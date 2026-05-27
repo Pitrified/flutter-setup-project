@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "required": ["correction", "conversation"],
+  "properties": {
+    "correction": {
+      "type": "object",
+      "required": ["content", "translation", "errors"],
+      "properties": {
+        "content": {"type": "string"},
+        "translation": {"type": "string"},
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["original", "corrected", "explanation"],
+            "properties": {
+              "original": {"type": "string"},
+              "corrected": {"type": "string"},
+              "explanation": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "conversation": {
+      "type": "object",
+      "required": ["content", "translation"],
+      "properties": {
+        "content": {"type": "string"},
+        "translation": {"type": "string"}
+      }
+    }
+  }
+}
