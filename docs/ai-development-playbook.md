@@ -109,3 +109,41 @@ After each significant implementation:
 - No automated tests load a real model
 - FakeInferenceEngine responses cover: valid structured output, invalid JSON,
   empty response, slow response (simulate timeout)
+
+## 12. Implementation-Audit Loop
+
+Every phase follows a strict implement-then-audit cycle:
+
+### Workflow
+
+1. **Plan** - Write detailed plan files in `plans/<phase>/` with acceptance criteria
+2. **Implement** - Execute plans, writing code that matches the plan spec
+3. **Validate** - Run `flutter analyze` and `flutter test` (must be clean)
+4. **Audit** - Compare implementation against plans AND functional-specs.md
+5. **Fix** - Resolve all discrepancies found in audit
+6. **Re-validate** - Run analysis and tests again
+7. **Commit** - Only after audit passes
+
+### Audit checklist
+
+- Do all acceptance criteria in the plan have a matching implementation?
+- Do JSON schemas in plans match the actual model classes?
+- Do import paths in plans match actual file locations?
+- Do class/field names in plans match the code?
+- Are all providers that plans specify actually created?
+- Do test files exist for services the plans say should be tested?
+- Does the functional spec still match the implementation?
+
+### What triggers a re-audit
+
+- Renaming a model or field (ripples through plans, fixtures, schemas)
+- Removing or adding a field to a model
+- Changing the file/folder structure
+- Any change to the functional spec
+
+### Recording audit results
+
+Create `plans/<phase>/10_audit.md` with:
+- Numbered findings (one per issue)
+- Status tag: `ISSUE` or `RESOLVED`
+- File references for context
