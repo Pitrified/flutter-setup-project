@@ -10,8 +10,8 @@ Single source of truth for progress across all phases.
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
-| [04 Core Systems](04_core_systems/README.md) | not-started | 7/7 plans written |
-| [05 Conversation Loop](05_conversation_loop/README.md) | not-started | 0/5 plans written |
+| [04 Core Systems](04_core_systems/README.md) | complete | 7/7 plans executed |
+| [05 Conversation Loop](05_controllers/README.md) | not-started | 6/6 plans written |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
 
@@ -48,13 +48,13 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_inference_interface.md | not-started | InferenceEngine abstract interface |
-| 01 | 01_fake_inference_engine.md | not-started | FakeInferenceEngine |
-| 02 | 02_flutter_gemma_engine.md | not-started | FlutterGemmaEngine |
-| 03 | 03_structured_output.md | not-started | Schema validation pipeline |
-| 04 | 04_conversation_repository.md | not-started | Hive persistence layer |
-| 05 | 05_model_manager.md | not-started | Model download/cache logic |
-| 06 | 06_prompt_manager.md | not-started | Versioned prompt loading |
+| 00 | 00_inference_interface.md | complete | InferenceEngine abstract interface |
+| 01 | 01_fake_inference_engine.md | complete | FakeInferenceEngine |
+| 02 | 02_flutter_gemma_engine.md | complete | FlutterGemmaEngine |
+| 03 | 03_structured_output.md | complete | Schema validation pipeline |
+| 04 | 04_conversation_repository.md | complete | Hive persistence layer |
+| 05 | 05_model_manager.md | complete | Model download/cache logic |
+| 06 | 06_prompt_manager.md | complete | Versioned prompt loading |
 
 ---
 
@@ -62,11 +62,12 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_conversation_controller.md | not-started | ConversationController |
-| 01 | 01_prompt_engineering.md | not-started | Tutor prompt templates |
-| 02 | 02_ui_screens.md | not-started | Welcome + Conversation screens |
-| 03 | 03_backend_swap.md | not-started | Fake-to-real engine switch |
-| 04 | 04_integration_test.md | not-started | End-to-end test |
+| 00 | 00_conversation_controller.md | not-started | ConversationController + provider |
+| 01 | 01_app_controller.md | not-started | AppController + provider |
+| 02 | 02_welcome_screen.md | not-started | Welcome screen |
+| 03 | 03_model_download_screen.md | not-started | Model download screen |
+| 04 | 04_conversation_screen.md | not-started | Conversation screen + widgets |
+| 05 | 05_integration.md | not-started | End-to-end wiring, demo-ready |
 
 ---
 
