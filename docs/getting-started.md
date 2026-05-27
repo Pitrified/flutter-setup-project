@@ -9,7 +9,13 @@ Android emulator running.
 - OS: Linux (Ubuntu 22.04+ or Debian 12+)
 - Disk space: ~10 GB (Flutter SDK + Android SDK + emulator images)
 - RAM: 8 GB minimum (16 GB recommended for emulator)
-- Already installed: git, curl, unzip, VS Code
+- Already installed: git, curl, unzip, ninja-build, VS Code
+
+Install `ninja-build` if you don't have it - the Android build system requires it:
+
+```bash
+sudo apt install ninja-build
+```
 
 ## Install Flutter SDK
 
@@ -35,9 +41,16 @@ flutter config --no-enable-ios --no-enable-web --no-enable-linux-desktop
 ### Option A: Android Studio (recommended)
 
 1. Download Android Studio from https://developer.android.com/studio
-2. Extract and run the installer
-3. During setup wizard, install: Android SDK, Android SDK Build-Tools, Android SDK Platform-Tools
+2. Extract and run the installer: `~/android-studio/bin/studio.sh`
+3. During setup wizard, install: Android SDK, Android SDK Build-Tools, Android SDK Platform-Tools, **Android SDK Command-line Tools**
 4. Install Android 14 (API 34) platform from SDK Manager
+
+Android Studio installs the SDK to `~/Android/Sdk/` by default. Add to PATH:
+
+```bash
+export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+```
 
 ### Option B: Command-line tools only
 
@@ -45,7 +58,7 @@ flutter config --no-enable-ios --no-enable-web --no-enable-linux-desktop
 # Download command-line tools
 mkdir -p ~/android-sdk/cmdline-tools
 cd ~/android-sdk/cmdline-tools
-curl -o tools.zip https://dl.google.com/android/repository/commandlinetools-linux-latest.zip
+curl -L -o tools.zip "https://dl.google.com/android/repository/commandlinetools-linux-latest.zip"
 unzip tools.zip
 mv cmdline-tools latest
 
@@ -89,7 +102,10 @@ Install these extensions:
 
 Optional but recommended:
 
-- **Error Lens** - inline error display
+- **Error Lens** (`usernamehw.errorlens`) - inline error display; add this to your VS Code settings to suppress noisy spelling warnings:
+  ```json
+  "errorLens.excludeByMessage": ["Unknown word."]
+  ```
 - **GitLens** - git history
 
 ## Validate setup
@@ -104,7 +120,7 @@ All checks should be green. If not, follow the doctor's suggestions.
 ### Quick smoke test
 
 ```bash
-flutter create /tmp/test_app && cd /tmp/test_app && flutter run
+flutter create /tmp/test_app && cd /tmp/test_app && flutter run -v
 ```
 
 Confirm the demo app launches on the emulator. Then delete it:
