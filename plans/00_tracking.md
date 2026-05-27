@@ -9,7 +9,7 @@ Single source of truth for progress across all phases.
 | [00 Drafts](00_drafts/README.md) | complete | Reference material, not maintained |
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
-| [03 Scaffold](03_scaffold/README.md) | not-started | 5/5 plans written |
+| [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
 | [04 Core Systems](04_core_systems/README.md) | not-started | 0/7 plans written |
 | [05 Conversation Loop](05_conversation_loop/README.md) | not-started | 0/5 plans written |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
@@ -36,11 +36,11 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_create_project.md | not-started | Flutter project + pubspec.yaml |
-| 01 | 01_folder_structure.md | not-started | Folder tree + analysis_options.yaml |
-| 02 | 02_generated_models.md | not-started | Freezed models + build_runner |
-| 03 | 03_routing_and_providers.md | not-started | GoRouter + Riverpod bootstrap |
-| 04 | 04_git_workflow.md | not-started | .gitignore + docs/git-workflow.md |
+| 00 | 00_create_project.md | complete | Flutter project + pubspec.yaml |
+| 01 | 01_folder_structure.md | complete | Folder tree + analysis_options.yaml |
+| 02 | 02_generated_models.md | complete | Freezed models + build_runner |
+| 03 | 03_routing_and_providers.md | complete | GoRouter + Riverpod bootstrap |
+| 04 | 04_git_workflow.md | complete | .gitignore + docs/git-workflow.md |
 
 ---
 
