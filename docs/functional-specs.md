@@ -106,11 +106,11 @@ and `correction.errors` are empty/empty list.
 
 ## 9. Persistence
 
-| Hive box | Contents |
-|----------|----------|
-| conversations | List of messages: role, content, timestamp, correction data |
-| settings | Selected language, CEFR difficulty level, prompt version |
-| model_metadata | File path, version, download timestamp, compatibility info |
+| Hive box | Dart model | Contents |
+|----------|------------|----------|
+| conversations | `Conversation` (list of `ConversationMessage` with `TutorResponse`) | Messages: role, content, timestamp, correction data |
+| settings | `Settings` (TBD) | Selected language, CEFR difficulty level, prompt version |
+| model_metadata | `ModelMetadata` | File path, version, download timestamp, compatibility info |
 
 ## 10. Error Handling
 

@@ -1,1 +1,47 @@
-[]
+[
+  {
+    "correction": {
+      "content": "Eu gosto de cafe",
+      "translation": "I like coffee",
+      "errors": [
+        {
+          "original": "eu gosto de cafe",
+          "corrected": "Eu gosto de cafe",
+          "explanation": "Sentences should start with a capital letter."
+        }
+      ]
+    },
+    "conversation": {
+      "content": "Muito bem! Voce esta aprendendo rapido. Vamos continuar praticando.",
+      "translation": "Very good! You are learning fast. Let's keep practicing."
+    }
+  },
+  {
+    "correction": {
+      "content": "",
+      "translation": "",
+      "errors": []
+    },
+    "conversation": {
+      "content": "Otimo! Sua frase esta perfeita.",
+      "translation": "Great! Your sentence is perfect."
+    }
+  },
+  {
+    "correction": {
+      "content": "Eu estou cansado",
+      "translation": "I am tired",
+      "errors": [
+        {
+          "original": "Eu sou cansado",
+          "corrected": "Eu estou cansado",
+          "explanation": "Use 'estar' for temporary states, not 'ser'."
+        }
+      ]
+    },
+    "conversation": {
+      "content": "Boa tentativa! Veja a correcao acima.",
+      "translation": "Good try! See the correction above."
+    }
+  }
+]

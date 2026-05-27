@@ -14,6 +14,9 @@ abstract final class AppRoutes {
 }
 
 /// App-level GoRouter configuration.
+///
+/// Uses manual Provider (not @riverpod) because GoRouter setup is declarative
+/// configuration, not async/stateful logic. This is a common Flutter pattern.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: AppRoutes.welcome,

@@ -25,14 +25,21 @@ void main() {
         content: 'Quase perfeito!',
         timestamp: DateTime(2025),
         tutorResponse: const TutorResponse(
-          reply: 'Quase perfeito!',
-          corrections: [
-            CorrectionBlock(
-              original: 'cafe',
-              corrected: 'cafe',
-              explanation: 'Missing accent on e',
-            ),
-          ],
+          correction: CorrectionBlock(
+            content: 'Eu gosto de cafe',
+            translation: 'I like coffee',
+            errors: [
+              CorrectionError(
+                original: 'cafe',
+                corrected: 'cafe',
+                explanation: 'Missing accent on e',
+              ),
+            ],
+          ),
+          conversation: ConversationBlock(
+            content: 'Quase perfeito!',
+            translation: 'Almost perfect!',
+          ),
         ),
       );
 

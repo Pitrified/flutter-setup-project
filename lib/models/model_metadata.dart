@@ -1,20 +1,20 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'model_info.freezed.dart';
-part 'model_info.g.dart';
+part 'model_metadata.freezed.dart';
+part 'model_metadata.g.dart';
 
 /// Metadata for a downloaded LLM model file.
 @freezed
-abstract class ModelInfo with _$ModelInfo {
-  const factory ModelInfo({
+abstract class ModelMetadata with _$ModelMetadata {
+  const factory ModelMetadata({
     required String name,
     required String filePath,
     required int fileSizeBytes,
     required DateTime downloadedAt,
     String? version,
     String? checksum,
-  }) = _ModelInfo;
+  }) = _ModelMetadata;
 
-  factory ModelInfo.fromJson(Map<String, dynamic> json) =>
-      _$ModelInfoFromJson(json);
+  factory ModelMetadata.fromJson(Map<String, dynamic> json) =>
+      _$ModelMetadataFromJson(json);
 }
