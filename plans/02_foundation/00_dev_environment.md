@@ -37,11 +37,11 @@ VS Code installed. No prior Dart, Flutter, or Android SDK knowledge.
 - Install Android Studio (for SDK manager and emulator)
 - Or: install Android command-line tools only (lighter)
 - Accept licenses: `flutter doctor --android-licenses`
-- Required SDK components: Android SDK, Build-Tools, Platform-Tools, Android 14 (API 34) platform
+- Required SDK components: Android SDK, Build-Tools, Platform-Tools, Android 16 (API 36) platform
 
 ### 4. Create Android emulator
 
-- Install system image: `sdkmanager "system-images;android-34;google_apis;x86_64"`
+- Install system image: `sdkmanager "system-images;android-36;google_apis;x86_64"`
 - Create AVD: `avdmanager create avd --name dev_phone --device pixel_7 --package ...`
 - Launch: `emulator -avd dev_phone`
 - Verify Flutter sees it: `flutter devices`
@@ -72,7 +72,7 @@ VS Code installed. No prior Dart, Flutter, or Android SDK knowledge.
 
 - Android Studio is recommended over CLI-only because it provides the emulator GUI,
   but the doc should cover both paths.
-- Target API level: Android 14 (API 34) for development, minimum SDK 26 (Android 8) for release.
+- Target API level: Android 16 (API 36) for development, minimum SDK 26 (Android 8) for release.
 - No iOS/Xcode/CocoaPods steps - Android only.
 
 ## References

@@ -26,7 +26,7 @@
 | Initial model | Gemma 3 1B (to be evaluated on-device) |
 | Model delivery | Download on first launch |
 | Min Android version | API 26 (Android 8.0) |
-| Target Android version | API 34 (Android 14) |
+| Target Android version | API 36 (Android 16) |
 | Difficulty system | A1-C2 CEFR levels via prompt templates |
 
 ## 3. Platform Constraints

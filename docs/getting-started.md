@@ -43,7 +43,7 @@ flutter config --no-enable-ios --no-enable-web --no-enable-linux-desktop
 1. Download Android Studio from https://developer.android.com/studio
 2. Extract and run the installer: `~/android-studio/bin/studio.sh`
 3. During setup wizard, install: Android SDK, Android SDK Build-Tools, Android SDK Platform-Tools, **Android SDK Command-line Tools**
-4. Install Android 14 (API 34) platform from SDK Manager
+4. Install Android 16 (API 36) platform from SDK Manager
 
 Android Studio installs the SDK to `~/Android/Sdk/` by default. Add to PATH:
 
@@ -143,6 +143,66 @@ flutter run
 
 | Concern | Value |
 |---------|-------|
-| Development API level | Android 14 (API 34) |
+| Development API level | Android 16 (API 36) |
 | Minimum release API | Android 8.0 (API 26) |
 | Flutter channel | stable |
+
+## Migrating from API 34 to API 36
+
+If you previously set up your environment targeting API 34 (Android 14), follow these
+steps to upgrade to API 36 (Android 16).
+
+### 1. Install the new platform
+
+**Android Studio:** Open SDK Manager (Tools > SDK Manager), check "Android 16 (API 36)"
+under SDK Platforms, click Apply.
+
+**CLI:**
+
+```bash
+sdkmanager "platforms;android-36" "build-tools;36.0.0"
+```
+
+### 2. Update the emulator
+
+Create a new AVD with the API 36 system image:
+
+```bash
+sdkmanager "system-images;android-36;google_apis;x86_64"
+avdmanager create avd --name dev_phone_36 --device pixel_7 \
+  --package "system-images;android-36;google_apis;x86_64"
+```
+
+You can keep the old AVD for regression testing or delete it:
+
+```bash
+avdmanager delete avd --name dev_phone
+```
+
+### 3. Update the Flutter project (once scaffolded)
+
+In `android/app/build.gradle`:
+
+```groovy
+android {
+    compileSdk = 36
+
+    defaultConfig {
+        minSdk = 26
+        targetSdk = 36
+    }
+}
+```
+
+### 4. Verify
+
+```bash
+flutter doctor    # should show Android SDK 36
+flutter run       # should launch on the API 36 emulator
+```
+
+### Notes
+
+- The old API 34 SDK can remain installed (it takes minimal disk space).
+- Removing it: `sdkmanager --uninstall "platforms;android-34"`.
+- If gradle sync fails after the bump, run `flutter clean && flutter pub get`.

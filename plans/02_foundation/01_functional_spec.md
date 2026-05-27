@@ -37,7 +37,7 @@ unity-setup-project.
 | Model size | 0.6B-3B parameters (Qwen3 0.6B initial target) |
 | Model delivery | Download on first launch |
 | Min Android version | API 26 (Android 8.0) |
-| Target Android version | API 34 (Android 14) |
+| Target Android version | API 36 (Android 16) |
 
 ### 3. Platform Constraints
 
