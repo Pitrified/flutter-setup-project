@@ -8,7 +8,7 @@ Single source of truth for progress across all phases.
 |-------|--------|----------|
 | [00 Drafts](00_drafts/README.md) | complete | Reference material, not maintained |
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
-| [02 Foundation](02_foundation/README.md) | not-started | 0/8 plans written |
+| [02 Foundation](02_foundation/README.md) | in-progress | 8/8 plans drafted |
 | [03 Scaffold](03_scaffold/README.md) | not-started | 0/5 plans written |
 | [04 Core Systems](04_core_systems/README.md) | not-started | 0/7 plans written |
 | [05 Conversation Loop](05_conversation_loop/README.md) | not-started | 0/5 plans written |
@@ -21,14 +21,14 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_dev_environment.md | not-started | docs/getting-started.md |
-| 01 | 01_functional_spec.md | not-started | docs/functional-specs.md |
-| 02 | 02_project_structure.md | not-started | docs/project-structure.md |
-| 03 | 03_coding_standards.md | not-started | docs/coding-standards.md |
-| 04 | 04_ai_development_playbook.md | not-started | docs/ai-development-playbook.md |
-| 05 | 05_system_specs_template.md | not-started | Template for docs/library/*.md |
-| 06 | 06_copilot_instructions.md | not-started | .github/copilot-instructions.md |
-| 07 | 07_docs_readme.md | not-started | docs/README.md |
+| 00 | 00_dev_environment.md | draft | docs/getting-started.md |
+| 01 | 01_functional_spec.md | draft | docs/functional-specs.md |
+| 02 | 02_project_structure.md | draft | docs/project-structure.md |
+| 03 | 03_coding_standards.md | draft | docs/coding-standards.md |
+| 04 | 04_ai_development_playbook.md | draft | docs/ai-development-playbook.md |
+| 05 | 05_system_specs_template.md | draft | Template for docs/library/*.md |
+| 06 | 06_copilot_instructions.md | draft | .github/copilot-instructions.md |
+| 07 | 07_docs_readme.md | draft | docs/README.md |
 
 ---
 
