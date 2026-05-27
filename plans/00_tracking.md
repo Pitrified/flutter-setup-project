@@ -10,7 +10,7 @@ Single source of truth for progress across all phases.
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
-| [04 Core Systems](04_core_systems/README.md) | not-started | 0/7 plans written |
+| [04 Core Systems](04_core_systems/README.md) | not-started | 7/7 plans written |
 | [05 Conversation Loop](05_conversation_loop/README.md) | not-started | 0/5 plans written |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
