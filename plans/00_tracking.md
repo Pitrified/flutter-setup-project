@@ -11,7 +11,7 @@ Single source of truth for progress across all phases.
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
 | [04 Core Systems](04_core_systems/README.md) | complete | 8/8 plans executed |
-| [05 Controllers](05_controllers/README.md) | not-started | 6/6 plans written |
+| [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
 
@@ -63,12 +63,12 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_conversation_controller.md | not-started | ConversationController + provider |
-| 01 | 01_app_controller.md | not-started | AppController + provider |
-| 02 | 02_welcome_screen.md | not-started | Welcome screen |
-| 03 | 03_model_download_screen.md | not-started | Model download screen |
-| 04 | 04_conversation_screen.md | not-started | Conversation screen + widgets |
-| 05 | 05_integration.md | not-started | End-to-end wiring, demo-ready |
+| 00 | 00_conversation_controller.md | complete | ConversationController + provider |
+| 01 | 01_app_controller.md | complete | AppController + provider |
+| 02 | 02_welcome_screen.md | complete | Welcome screen |
+| 03 | 03_model_download_screen.md | complete | Model download screen |
+| 04 | 04_conversation_screen.md | complete | Conversation screen + widgets |
+| 05 | 05_integration.md | complete | End-to-end wiring, demo-ready |
 
 ---
 
