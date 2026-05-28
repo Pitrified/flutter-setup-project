@@ -11,7 +11,7 @@ Single source of truth for progress across all phases.
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
 | [04 Core Systems](04_core_systems/README.md) | complete | 7/7 plans executed |
-| [05 Conversation Loop](05_controllers/README.md) | not-started | 6/6 plans written |
+| [05 Controllers](05_controllers/README.md) | not-started | 6/6 plans written |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
 
@@ -58,7 +58,7 @@ Single source of truth for progress across all phases.
 
 ---
 
-## Phase 05 - Conversation Loop
+## Phase 05 - Controllers and Screens
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
