@@ -9,14 +9,14 @@ The app never crashes. Every error produces a recoverable UI state.
 Tests pass in CI using the fake engine. Inference latency is acceptable
 on the target device tier.
 
-## Planned contents
+## Plans
 
-| File | Produces |
-|------|----------|
-| 00_error_handling.md | Failure taxonomy + recovery UI |
-| 01_loading_states.md | Download progress, generation indicator, timeouts |
-| 02_testing_strategy.md | Unit, widget, and integration test suite |
-| 03_performance.md | Memory/latency budgets, minimum device tier |
+| # | File | Status | Produces |
+|---|------|--------|----------|
+| 00 | [00_error_handling.md](00_error_handling.md) | not-started | Failure taxonomy + recovery UI |
+| 01 | [01_loading_states.md](01_loading_states.md) | not-started | Timeouts + progress detail |
+| 02 | [02_testing_strategy.md](02_testing_strategy.md) | not-started | Widget + integration tests |
+| 03 | [03_performance.md](03_performance.md) | not-started | Memory/latency budgets |
 
 ## Dependencies
 
