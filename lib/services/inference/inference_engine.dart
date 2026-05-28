@@ -1,5 +1,4 @@
 import '../../models/inference_status.dart';
-import '../../models/tutor_response.dart';
 
 /// Configuration for a single inference call.
 class InferenceRequest {
@@ -22,10 +21,10 @@ sealed class InferenceResult {
 }
 
 class InferenceSuccess extends InferenceResult {
-  const InferenceSuccess({required this.rawText, this.tutorResponse});
+  const InferenceSuccess({required this.rawText});
 
+  /// The raw text output from the LLM.
   final String rawText;
-  final TutorResponse? tutorResponse;
 }
 
 class InferenceFailure extends InferenceResult {
@@ -53,7 +52,7 @@ abstract class InferenceEngine {
 
   /// Generate a response given a prompt.
   ///
-  /// Returns structured output if parsing succeeds, raw text otherwise.
+  /// Returns the raw text output from the LLM.
   /// Transitions status: ready -> generating -> ready.
   Future<InferenceResult> generate(InferenceRequest request);
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fala/models/inference_status.dart';
 import 'package:fala/services/inference/fake_inference_engine.dart';
 import 'package:fala/services/inference/inference_engine.dart';
@@ -96,16 +98,20 @@ void main() {
       const InferenceRequest(prompt: 'msg1'),
     );
     expect(result1, isA<InferenceSuccess>());
+    final json1 = jsonDecode((result1 as InferenceSuccess).rawText)
+        as Map<String, dynamic>;
     expect(
-      (result1 as InferenceSuccess).tutorResponse!.conversation.content,
+      (json1['conversation'] as Map<String, dynamic>)['content'],
       'Muito bem!',
     );
 
     final result2 = await engine.generate(
       const InferenceRequest(prompt: 'msg2'),
     );
+    final json2 = jsonDecode((result2 as InferenceSuccess).rawText)
+        as Map<String, dynamic>;
     expect(
-      (result2 as InferenceSuccess).tutorResponse!.conversation.content,
+      (json2['conversation'] as Map<String, dynamic>)['content'],
       'Otimo!',
     );
   });
@@ -121,8 +127,10 @@ void main() {
     final result = await engine.generate(
       const InferenceRequest(prompt: '3'),
     );
+    final json = jsonDecode((result as InferenceSuccess).rawText)
+        as Map<String, dynamic>;
     expect(
-      (result as InferenceSuccess).tutorResponse!.conversation.content,
+      (json['conversation'] as Map<String, dynamic>)['content'],
       'Muito bem!',
     );
   });

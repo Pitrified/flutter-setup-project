@@ -10,7 +10,7 @@ Single source of truth for progress across all phases.
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
 | [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
-| [04 Core Systems](04_core_systems/README.md) | in-progress | 7/8 plans executed |
+| [04 Core Systems](04_core_systems/README.md) | complete | 8/8 plans executed |
 | [05 Controllers](05_controllers/README.md) | not-started | 6/6 plans written |
 | [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
@@ -55,7 +55,7 @@ Single source of truth for progress across all phases.
 | 04 | 04_conversation_repository.md | complete | Hive persistence layer |
 | 05 | 05_model_manager.md | complete | Model download/cache logic |
 | 06 | 06_prompt_manager.md | complete | Versioned prompt loading |
-| 07 | 07_decouple_structured_output.md | not-started | Generic parser + StructuredInferenceEngine<T> |
+| 07 | 07_decouple_structured_output.md | complete | Generic parser + StructuredInferenceEngine<T> |
 
 ---
 

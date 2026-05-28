@@ -1,82 +1,67 @@
 import 'dart:convert';
 
-import '../../models/tutor_response.dart';
+import 'json_extractor.dart';
 
-/// Result of parsing raw LLM output into structured form.
-sealed class ParseResult {
+/// Result of parsing raw LLM output into a structured type.
+sealed class ParseResult<T> {
   const ParseResult();
 }
 
-class ParseSuccess extends ParseResult {
-  const ParseSuccess({required this.response});
-  final TutorResponse response;
+class ParseSuccess<T> extends ParseResult<T> {
+  const ParseSuccess({required this.value});
+
+  /// The parsed and validated domain object.
+  final T value;
 }
 
-class ParseFailure extends ParseResult {
+class ParseFailure<T> extends ParseResult<T> {
   const ParseFailure({required this.rawText, required this.error});
+
+  /// The raw text that could not be parsed.
   final String rawText;
+
+  /// Description of the parse failure.
   final String error;
 }
 
-/// Parses raw LLM text output into a validated [TutorResponse].
+/// Generic parser that extracts JSON from LLM text and deserializes to T.
 ///
-/// Attempts multiple extraction strategies in order:
-/// 1. Direct JSON parse (if output is pure JSON)
-/// 2. Extract JSON from markdown code block
-/// 3. Extract JSON substring (first { to last })
-///
-/// Validates the parsed structure against the TutorResponse schema.
-class StructuredOutputParser {
-  const StructuredOutputParser();
+/// Works with any type that has a fromJson factory (all freezed models do).
+/// Uses [JsonExtractor] for text extraction strategies, then [fromJson] for
+/// deserialization and validation.
+class StructuredOutputParser<T> {
+  const StructuredOutputParser({
+    required this.fromJson,
+    this.extractor = const JsonExtractor(),
+  });
 
-  /// Parse raw text into a TutorResponse.
-  ParseResult parse(String rawText) {
-    final trimmed = rawText.trim();
+  /// Factory function to deserialize JSON map into T.
+  final T Function(Map<String, dynamic>) fromJson;
 
-    // Strategy 1: direct JSON parse
-    final direct = _tryParseJson(trimmed);
-    if (direct != null) return ParseSuccess(response: direct);
+  /// JSON extraction strategy.
+  final JsonExtractor extractor;
 
-    // Strategy 2: extract from markdown code block
-    final codeBlock = _extractCodeBlock(trimmed);
-    if (codeBlock != null) {
-      final parsed = _tryParseJson(codeBlock);
-      if (parsed != null) return ParseSuccess(response: parsed);
+  /// Parse raw LLM text into a validated instance of T.
+  ParseResult<T> parse(String rawText) {
+    final jsonString = extractor.extract(rawText);
+    if (jsonString == null) {
+      return ParseFailure(
+        rawText: rawText,
+        error: 'Could not extract valid JSON from LLM output',
+      );
     }
 
-    // Strategy 3: extract JSON substring
-    final substring = _extractJsonSubstring(trimmed);
-    if (substring != null) {
-      final parsed = _tryParseJson(substring);
-      if (parsed != null) return ParseSuccess(response: parsed);
-    }
-
-    return ParseFailure(
-      rawText: rawText,
-      error: 'Could not extract valid JSON from LLM output',
-    );
-  }
-
-  TutorResponse? _tryParseJson(String text) {
     try {
-      final decoded = jsonDecode(text);
-      if (decoded is! Map<String, dynamic>) return null;
-      return TutorResponse.fromJson(decoded);
-    } on Object {
-      return null;
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map<String, dynamic>) {
+        return ParseFailure(
+          rawText: rawText,
+          error: 'Extracted JSON is not a Map',
+        );
+      }
+      return ParseSuccess(value: fromJson(decoded));
+    } on Object catch (e) {
+      return ParseFailure(rawText: rawText, error: e.toString());
     }
-  }
-
-  String? _extractCodeBlock(String text) {
-    final regex = RegExp(r'```(?:json)?\s*\n?([\s\S]*?)\n?```');
-    final match = regex.firstMatch(text);
-    return match?.group(1)?.trim();
-  }
-
-  String? _extractJsonSubstring(String text) {
-    final start = text.indexOf('{');
-    final end = text.lastIndexOf('}');
-    if (start == -1 || end == -1 || end <= start) return null;
-    return text.substring(start, end + 1);
   }
 }

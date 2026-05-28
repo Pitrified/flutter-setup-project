@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../../models/inference_status.dart';
-import '../../models/tutor_response.dart';
 import 'inference_engine.dart';
 
 /// Fake inference engine that returns pre-loaded responses in sequence.
@@ -12,6 +11,9 @@ import 'inference_engine.dart';
 /// Responses are loaded from a JSON fixture file in assets/fixtures/.
 /// Each call to [generate] returns the next response in order, cycling back
 /// to the start when all responses have been used.
+///
+/// Returns only raw text (serialized JSON). The StructuredInferenceEngine
+/// layer handles parsing into domain types.
 class FakeInferenceEngine implements InferenceEngine {
   FakeInferenceEngine({
     this.fixtureAssetPath = 'assets/fixtures/tutor_responses.json',
@@ -23,7 +25,7 @@ class FakeInferenceEngine implements InferenceEngine {
 
   final _statusController = StreamController<InferenceStatus>.broadcast();
   InferenceStatus _status = const InferenceStatus.uninitialized();
-  List<TutorResponse> _responses = [];
+  List<Map<String, dynamic>> _responses = [];
   int _nextIndex = 0;
 
   @override
@@ -41,9 +43,7 @@ class FakeInferenceEngine implements InferenceEngine {
 
     final jsonString = await rootBundle.loadString(fixtureAssetPath);
     final jsonList = jsonDecode(jsonString) as List<dynamic>;
-    _responses = jsonList
-        .map((e) => TutorResponse.fromJson(e as Map<String, dynamic>))
-        .toList();
+    _responses = jsonList.cast<Map<String, dynamic>>();
 
     _setStatus(const InferenceStatus.ready());
   }
@@ -73,10 +73,7 @@ class FakeInferenceEngine implements InferenceEngine {
     _nextIndex++;
 
     _setStatus(const InferenceStatus.ready());
-    return InferenceSuccess(
-      rawText: jsonEncode(response.toJson()),
-      tutorResponse: response,
-    );
+    return InferenceSuccess(rawText: jsonEncode(response));
   }
 
   @override
