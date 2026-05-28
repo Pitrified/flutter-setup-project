@@ -13,7 +13,7 @@ Single source of truth for progress across all phases.
 | [04 Core Systems](04_core_systems/README.md) | complete | 8/8 plans executed |
 | [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
 | [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
-| [07 Release](07_release/README.md) | not-started | 0/3 plans written |
+| [07 Release](07_release/README.md) | in-progress | 3/3 plans written, 2/3 executed |
 
 ---
 
@@ -87,6 +87,6 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_build_config.md | not-started | Release build + signing |
-| 01 | 01_play_store_alpha.md | not-started | Play Store listing |
-| 02 | 02_tracking_template.md | not-started | Final tracking.md |
+| 00 | 00_build_config.md | complete | Release build + signing |
+| 01 | 01_play_store_alpha.md | in-progress | Play Store listing (docs done, manual steps remain) |
+| 02 | 02_tracking_template.md | complete | Final tracking.md |
