@@ -1,6 +1,6 @@
 ---
 status: not-started
-depends_on: [04_core_systems/00_inference_interface.md, 04_core_systems/03_structured_output.md, 04_core_systems/04_conversation_repository.md, 04_core_systems/06_prompt_manager.md]
+depends_on: [04_core_systems/07_decouple_structured_output.md, 04_core_systems/04_conversation_repository.md, 04_core_systems/06_prompt_manager.md]
 produces: [lib/services/conversation/conversation_controller.dart, lib/providers/conversation_provider.dart]
 ---
 
@@ -9,8 +9,23 @@ produces: [lib/services/conversation/conversation_controller.dart, lib/providers
 ## Goal
 
 Orchestrate the full conversation loop: receive user input, build prompt, call
-inference engine, parse output, persist messages, expose state to UI. This is
-the primary "glue" between services.
+structured inference engine, handle result, persist messages, expose state to UI.
+This is the primary "glue" between services.
+
+## Design decision: StructuredInferenceEngine<TutorResponse>
+
+The controller depends on `StructuredInferenceEngine<TutorResponse>` (from
+Plan 04/07), NOT on InferenceEngine directly. This means:
+
+- The controller never handles raw text parsing
+- It receives `StructuredResult<TutorResponse>` with three explicit outcomes:
+  - `StructuredSuccess` - parsed TutorResponse ready to use
+  - `StructuredInferenceFailure` - engine could not generate at all
+  - `StructuredParseFailure` - engine generated text but parsing failed (raw text available for fallback display)
+- The parsing, extraction, and validation layers are fully encapsulated below
+
+This keeps the controller focused on orchestration: prompt building,
+calling inference, persisting messages, and exposing state.
 
 ## Implementation
 
@@ -22,7 +37,10 @@ import 'dart:async';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
 import '../../models/tutor_response.dart';
+import '../inference/structured_inference_engine.dart';
 import '../inference/inference_engine.dart';
+import '../persistence/conversation_repository.dart';
+import '../prompt/prompt_manager.dart';
 import '../inference/structured_output_parser.dart';
 import '../persistence/conversation_repository.dart';
 import '../prompt/prompt_manager.dart';
@@ -31,22 +49,20 @@ import '../prompt/prompt_manager.dart';
 ///
 /// Responsibilities:
 /// - Build prompt from template + history + user message
-/// - Call inference engine and parse structured output
+/// - Call structured inference engine
 /// - Persist messages to repository
 /// - Expose conversation state for UI consumption
 class ConversationController {
   ConversationController({
-    required this.engine,
+    required this.structuredEngine,
     required this.repository,
     required this.promptManager,
-    this.parser = const StructuredOutputParser(),
     this.maxHistoryMessages = 10,
   });
 
-  final InferenceEngine engine;
+  final StructuredInferenceEngine<TutorResponse> structuredEngine;
   final ConversationRepository repository;
   final PromptManager promptManager;
-  final StructuredOutputParser parser;
   final int maxHistoryMessages;
 
   Conversation? _currentConversation;
@@ -114,23 +130,24 @@ class ConversationController {
       },
     );
 
-    // Call inference
-    final result = await engine.generate(InferenceRequest(prompt: prompt));
+    // Call structured inference engine
+    final result = await structuredEngine.generate(
+      InferenceRequest(prompt: prompt),
+    );
 
-    // Parse response
+    // Handle three-state result
     TutorResponse? tutorResponse;
     String replyContent;
 
-    if (result is InferenceSuccess) {
-      final parsed = parser.parse(result.rawText);
-      if (parsed is ParseSuccess) {
-        tutorResponse = parsed.response;
-        replyContent = tutorResponse.conversation.content;
-      } else {
-        replyContent = result.rawText;
-      }
-    } else {
-      replyContent = 'Sorry, I could not generate a response.';
+    switch (result) {
+      case StructuredSuccess(:final value):
+        tutorResponse = value;
+        replyContent = value.conversation.content;
+      case StructuredParseFailure(:final rawText):
+        // Engine generated text but parsing failed - show raw text
+        replyContent = rawText;
+      case StructuredInferenceFailure(:final error):
+        replyContent = 'Sorry, I could not generate a response.';
     }
 
     final tutorMessage = ConversationMessage(
@@ -182,10 +199,10 @@ import '../services/conversation/conversation_controller.dart';
 
 /// Provider for the ConversationController.
 ///
-/// Depends on inference engine, repository, and prompt manager.
+/// Depends on structured inference engine, repository, and prompt manager.
 final conversationControllerProvider = Provider<ConversationController>((ref) {
   return ConversationController(
-    engine: ref.watch(inferenceEngineProvider),
+    structuredEngine: ref.watch(structuredInferenceEngineProvider),
     repository: ref.watch(conversationRepositoryProvider),
     promptManager: ref.watch(promptManagerProvider),
   );
@@ -198,10 +215,11 @@ final conversationControllerProvider = Provider<ConversationController>((ref) {
 
 - Start conversation creates and persists a new conversation
 - Send message appends user and tutor messages
-- Tutor response is parsed into TutorResponse on success
-- Failed inference shows fallback message
-- Invalid JSON output shows raw text
+- StructuredSuccess: uses parsed TutorResponse, sets reply content
+- StructuredParseFailure: shows raw text as reply content
+- StructuredInferenceFailure: shows error fallback message
 - History truncation respects maxHistoryMessages
+- Stream emits updated conversation after each message
 
 ## Acceptance criteria
 

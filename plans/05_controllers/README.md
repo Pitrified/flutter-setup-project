@@ -29,9 +29,10 @@ then swapped to the real model via provider override.
 
 ## Dependencies
 
-Requires Phase 04 complete (all core systems individually functional):
-- InferenceEngine interface + FakeInferenceEngine + FlutterGemmaEngine
-- StructuredOutputParser
+Requires Phase 04 complete, including Plan 07 (decoupling refactor):
+- InferenceEngine interface (pure text-in/text-out) + FakeInferenceEngine + FlutterGemmaEngine
+- JsonExtractor + StructuredOutputParser<T> (generic)
+- StructuredInferenceEngine<T> (composition layer)
 - ConversationRepository (Hive persistence)
 - ModelManager (download + cache)
 - PromptManager (versioned templates)
@@ -40,6 +41,7 @@ Requires Phase 04 complete (all core systems individually functional):
 
 - Screens never import services directly - always through Riverpod providers
 - AppController manages lifecycle; router redirects based on AppState
-- ConversationController orchestrates the send/receive loop
+- ConversationController depends on StructuredInferenceEngine<TutorResponse>
+- Controller gets typed results (StructuredSuccess/ParseFailure/InferenceFailure)
 - FakeInferenceEngine is the default for development/testing
 - Real engine swap happens via provider override in main.dart
