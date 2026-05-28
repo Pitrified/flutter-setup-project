@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../models/inference_status.dart';
+import '../logging/app_logger.dart';
 import 'inference_engine.dart';
 import 'structured_output_parser.dart';
 
@@ -102,9 +103,10 @@ class StructuredInferenceEngine<T> {
     stopwatch.stop();
 
     assert(() {
-      // ignore: avoid_print
-      print('[PERF] inference: ${inferenceTime.inMilliseconds}ms, '
-          'total: ${totalTime.inMilliseconds}ms');
+      AppLogger.instance.info(
+        'inference: ${inferenceTime.inMilliseconds}ms, '
+        'total: ${totalTime.inMilliseconds}ms',
+      );
       return true;
     }());
 

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../models/conversation_message.dart';
 
-/// Chat bubble widget for a single message.
+/// Chat bubble displaying a single conversation message.
+///
+/// User messages align right with primary color; tutor messages
+/// align left with surface color.
 class MessageBubble extends StatelessWidget {
   const MessageBubble({super.key, required this.message});
 

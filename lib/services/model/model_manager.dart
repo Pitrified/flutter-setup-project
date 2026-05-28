@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../../models/app_exception.dart';
-
 import '../../models/model_metadata.dart';
 
 /// Status of a model download operation.

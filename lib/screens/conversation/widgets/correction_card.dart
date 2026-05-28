@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../models/tutor_response.dart';
 
-/// Displays corrections from the tutor below the message.
+/// Displays tutor corrections below a message.
+///
+/// Shows each error with strikethrough original, bold corrected form,
+/// and explanation text.
 class CorrectionCard extends StatelessWidget {
   const CorrectionCard({super.key, required this.corrections});
 
