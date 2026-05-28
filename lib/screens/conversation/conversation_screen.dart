@@ -6,6 +6,7 @@ import '../../models/conversation_message.dart';
 import '../../providers/conversation_provider.dart';
 import 'widgets/correction_card.dart';
 import 'widgets/message_bubble.dart';
+import 'widgets/typing_indicator.dart';
 
 /// Conversation screen - main chat interface.
 ///
@@ -106,8 +107,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: messages.length,
+      itemCount: messages.length + (_isSending ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == messages.length) {
+          return const TypingIndicator();
+        }
         final message = messages[index];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

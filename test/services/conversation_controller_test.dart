@@ -17,8 +17,8 @@ class _FakeStructuredEngine extends StructuredInferenceEngine<TutorResponse> {
   _FakeStructuredEngine()
       : super(engine: _DummyEngine(), parser: _dummyParser());
 
-  StructuredResult<TutorResponse> nextResult = StructuredSuccess(
-    value: const TutorResponse(
+  StructuredResult<TutorResponse> nextResult = const StructuredSuccess(
+    value: TutorResponse(
       correction: CorrectionBlock(content: '', translation: '', errors: []),
       conversation: ConversationBlock(content: 'Ola!', translation: 'Hello!'),
     ),
@@ -61,7 +61,7 @@ class _DummyEngine implements InferenceEngine {
 // Need a dummy parser just for the super constructor
 
 StructuredOutputParser<TutorResponse> _dummyParser() {
-  return StructuredOutputParser<TutorResponse>(
+  return const StructuredOutputParser<TutorResponse>(
     fromJson: TutorResponse.fromJson,
   );
 }

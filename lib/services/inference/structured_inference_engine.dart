@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../models/inference_status.dart';
 import 'inference_engine.dart';
 import 'structured_output_parser.dart';
@@ -47,6 +49,7 @@ class StructuredInferenceEngine<T> {
   const StructuredInferenceEngine({
     required this.engine,
     required this.parser,
+    this.timeout = const Duration(seconds: 30),
   });
 
   /// The underlying raw text inference engine.
@@ -54,6 +57,9 @@ class StructuredInferenceEngine<T> {
 
   /// The parser that converts raw text to T.
   final StructuredOutputParser<T> parser;
+
+  /// Maximum time to wait for inference before timing out.
+  final Duration timeout;
 
   /// Current status of the underlying engine.
   InferenceStatus get status => engine.status;
@@ -71,17 +77,38 @@ class StructuredInferenceEngine<T> {
   /// - [StructuredInferenceFailure] if the engine could not generate
   /// - [StructuredParseFailure] if the engine generated text but parsing failed
   Future<StructuredResult<T>> generate(InferenceRequest request) async {
-    final result = await engine.generate(request);
-    return switch (result) {
+    final stopwatch = Stopwatch()..start();
+    final InferenceResult result;
+    try {
+      result = await engine.generate(request).timeout(timeout);
+    } on TimeoutException {
+      return const StructuredInferenceFailure(
+        error: 'Response timed out',
+      );
+    }
+    final inferenceTime = stopwatch.elapsed;
+
+    final structured = switch (result) {
       InferenceFailure(:final error) =>
-        StructuredInferenceFailure(error: error),
+        StructuredInferenceFailure<T>(error: error),
       InferenceSuccess(:final rawText) => switch (parser.parse(rawText)) {
         ParseSuccess(:final value) =>
-          StructuredSuccess(value: value, rawText: rawText),
+          StructuredSuccess<T>(value: value, rawText: rawText),
         ParseFailure(:final rawText, :final error) =>
-          StructuredParseFailure(rawText: rawText, error: error),
+          StructuredParseFailure<T>(rawText: rawText, error: error),
       },
     };
+    final totalTime = stopwatch.elapsed;
+    stopwatch.stop();
+
+    assert(() {
+      // ignore: avoid_print
+      print('[PERF] inference: ${inferenceTime.inMilliseconds}ms, '
+          'total: ${totalTime.inMilliseconds}ms');
+      return true;
+    }());
+
+    return structured;
   }
 
   /// Delegates initialization to the underlying engine.

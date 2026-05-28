@@ -12,7 +12,7 @@ Single source of truth for progress across all phases.
 | [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
 | [04 Core Systems](04_core_systems/README.md) | complete | 8/8 plans executed |
 | [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
-| [06 Stabilization](06_stabilization/README.md) | not-started | 0/4 plans written |
+| [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
 | [07 Release](07_release/README.md) | not-started | 0/3 plans written |
 
 ---
@@ -76,10 +76,10 @@ Single source of truth for progress across all phases.
 
 | # | Plan file | Status | Produces |
 |---|-----------|--------|----------|
-| 00 | 00_error_handling.md | not-started | Failure taxonomy + recovery UI |
-| 01 | 01_loading_states.md | not-started | Progress/loading indicators |
-| 02 | 02_testing_strategy.md | not-started | Test suite |
-| 03 | 03_performance.md | not-started | Budgets + device tier |
+| 00 | 00_error_handling.md | complete | Failure taxonomy + recovery UI |
+| 01 | 01_loading_states.md | complete | Progress/loading indicators |
+| 02 | 02_testing_strategy.md | complete | Test suite |
+| 03 | 03_performance.md | complete | Budgets + device tier |
 
 ---
 

@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
+import '../../models/app_exception.dart';
+
 import '../../models/model_metadata.dart';
 
 /// Status of a model download operation.
@@ -134,12 +136,13 @@ class ModelManager {
       _downloadStatusController.add(DownloadComplete(modelInfo: info));
       return info;
     } on Exception catch (e) {
-      _downloadStatusController.add(DownloadFailed(error: e.toString()));
+      final errorMsg = e.toString();
+      _downloadStatusController.add(DownloadFailed(error: errorMsg));
       // Clean up partial download
       if (targetFile.existsSync()) {
         await targetFile.delete();
       }
-      rethrow;
+      throw ModelException(message: 'Model download failed', cause: e);
     }
   }
 

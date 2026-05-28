@@ -54,6 +54,7 @@ class AppController {
   /// Run the initialization sequence.
   ///
   /// Checks model availability, initializes engine if model found.
+  /// Times out after 10 seconds if engine init hangs.
   Future<void> initialize() async {
     _setState(const AppLoading());
 
@@ -64,7 +65,14 @@ class AppController {
       return;
     }
 
-    await engine.initialize();
+    try {
+      await engine.initialize().timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      _setState(
+        const AppError(message: 'Engine initialization timed out'),
+      );
+      return;
+    }
 
     if (engine.isReady) {
       _setState(AppReady(modelInfo: modelInfo));
