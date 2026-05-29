@@ -9,57 +9,86 @@ import '../../services/app/app_controller.dart';
 /// Welcome screen - app entry point.
 ///
 /// Displays app name, status indicator, and start button.
-class WelcomeScreen extends ConsumerWidget {
+/// Triggers app initialization on first build.
+class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerInit();
+  }
+
+  Future<void> _triggerInit() async {
+    if (_initialized) return;
+    _initialized = true;
+    final appController = ref.read(appControllerProvider);
+    await appController.initialize();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final appController = ref.watch(appControllerProvider);
-    final state = appController.state;
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'fala',
-                  style: Theme.of(context).textTheme.displayLarge,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Learn Portuguese by speaking',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 48),
-                _buildStatusWidget(context, state),
-                const SizedBox(height: 32),
-                if (state is AppReady)
-                  FilledButton(
-                    onPressed: () => context.go(AppRoutes.conversation),
-                    child: const Text('Start Conversation'),
-                  ),
-                if (state is AppLoading) const CircularProgressIndicator(),
-                if (state is AppError)
-                  Column(
-                    children: [
-                      Text(
-                        state.message,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+            child: StreamBuilder<AppState>(
+              stream: appController.stateStream,
+              initialData: appController.state,
+              builder: (context, snapshot) {
+                final state = snapshot.data ?? const AppLoading();
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'fala',
+                      style: Theme.of(context).textTheme.displayLarge,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Learn Portuguese by speaking',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 48),
+                    _buildStatusWidget(context, state),
+                    const SizedBox(height: 32),
+                    if (state is AppReady)
+                      FilledButton(
+                        onPressed: () => context.go(AppRoutes.conversation),
+                        child: const Text('Start Conversation'),
                       ),
-                      const SizedBox(height: 16),
-                      OutlinedButton(
-                        onPressed: () => appController.initialize(),
-                        child: const Text('Retry'),
+                    if (state is AppLoading)
+                      const CircularProgressIndicator(),
+                    if (state is AppError)
+                      Column(
+                        children: [
+                          Text(
+                            state.message,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          OutlinedButton(
+                            onPressed: () => appController.initialize(),
+                            child: const Text('Retry'),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),

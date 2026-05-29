@@ -29,19 +29,24 @@
   },
   {
     "correction": {
-      "content": "Eu estou cansado",
-      "translation": "I am tired",
+      "content": "Eu estou cansado hoje",
+      "translation": "I am tired today",
       "errors": [
         {
           "original": "Eu sou cansado",
           "corrected": "Eu estou cansado",
           "explanation": "Use 'estar' for temporary states, not 'ser'."
+        },
+        {
+          "original": "oje",
+          "corrected": "hoje",
+          "explanation": "The 'h' in 'hoje' is silent but must be written."
         }
       ]
     },
     "conversation": {
-      "content": "Boa tentativa! Veja a correcao acima.",
-      "translation": "Good try! See the correction above."
+      "content": "Boa tentativa! Dois erros pequenos, mas o sentido ficou claro.",
+      "translation": "Good try! Two small errors, but the meaning was clear."
     }
   }
 ]

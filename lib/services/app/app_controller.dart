@@ -36,11 +36,15 @@ class AppController {
     required this.modelManager,
     required this.engine,
     this.modelName = 'gemma3-1b-it.task',
+    this.skipModelCheck = false,
   });
 
   final ModelManager modelManager;
   final InferenceEngine engine;
   final String modelName;
+
+  /// When true, skip model file verification (used with FakeInferenceEngine).
+  final bool skipModelCheck;
 
   AppState _state = const AppLoading();
   final _stateController = StreamController<AppState>.broadcast();
@@ -58,11 +62,13 @@ class AppController {
   Future<void> initialize() async {
     _setState(const AppLoading());
 
-    final modelInfo = await modelManager.getDownloadedModel(modelName);
+    if (!skipModelCheck) {
+      final modelInfo = await modelManager.getDownloadedModel(modelName);
 
-    if (modelInfo == null) {
-      _setState(const AppNeedsModel());
-      return;
+      if (modelInfo == null) {
+        _setState(const AppNeedsModel());
+        return;
+      }
     }
 
     try {
@@ -75,7 +81,14 @@ class AppController {
     }
 
     if (engine.isReady) {
-      _setState(AppReady(modelInfo: modelInfo));
+      _setState(AppReady(
+        modelInfo: ModelMetadata(
+          name: modelName,
+          filePath: '',
+          fileSizeBytes: 0,
+          downloadedAt: DateTime.now(),
+        ),
+      ));
     } else {
       _setState(
         const AppError(message: 'Failed to initialize inference engine'),

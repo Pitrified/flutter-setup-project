@@ -54,7 +54,7 @@ class PromptManager {
       try {
         await rootBundle.loadString(path);
         return path;
-      } on Exception {
+      } on Object {
         continue;
       }
     }

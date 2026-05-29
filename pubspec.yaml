@@ -35,6 +35,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/prompts/
+    - assets/prompts/tutor_response/
     - assets/fixtures/
   #         style: italic
   #   - family: Trajan Pro

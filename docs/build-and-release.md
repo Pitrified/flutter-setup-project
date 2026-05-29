@@ -21,6 +21,32 @@ Or simply:
 flutter run --release
 ```
 
+### Debugging a live app on device
+
+If the app crashes or misbehaves on device:
+
+```bash
+# Run in debug mode (hot reload, full error messages)
+flutter run
+
+# Run in profile mode (release performance, some debug info)
+flutter run --profile
+
+# View real-time logs from a release APK already installed
+adb logcat | grep -i "flutter\|fala\|Fatal\|AndroidRuntime"
+
+# Filter to just your app's process
+adb logcat --pid=$(adb shell pidof com.fala.app)
+
+# Clear old logs first
+adb logcat -c && adb logcat | grep -i "flutter\|Fatal"
+```
+
+Key things to look for in logcat:
+- `FATAL EXCEPTION` - unhandled crash
+- `FlutterError` - Dart-side exception
+- `E/flutter` - Flutter engine errors
+
 ## Production signing (required for Play Store)
 
 ### 1. Generate a keystore
