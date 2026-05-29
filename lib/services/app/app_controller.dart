@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import '../../config/model_config.dart';
 import '../../models/model_metadata.dart';
 import '../inference/inference_engine.dart';
-import '../model/model_manager.dart';
+
+/// Checks whether the model is available for inference.
+typedef ModelChecker = Future<bool> Function();
 
 /// Top-level application state.
 sealed class AppState {
@@ -33,18 +36,22 @@ class AppError extends AppState {
 /// and exposes state for the router to decide navigation.
 class AppController {
   AppController({
-    required this.modelManager,
-    required this.engine,
-    this.modelName = 'gemma3-1b-it.task',
+    required this.engineFactory,
+    required this.onEngineReady,
+    required this.modelChecker,
+    this.modelName = ModelConfig.defaultModelFileName,
     this.skipModelCheck = false,
   });
 
-  final ModelManager modelManager;
-  final InferenceEngine engine;
+  final InferenceEngine Function(String modelPath) engineFactory;
+  final void Function(InferenceEngine engine) onEngineReady;
+  final ModelChecker modelChecker;
   final String modelName;
 
   /// When true, skip model file verification (used with FakeInferenceEngine).
   final bool skipModelCheck;
+
+  InferenceEngine? _engine;
 
   AppState _state = const AppLoading();
   final _stateController = StreamController<AppState>.broadcast();
@@ -63,16 +70,18 @@ class AppController {
     _setState(const AppLoading());
 
     if (!skipModelCheck) {
-      final modelInfo = await modelManager.getDownloadedModel(modelName);
+      final isAvailable = await modelChecker();
 
-      if (modelInfo == null) {
+      if (!isAvailable) {
         _setState(const AppNeedsModel());
         return;
       }
     }
 
+    _engine = engineFactory('');
+
     try {
-      await engine.initialize().timeout(const Duration(seconds: 10));
+      await _engine!.initialize().timeout(const Duration(seconds: 10));
     } on TimeoutException {
       _setState(
         const AppError(message: 'Engine initialization timed out'),
@@ -80,7 +89,8 @@ class AppController {
       return;
     }
 
-    if (engine.isReady) {
+    if (_engine!.isReady) {
+      onEngineReady(_engine!);
       _setState(AppReady(
         modelInfo: ModelMetadata(
           name: modelName,

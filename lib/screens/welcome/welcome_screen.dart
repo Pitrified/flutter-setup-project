@@ -31,7 +31,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     _initialized = true;
     final appController = ref.read(appControllerProvider);
     await appController.initialize();
-    if (mounted) setState(() {});
+    if (mounted) {
+      if (appController.state is AppNeedsModel) {
+        context.go(AppRoutes.modelDownload);
+      } else {
+        setState(() {});
+      }
+    }
   }
 
   @override

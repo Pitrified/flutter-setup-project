@@ -32,6 +32,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
   Future<void> _initConversation() async {
     final controller = ref.read(conversationControllerProvider);
+    if (controller == null) return;
     if (controller.currentConversation == null) {
       await controller.startConversation();
     }
@@ -45,7 +46,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     _textController.clear();
 
     final controller = ref.read(conversationControllerProvider);
-    await controller.sendMessage(text);
+    await controller?.sendMessage(text);
 
     setState(() => _isSending = false);
     _scrollToBottom();
@@ -73,6 +74,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(conversationControllerProvider);
+
+    if (controller == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(title: const Text('fala')),

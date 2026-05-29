@@ -1,0 +1,410 @@
+# fala — LLM Integration Report
+
+_Analysis of the `flutter-setup-project-main` codebase, May 2026_
+
+---
+
+## ⚠️ API Drift Warning
+
+`flutter_gemma` has changed its public API **multiple times** and is still actively moving. The stub in `flutter_gemma_engine.dart` reflects an old API that no longer exists. Before writing any SDK calls, open the package changelog on pub.dev and read it top-to-bottom. The current version (as of this writing) uses a completely different pattern from what the stub implies — see Step 4 below. Do this **every time** you pick up this work after a gap of more than a few weeks; a minor version bump in this package has historically meant breaking changes to call sites.
+
+The same applies to model URLs: HuggingFace model repos can change their file names, directory layouts, and access policies between visits.
+
+---
+
+## Executive Summary
+
+The project has a surprisingly mature architecture for something whose README says "no code exists yet." The inference abstraction layer, structured output pipeline, persistence, navigation, and all three screens are implemented and wired. The **core remaining work for on-device Gemma** involves adding the package, handling HuggingFace authentication (all Gemma models are gated), migrating to the plugin's current API, and deciding whether to keep the existing `ModelManager` or delegate download to the plugin. Migrating to an external API provider is architecturally trivial but has a meaningful key-distribution problem that needs a deliberate decision.
+
+---
+
+## 1. Current State
+
+### What is actually built
+
+The architecture has been fully realised ahead of the plans' stated statuses (most plans still say `not-started` but the code disagrees):
+
+| Component | Status | Notes |
+|---|---|---|
+| `InferenceEngine` interface | ✅ Complete | Text-in / text-out sealed result types |
+| `FakeInferenceEngine` | ✅ Complete | Fixture-based, cycles through `tutor_responses.json` |
+| `FlutterGemmaEngine` | ⚠️ Stub | Class exists, SDK calls are all `// TODO` comments in an outdated API style |
+| `StructuredInferenceEngine<T>` | ✅ Complete | Composes engine + parser, timeout, 3-state result |
+| `StructuredOutputParser<T>` | ✅ Complete | Generic, `fromJson` factory, delegates to `JsonExtractor` |
+| `JsonExtractor` | ✅ Complete | Three fallback strategies (direct, code block, substring) |
+| `ModelManager` | ✅ Complete | Download with streaming progress, cleanup on failure |
+| `ConversationController` | ✅ Complete | Full conversation loop, history trimming, 3-state switch |
+| `AppController` | ✅ Complete | App lifecycle, model check, engine init, state stream |
+| All three screens | ✅ Complete | Welcome, ModelDownload, Conversation |
+| GoRouter + redirects | ✅ Complete | State-driven routing in `app.dart` |
+| Hive persistence | ✅ Complete | `ConversationRepository` with `initialize()` |
+| Prompt system | ✅ Complete | Template v1 with variable interpolation |
+| `TutorResponse` schema | ✅ Complete | JSON schema file + Dart model |
+
+### Riverpod provider graph
+
+The "provider graph" is the DAG of providers and their `ref.watch()` dependencies. Riverpod uses it to determine initialization order, what to rebuild when something changes, and how long each value lives. The current graph for the inference path is:
+
+```
+main.dart (ProviderScope overrides)
+  └─► inferenceEngineProvider          ← overridden with FakeInferenceEngine today
+        └─► structuredInferenceEngineProvider
+              └─► ConversationController (via conversationControllerProvider)
+                    └─► ConversationScreen (watches controller)
+```
+
+`modelManagerProvider` and `appControllerProvider` sit beside this graph and are not in the inference chain — they manage the download/boot lifecycle separately.
+
+The "provider wiring gap" flagged below is a graph ordering problem: `inferenceEngineProvider` would need to be overridden with a `FlutterGemmaEngine(modelPath: ...)` but the path is only known after `ModelManager` runs inside `AppController.initialize()`. Creating the engine before knowing the path, or passing `null` and filling it in later, both break the graph's guarantees.
+
+### What is genuinely missing
+
+1. `flutter_gemma` is **not in `pubspec.yaml`** — the package has never been added.
+2. `FlutterGemmaEngine.initialize()` and `generate()` contain commented-out SDK calls in an API style that is now deprecated.
+3. The download URL in `model_download_screen.dart` uses a placeholder; the URL in `ModelConfig.defaultModel` points to a **gated** HuggingFace repo that requires authentication.
+4. `main.dart` hardcodes `FakeInferenceEngine`; no production wiring exists.
+5. `INTERNET` permission is missing from `AndroidManifest.xml`.
+6. A **provider graph wiring gap** exists (described above).
+
+---
+
+## 2. Getting Gemma Working — Precisely
+
+### Step 1 — Add the package
+
+```yaml
+# pubspec.yaml, under dependencies:
+flutter_gemma:   # pin to the latest from pub.dev, e.g. ^0.11.7
+```
+
+```bash
+flutter pub get
+```
+
+Then **read `CHANGELOG.md` on the pub.dev page** for the version you installed before writing any code. The API has had multiple breaking changes across minor versions.
+
+### Step 2 — Add INTERNET permission
+
+```xml
+<!-- android/app/src/main/AndroidManifest.xml, inside <manifest> -->
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+This is required both for model download and for any future remote calls.
+
+### Step 3 — The HuggingFace auth problem
+
+All Gemma models (including the `Gemma3-1B-IT` model in `ModelConfig.defaultModel`) are **gated** under the Gemma license. Downloading them requires:
+
+1. A HuggingFace account
+2. Accepting the Gemma license on the model's HF page
+3. Generating a HF access token (read permissions)
+
+The `litert-community/Gemma3-1B-IT` repo that was in `ModelConfig` gives the exact error you saw: `Access to model is restricted`.
+
+**Option A — User supplies their own HF token (cleanest for alpha)**
+
+Show a one-time setup screen where the user pastes their HF token. Store it with `flutter_secure_storage` (uses Android Keystore). Read it when constructing the download call. This is actually consistent with how the flutter_gemma example app works — it prompts for a token before downloading.
+
+**Option B — Find a community-mirrored non-gated version**
+
+The `MiCkSoftware` HuggingFace account you found may host re-uploaded community mirrors without the Gemma license gate. Check whether the files there are genuinely ungated before depending on them — community mirrors can disappear or be DMCA'd. To check: try downloading the file without any auth header; a `200 OK` means it's ungated, a `401` or redirect to the login page means it isn't.
+
+For a small app in private alpha, a community mirror is a pragmatic shortcut, but you should not hardcode a specific community URL in the codebase as the long-term answer.
+
+**Option C — Use Qwen3 0.6B instead**
+
+As covered in the draft research (`plans/00_drafts/01_llm_local_integration.md`), Qwen3 0.6B actually scores *higher* than Gemma 3 1B on structured output benchmarks. It's available on HuggingFace under Apache 2.0 — no license gate, no auth required. It's already supported in `flutter_gemma`. This is worth serious consideration: better structured output, smaller model, no auth friction.
+
+### Step 4 — Implement `FlutterGemmaEngine` with the current API
+
+**The stub's API is wrong.** The commented-out calls (`FlutterGemmaPlugin.instance.init(modelPath:)`, `getResponseAsync(prompt:)`) are from a deprecated API. The current flutter_gemma (v0.10+) splits model management from inference and uses a different object hierarchy.
+
+The current pattern (verify against changelog when you install):
+
+```
+FlutterGemma.initialize()           ← one-time app init
+  ↓
+FlutterGemma.installModel()         ← download/register model file
+  .fromNetwork(url, token:)         ← or .fromFile(path) if already on disk
+  .install()
+  ↓
+FlutterGemma.getActiveModel()       ← load weights into memory
+  ↓
+model.createSession()               ← creates a conversation context (cheap)
+  ↓
+session.addQueryChunk(Message(...)) ← add user turn
+session.getResponseAsync()          ← stream of token strings
+```
+
+A sketch of `FlutterGemmaEngine` against this API:
+
+```dart
+import 'dart:async';
+import 'package:flutter_gemma/core/api/flutter_gemma.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
+import '../../models/inference_status.dart';
+import 'inference_engine.dart';
+
+class FlutterGemmaEngine implements InferenceEngine {
+  FlutterGemmaEngine({required this.modelUrl, this.hfToken});
+
+  final String modelUrl;
+  final String? hfToken;
+
+  InferenceModel? _model;
+  final _statusController = StreamController<InferenceStatus>.broadcast();
+  InferenceStatus _status = const InferenceStatus.uninitialized();
+
+  @override
+  InferenceStatus get status => _status;
+
+  @override
+  Stream<InferenceStatus> get statusStream => _statusController.stream;
+
+  @override
+  bool get isReady => _status == const InferenceStatus.ready();
+
+  @override
+  Future<void> initialize() async {
+    _setStatus(const InferenceStatus.loading());
+    try {
+      await FlutterGemma.installModel(modelType: ModelType.gemmaIt)
+          .fromNetwork(modelUrl, token: hfToken)
+          .install();
+      _model = await FlutterGemma.getActiveModel(maxTokens: 1024);
+      _setStatus(const InferenceStatus.ready());
+    } on Exception catch (e) {
+      _setStatus(InferenceStatus.error(e.toString()));
+    }
+  }
+
+  @override
+  Future<InferenceResult> generate(InferenceRequest request) async {
+    if (!isReady || _model == null) {
+      return const InferenceFailure(error: 'Engine not initialized');
+    }
+    _setStatus(const InferenceStatus.generating());
+    try {
+      final session = await _model!.createSession();
+      await session.addQueryChunk(Message(text: request.prompt, isUser: true));
+      final buffer = StringBuffer();
+      await for (final token in session.getResponseAsync()) {
+        if (token != null) buffer.write(token);
+      }
+      _setStatus(const InferenceStatus.ready());
+      return InferenceSuccess(rawText: buffer.toString());
+    } on Exception catch (e) {
+      _setStatus(const InferenceStatus.ready());
+      return InferenceFailure(error: e.toString());
+    }
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _model?.close();
+    _model = null;
+    _setStatus(const InferenceStatus.disposed());
+    await _statusController.close();
+  }
+
+  void _setStatus(InferenceStatus s) {
+    _status = s;
+    _statusController.add(s);
+  }
+}
+```
+
+> ⚠️ **Verify every method name and parameter against the version you install.** `createSession`, `addQueryChunk`, `getResponseAsync`, `Message`, `ModelType.gemmaIt` — all of these have changed at least once. The changelog is the source of truth, not any example you find online (including this document).
+
+### Step 4b — Rethink ModelManager's role
+
+The current `ModelManager` handles download independently. The current `flutter_gemma` plugin **also** handles download via `installModel().fromNetwork()`. You now have two download systems.
+
+**Options:**
+
+- **Keep `ModelManager`, skip plugin download**: Download the file yourself with `ModelManager` → pass the local file path to the engine via `installModel().fromFile(path)`. You keep the existing progress UI and download logic. Slightly more code but full control.
+- **Delegate to plugin, retire `ModelManager`**: Let the plugin manage download entirely. Remove the ModelDownload screen and `AppNeedsModel` state; the plugin will download on first `initialize()`. You lose the explicit download screen but gain the plugin's built-in retry and foreground service support (the plugin automatically uses an Android Foreground Service for downloads >500 MB, which prevents the OS from killing it after 9 minutes).
+
+For a ~1.5 GB model download, the plugin's Foreground Service support is genuinely useful — `ModelManager`'s `HttpClient` approach will be killed by Android after 9 minutes in the background. If you keep `ModelManager`, you'll need to handle this yourself. Delegating to the plugin is the pragmatic choice.
+
+### Step 5 — Fix the provider wiring gap
+
+With the new API, `FlutterGemmaEngine` no longer needs `modelPath` at construction time — the URL is sufficient, and the plugin manages local storage. This largely dissolves the wiring gap. But `initialize()` now does network I/O, which means it should not be called during the ProviderScope setup.
+
+The cleanest pattern: keep `AppController` owning the engine initialization (it already has the right lifecycle), and construct `FlutterGemmaEngine` inside `AppController` rather than injecting it:
+
+```dart
+class AppController {
+  AppController({required this.modelManager, required this.engineFactory, ...});
+
+  // engineFactory: () => FlutterGemmaEngine(url: ..., token: ...)
+  final InferenceEngine Function() engineFactory;
+  InferenceEngine? _engine;
+
+  Future<void> initialize() async {
+    _engine = engineFactory();
+    await _engine!.initialize().timeout(const Duration(seconds: 60)); // longer for download
+    ...
+  }
+}
+```
+
+### Step 6 — Wire production mode in `main.dart`
+
+```dart
+const bool kUseFakeEngine = bool.fromEnvironment('FAKE_ENGINE', defaultValue: false);
+
+// In main():
+FlutterGemma.initialize(
+  huggingFaceToken: const String.fromEnvironment('HF_TOKEN'),
+);
+
+runApp(
+  ProviderScope(
+    overrides: [
+      if (kUseFakeEngine)
+        inferenceEngineProvider.overrideWithValue(FakeInferenceEngine()),
+      conversationRepositoryProvider.overrideWithValue(repo),
+    ],
+    child: const FalaApp(),
+  ),
+);
+```
+
+Build with fake engine: `flutter run --dart-define=FAKE_ENGINE=true`
+Build for real device: `flutter run --dart-define=HF_TOKEN=hf_yourtoken`
+
+The HF token should never be committed. Keep it in a gitignored `config.json` and use `--dart-define-from-file=config.json`.
+
+### Summary of changes
+
+| File | Change |
+|---|---|
+| `pubspec.yaml` | Add `flutter_gemma` |
+| `AndroidManifest.xml` | Add `INTERNET` permission |
+| `flutter_gemma_engine.dart` | Full rewrite against current API |
+| `model_config.dart` | Decide on model (Gemma gated vs Qwen3 open); update URL |
+| `model_download_screen.dart` | Either adapt to plugin's download or remove if delegating |
+| `app_controller.dart` | Move engine construction inside `initialize()` |
+| `main.dart` | Add `FlutterGemma.initialize(token:)`, add `--dart-define` pattern |
+
+---
+
+## 3. Migrating to an External API Provider
+
+### Architectural effort: low
+
+The `InferenceEngine` interface is the exact right seam for this. A `RemoteInferenceEngine` implementing the interface would be ~80 lines of Dart:
+
+```dart
+class RemoteInferenceEngine implements InferenceEngine {
+  RemoteInferenceEngine({required this.apiKey, required this.baseUrl});
+
+  final String apiKey;
+  final String baseUrl;
+
+  @override
+  Future<InferenceResult> generate(InferenceRequest request) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/v1/chat/completions'),
+      headers: {'Authorization': 'Bearer $apiKey', 'Content-Type': 'application/json'},
+      body: jsonEncode({/* provider-specific payload */}),
+    );
+    // parse response → InferenceSuccess / InferenceFailure
+  }
+}
+```
+
+What you would also remove: `ModelManager`, the model download screen, and the `AppNeedsModel` state — the app starts immediately. The rest of the stack (`StructuredInferenceEngine`, `ConversationController`, `JsonExtractor`, `PromptManager`) stays completely unchanged because they sit above `InferenceEngine` in the provider graph.
+
+You'd add: the `http` or `dio` package, streaming support, and error handling for rate limits and network failures.
+
+**Effort estimate:** 1–2 days for a working implementation, 1 extra day for streaming UX.
+
+### The hard problem: key distribution
+
+An API key embedded in an Android APK is extractable — APKs are zip files, and with a disassembler or string search on the native binary you can pull it out. Obfuscation (`isMinifyEnabled = true` is already set) slows this down but does not prevent it.
+
+There are four realistic options:
+
+---
+
+#### Option A — User supplies their own key (recommended for alpha)
+
+The user pastes their own Gemini/OpenAI/Groq API key into the app settings. You never touch a key.
+
+**Pros:** Zero cost to you. No secret to protect. No backend to run. Trivially secure.
+
+**Cons:** Onboarding friction. Only viable for technically-literate users willing to create an API account.
+
+**Implementation:** Settings screen with a `flutter_secure_storage` field (Android Keystore). Read the key in `RemoteInferenceEngine`.
+
+**When to use:** Private alpha, developer testing, power-user products.
+
+---
+
+#### Option B — Your own proxy backend (recommended for production)
+
+A single FastAPI endpoint on your homelab or a VPS. The app sends prompts to your endpoint, which forwards them to the real provider using your key stored server-side.
+
+```
+[fala app] → POST /v1/generate (with app token) → [your proxy] → [Gemini/OpenAI API]
+```
+
+**Pros:** Your API key never leaves the server. Full control over rate limiting, cost caps, abuse prevention.
+
+**Cons:** You pay for all inference. Backend to maintain. App is no longer offline.
+
+**For the app→proxy token:** A static token embedded in the app is still extractable, but it's a token to a proxy you control — you can rotate it, rate-limit by device, or invalidate it without touching the upstream provider key. Materially better than embedding a direct provider key.
+
+**When to use:** When you're paying for inference centrally and distributing to many users.
+
+---
+
+#### Option C — App Attestation (best security, highest complexity)
+
+Google Play Integrity API lets your backend verify that a request comes from a genuine, unmodified copy of your app. Combined with a proxy backend, this prevents even an extracted proxy token from being reused outside the real app.
+
+**Pros:** Meaningfully harder to abuse.
+**Cons:** Requires Google Cloud, significant implementation effort. Overkill for alpha.
+
+---
+
+#### Option D — Hardcoded/build-time key (not recommended)
+
+Embed the key as `--dart-define`. It ends up in the binary.
+
+**Acceptable for:** Internal test builds never distributed.
+**Not acceptable for:** Any Play Store release, even internal track — the APK is downloadable.
+
+---
+
+### Decision matrix
+
+| Scenario | Recommended approach |
+|---|---|
+| Private alpha, technical users | Option A (user-supplied key) |
+| Private alpha, non-technical users | Option B (proxy, static app token) |
+| Public release you're paying for | Option B + Option C (proxy + attestation) |
+| You never want a backend | Option A only |
+
+---
+
+### What stays the same
+
+Everything above `InferenceEngine` in the provider graph is backend-agnostic. `StructuredOutputParser`, `ConversationController`, `PromptManager`, the screens — all work identically whether the engine is on-device Gemma or a remote API call. Swapping the override in `main.dart` is the only required change.
+
+---
+
+## 4. Recommended Next Steps
+
+In order of priority:
+
+1. **Decide on model first.** Gemma (gated, requires HF auth, slightly worse structured output) vs Qwen3 0.6B (Apache 2.0, no auth, better structured output benchmarks). This decision unblocks the URL and auth story.
+2. **Add `flutter_gemma` to pubspec.yaml**, run `pub get`, then read the changelog for the installed version before touching any code.
+3. **Add `INTERNET` permission** to the manifest.
+4. **Implement `FlutterGemmaEngine`** against the current API (Step 4 above, verified against the actual installed version's changelog).
+5. **Decide on `ModelManager` fate** — keep it and use `.fromFile()`, or delegate to the plugin's download system and remove the download screen.
+6. **Decide on external provider strategy** before any public distribution.
+7. **Update plan statuses** — many plans say `not-started` but the code is done. Keeping them accurate matters for AI-assisted development (stale statuses cause the assistant to plan work that's already been done).
