@@ -14,6 +14,7 @@ Single source of truth for progress across all phases.
 | [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
 | [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
 | [07 Release](07_release/README.md) | in-progress | 3/3 plans written, 2/3 executed |
+| [08 LLM Integration](08_udpates/00_coalesced_plan.md) | complete | Qwen3 0.6B on-device, end-to-end working |
 
 ---
 
@@ -90,3 +91,17 @@ Single source of truth for progress across all phases.
 | 00 | 00_build_config.md | complete | Release build + signing |
 | 01 | 01_play_store_alpha.md | in-progress | Play Store listing (docs done, manual steps remain) |
 | 02 | 02_tracking_template.md | complete | Final tracking.md |
+
+---
+
+## Phase 08 - LLM Integration
+
+| # | Plan file | Status | Produces |
+|---|-----------|--------|----------|
+| 00 | 00_coalesced_plan.md | complete | Single plan from 3 analysis reports |
+| 01 | Step 1-3 (deps + config) | complete | flutter_gemma dep, INTERNET perm, Qwen3 ModelConfig |
+| 02 | Step 4 (plugin download) | complete | ModelDownloadScreen uses FlutterGemma.installModel() |
+| 03 | Step 5 (engine rewrite) | complete | FlutterGemmaEngine against v0.13.6 API |
+| 04 | Step 6 (provider wiring) | complete | NotifierProvider, EngineFactory, ModelChecker |
+| 05 | Step 7 (main.dart) | complete | FAKE_ENGINE toggle, FlutterGemma.initialize() |
+| 06 | Step 8 (smoke test) | complete | On-device: download, init, inference all working |

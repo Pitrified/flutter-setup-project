@@ -64,7 +64,7 @@ This creates onboarding friction for users. The `ModelConfig.defaultModel` URL c
 
 ## Implementation plan
 
-### Step 1 - Add `flutter_gemma` to pubspec.yaml
+### Step 1 - Add `flutter_gemma` to pubspec.yaml [DONE]
 
 Add the dependency and run `flutter pub get`. Read the CHANGELOG for the installed version before writing any SDK calls.
 
@@ -77,9 +77,9 @@ dependencies:
 
 ---
 
-### Step 2 - Add INTERNET permission
+### Step 2 - Add INTERNET permission [DONE]
 
-Required for model download (regardless of whether we use ModelManager or plugin download).
+Required for model download.
 
 ```xml
 <!-- android/app/src/main/AndroidManifest.xml, inside <manifest> -->
@@ -90,7 +90,7 @@ Required for model download (regardless of whether we use ModelManager or plugin
 
 ---
 
-### Step 3 - Update ModelConfig for Qwen3 0.6B
+### Step 3 - Update ModelConfig for Qwen3 0.6B [DONE]
 
 Replace the gated Gemma URL with the ungated Qwen3 0.6B model.
 
@@ -120,7 +120,7 @@ static const defaultModel = ModelConfig(
 
 ---
 
-### Step 4 - Delegate download to plugin (retire custom ModelManager for download)
+### Step 4 - Delegate download to plugin [DONE]
 
 The `flutter_gemma` plugin has built-in download with:
 - Android Foreground Service (prevents OS kill after 9 min for large downloads)
@@ -135,7 +135,7 @@ The current `ModelManager` uses raw `HttpClient` which will be killed by Android
 
 ---
 
-### Step 5 - Implement FlutterGemmaEngine against current API
+### Step 5 - Implement FlutterGemmaEngine against current API [DONE]
 
 The stub uses a deprecated API. The current `flutter_gemma` is at **v0.16.2** (May 2026). Key changes since the stub was written:
 
@@ -183,7 +183,7 @@ final response = session.getResponseAsync(); // Stream<String?>
 
 ---
 
-### Step 6 - Fix provider wiring gap (engine factory pattern)
+### Step 6 - Fix provider wiring gap (engine factory pattern) [DONE]
 
 **The problem:**
 
@@ -241,7 +241,7 @@ The `structuredInferenceEngineProvider` becomes a `StateProvider` or `AsyncNotif
 
 ---
 
-### Step 7 - Wire production mode in main.dart
+### Step 7 - Wire production mode in main.dart [DONE]
 
 ```dart
 const bool kUseFakeEngine = bool.fromEnvironment('FAKE_ENGINE', defaultValue: false);
@@ -282,7 +282,7 @@ Build commands:
 
 ---
 
-### Step 8 - Smoke test on physical device
+### Step 8 - Smoke test on physical device [DONE]
 
 1. Install on device with >= 4 GB RAM (Qwen3 0.6B is smaller than Gemma)
 2. Confirm model downloads via plugin (progress shows in UI)
