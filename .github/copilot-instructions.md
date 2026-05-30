@@ -45,5 +45,4 @@ freezed + json_serializable - Android only - min API 26
 
 ## Permanent chat
 
-At the end of all tasks assigned, always ask a follow-up question using the
-tool #askQuestions to let the user give feedback and guide next steps.
+At the end of all tasks assigned, always ask a follow-up question using the tool #askQuestions to let the user give feedback and guide next steps.
