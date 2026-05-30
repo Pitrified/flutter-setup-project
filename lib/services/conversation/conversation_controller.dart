@@ -108,8 +108,8 @@ class ConversationController {
         replyContent = value.conversation.content;
       case StructuredParseFailure(:final rawText):
         replyContent = rawText;
-      case StructuredInferenceFailure():
-        replyContent = 'Sorry, I could not generate a response.';
+      case StructuredInferenceFailure(:final error):
+        replyContent = 'Error generating response: $error';
     }
 
     final tutorMessage = ConversationMessage(

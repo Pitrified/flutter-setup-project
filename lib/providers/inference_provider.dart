@@ -54,5 +54,6 @@ final structuredInferenceEngineProvider =
   return StructuredInferenceEngine(
     engine: engine,
     parser: const StructuredOutputParser(fromJson: TutorResponse.fromJson),
+    timeout: const Duration(seconds: 60),
   );
 });
