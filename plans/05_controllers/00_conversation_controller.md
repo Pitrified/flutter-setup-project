@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: complete
 depends_on: [04_core_systems/07_decouple_structured_output.md, 04_core_systems/04_conversation_repository.md, 04_core_systems/06_prompt_manager.md]
 produces: [lib/services/conversation/conversation_controller.dart, lib/providers/conversation_provider.dart]
 ---

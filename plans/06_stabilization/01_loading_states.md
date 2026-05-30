@@ -1,6 +1,6 @@
 # Plan 06/01 - Loading States
 
-## Status: not-started
+## Status: complete
 
 ## Goal
 

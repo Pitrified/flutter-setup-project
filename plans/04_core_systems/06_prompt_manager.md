@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: complete
 depends_on: [03_scaffold/00_create_project.md]
 produces: [lib/services/prompt/prompt_manager.dart, assets/prompts/tutor_response/v1.txt]
 ---

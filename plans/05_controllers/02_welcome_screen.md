@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: complete
 depends_on: [05_controllers/01_app_controller.md]
 produces: [lib/screens/welcome/welcome_screen.dart]
 ---

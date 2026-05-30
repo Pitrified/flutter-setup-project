@@ -1,6 +1,6 @@
 # Plan 07/00 - Build Configuration
 
-## Status: not-started
+## Status: complete
 
 ## Goal
 

@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: complete
 depends_on: [05_controllers/00_conversation_controller.md, 05_controllers/01_app_controller.md, 05_controllers/02_welcome_screen.md, 05_controllers/03_model_download_screen.md, 05_controllers/04_conversation_screen.md]
 produces: []
 ---

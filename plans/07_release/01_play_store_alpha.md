@@ -1,6 +1,6 @@
 # Plan 07/01 - Play Store Alpha
 
-## Status: not-started
+## Status: in-progress
 
 ## Goal
 

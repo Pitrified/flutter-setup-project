@@ -1,6 +1,6 @@
 # Plan 06/02 - Testing Strategy
 
-## Status: not-started
+## Status: in-progress
 
 ## Goal
 

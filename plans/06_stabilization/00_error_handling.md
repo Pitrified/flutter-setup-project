@@ -1,6 +1,6 @@
 # Plan 06/00 - Error Handling
 
-## Status: not-started
+## Status: complete
 
 ## Goal
 

@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: complete
 depends_on: [05_controllers/01_app_controller.md, 04_core_systems/05_model_manager.md]
 produces: [lib/screens/model_download/model_download_screen.dart]
 ---

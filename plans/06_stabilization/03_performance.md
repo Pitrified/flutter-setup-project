@@ -1,6 +1,6 @@
 # Plan 06/03 - Performance
 
-## Status: not-started
+## Status: complete
 
 ## Goal
 
