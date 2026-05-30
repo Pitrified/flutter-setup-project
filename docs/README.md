@@ -23,26 +23,26 @@ All documentation needed to go from zero to a working private alpha.
 
 - [ai-development-playbook.md](ai-development-playbook.md)
 
-### Guides (created during implementation)
+### Guides
 
-- guides/prompts.md - On-device prompt engineering
-- guides/model-management.md - Download, cache, validate model files
-- guides/structured-output.md - Schema validation pipeline
+- [guides/model-management.md](guides/model-management.md) - Download, cache, validate model files
+- ~~guides/prompts.md~~ - Not needed; covered by [prompt-engineering.md](prompt-engineering.md)
+- ~~guides/structured-output.md~~ - Not needed; covered by [prompt-engineering.md](prompt-engineering.md)
 
-### System specs (created during implementation)
+### System specs
 
-- library/app-controller.md
-- library/inference-engine.md
-- library/conversation-controller.md
-- library/structured-output-system.md
-- library/conversation-repository.md
-- library/runtime-model-manager.md
-- library/prompt-manager.md
+- [library/app-controller.md](library/app-controller.md)
+- [library/inference-engine.md](library/inference-engine.md)
+- [library/conversation-controller.md](library/conversation-controller.md)
+- [library/structured-output-system.md](library/structured-output-system.md)
+- [library/conversation-repository.md](library/conversation-repository.md)
+- [library/runtime-model-manager.md](library/runtime-model-manager.md)
+- [library/prompt-manager.md](library/prompt-manager.md)
 
-### Build and release (created during Phase 07)
+### Build and release
 
-- build/build-and-release.md
-- build/google-play-alpha.md
+- [build-and-release.md](build-and-release.md)
+- ~~build/google-play-alpha.md~~ - Not needed; covered by [build-and-release.md](build-and-release.md)
 
 ## Mental model
 
