@@ -39,6 +39,11 @@ class InferenceEngineNotifier extends Notifier<InferenceEngine?> {
   void setEngine(InferenceEngine engine) {
     state = engine;
   }
+
+  /// Clear the active engine (e.g. on engine-kind change).
+  void clearEngine() {
+    state = null;
+  }
 }
 
 /// Provider for the raw inference engine.

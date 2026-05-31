@@ -4,7 +4,6 @@ import '../models/cefr_level.dart';
 import '../services/inference/engine_kind.dart';
 import '../services/settings/api_key_store.dart';
 import '../services/settings/app_settings_repository.dart';
-import 'app_provider.dart';
 import 'inference_provider.dart';
 
 /// Provider for the non-secret settings repository (Hive-backed).
@@ -44,9 +43,13 @@ class SelectedEngineKindNotifier extends Notifier<EngineKind> {
     }
     if (kind == state) return;
     await ref.read(appSettingsRepositoryProvider).setEngineKind(kind);
+    // Clear the cached engine instance so the next AppController.initialize
+    // builds a fresh one for the new kind. appControllerProvider and
+    // engineFactoryProvider rebuild automatically because they watch this
+    // provider; calling ref.invalidate on them here would trip Riverpod's
+    // circular-dependency guard.
+    ref.read(inferenceEngineProvider.notifier).clearEngine();
     state = kind;
-    ref.invalidate(inferenceEngineProvider);
-    ref.invalidate(appControllerProvider);
   }
 }
 
