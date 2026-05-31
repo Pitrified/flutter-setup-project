@@ -489,7 +489,7 @@ packages:
     source: hosted
     version: "2.0.0"
   http:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -688,6 +688,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.4.1"
+  openai_dart:
+    dependency: "direct main"
+    description:
+      name: openai_dart
+      sha256: b03bfec1bf9db4e24836b86b5b918ecde51721bbbd63d6dee82b728dcf4cb526
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   package_config:
     dependency: transitive
     description:

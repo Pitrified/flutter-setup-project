@@ -1,24 +1,39 @@
 import '../../providers/inference_provider.dart';
+import '../settings/api_key_store.dart';
+import '../settings/app_settings_repository.dart';
 import 'engine_kind.dart';
 import 'fake_inference_engine.dart';
 import 'flutter_gemma_engine.dart';
+import 'openai_inference_engine.dart';
+
+/// Dependencies the registry hands to engine factories that need them.
+///
+/// `fake` and `gemma` ignore everything in here; `openai` uses the API key
+/// store and reads its model id from the settings repo on every call.
+class EngineRegistryDeps {
+  const EngineRegistryDeps({
+    required this.apiKeyStore,
+    required this.settings,
+  });
+
+  final ApiKeyStore apiKeyStore;
+  final AppSettingsRepository settings;
+}
 
 /// Returns the [EngineFactory] registered for [kind].
 ///
 /// Adding a new engine is a single entry in this switch plus a new
 /// [EngineKind] value.
-///
-/// Throws [UnimplementedError] for kinds whose factory has not been wired up
-/// yet. 03.2 replaces the [EngineKind.openai] branch with the real factory.
-EngineFactory engineFactoryFor(EngineKind kind) {
+EngineFactory engineFactoryFor(EngineKind kind, EngineRegistryDeps deps) {
   switch (kind) {
     case EngineKind.fake:
       return (_) => FakeInferenceEngine();
     case EngineKind.gemma:
       return (modelPath) => FlutterGemmaEngine(modelPath: modelPath);
     case EngineKind.openai:
-      throw UnimplementedError(
-        'OpenAI engine is wired up in plan 03.2; not available yet.',
+      return (_) => OpenAiInferenceEngine(
+        apiKeyStore: deps.apiKeyStore,
+        modelProvider: deps.settings.openaiModel,
       );
   }
 }

@@ -6,9 +6,8 @@ import '../../services/inference/engine_kind.dart';
 
 /// Settings screen.
 ///
-/// Engine selector is live. The OpenAI section is a greyed-out placeholder
-/// until plan 03.2 lands - the dropdown shows the OpenAI option but does
-/// not let the user pick it.
+/// Lets the user pick the active inference engine and (for OpenAI) supply an
+/// API key and model id.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -35,7 +34,7 @@ class SettingsScreen extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const _OpenAiPlaceholder(),
+          const _OpenAiSection(),
         ],
       ),
     );
@@ -73,55 +72,118 @@ class _EngineDropdown extends ConsumerWidget {
     return DropdownMenuItem<EngineKind>(
       value: kind,
       enabled: kind.isImplemented,
-      child: Row(
-        children: [
-          Text(kind.displayName),
-          if (!kind.isImplemented) ...[
-            const SizedBox(width: 8),
-            const Tooltip(
-              message: 'Coming soon',
-              child: Text(
-                '(coming soon)',
-                style: TextStyle(fontStyle: FontStyle.italic),
-              ),
-            ),
-          ],
-        ],
-      ),
+      child: Text(kind.displayName),
     );
   }
 }
 
-class _OpenAiPlaceholder extends StatelessWidget {
-  const _OpenAiPlaceholder();
+class _OpenAiSection extends ConsumerStatefulWidget {
+  const _OpenAiSection();
+
+  @override
+  ConsumerState<_OpenAiSection> createState() => _OpenAiSectionState();
+}
+
+class _OpenAiSectionState extends ConsumerState<_OpenAiSection> {
+  final _keyController = TextEditingController();
+  final _modelController = TextEditingController();
+  bool _hasStoredKey = false;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _modelController.text = ref.read(openaiModelProvider);
+    _refreshKeyStatus();
+  }
+
+  Future<void> _refreshKeyStatus() async {
+    final store = ref.read(apiKeyStoreProvider);
+    final has = await store.hasKey();
+    if (!mounted) return;
+    setState(() {
+      _hasStoredKey = has;
+      _loaded = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    _keyController.dispose();
+    _modelController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final store = ref.read(apiKeyStoreProvider);
+    final keyInput = _keyController.text.trim();
+    if (keyInput.isNotEmpty) {
+      await store.write(keyInput);
+      _keyController.clear();
+    }
+    await ref.read(openaiModelProvider.notifier).setModel(_modelController.text);
+    await _refreshKeyStatus();
+    messenger.showSnackBar(
+      const SnackBar(content: Text('OpenAI settings saved.')),
+    );
+  }
+
+  Future<void> _clearKey() async {
+    final messenger = ScaffoldMessenger.of(context);
+    await ref.read(apiKeyStoreProvider).clear();
+    _keyController.clear();
+    await _refreshKeyStatus();
+    messenger.showSnackBar(
+      const SnackBar(content: Text('OpenAI key cleared.')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final disabledColor = Theme.of(context).disabledColor;
-    return Opacity(
-      opacity: 0.6,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'API key and model selection arrive in the next release.',
-            style: TextStyle(color: disabledColor),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: _keyController,
+          obscureText: true,
+          autocorrect: false,
+          enableSuggestions: false,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            labelText: 'OpenAI API key',
+            hintText: _loaded && _hasStoredKey
+                ? 'Key stored. Enter to replace.'
+                : 'sk-...',
+            helperText: _loaded && _hasStoredKey
+                ? 'A key is currently stored.'
+                : 'No key stored yet.',
           ),
-          const SizedBox(height: 8),
-          TextField(
-            enabled: false,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: 'OpenAI API key',
-              hintText: 'Coming soon',
-              suffixIcon: Tooltip(
-                message: 'Coming soon',
-                child: Icon(Icons.lock_outline, color: disabledColor),
-              ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _modelController,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Model',
+            hintText: 'gpt-4o-mini',
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            FilledButton(
+              onPressed: _save,
+              child: const Text('Save'),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 12),
+            OutlinedButton(
+              onPressed: _hasStoredKey ? _clearKey : null,
+              child: const Text('Clear key'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -54,3 +54,33 @@ final selectedEngineKindProvider =
     NotifierProvider<SelectedEngineKindNotifier, EngineKind>(
       SelectedEngineKindNotifier.new,
     );
+
+/// Reactive holder for the selected OpenAI model id.
+///
+/// Persists to the same Hive box used by [SelectedEngineKindNotifier], but
+/// **does not invalidate** the engine providers: the active
+/// `OpenAiInferenceEngine` reads the model on every `generate()` call, so the
+/// new value applies to the next message without rebuilding anything.
+///
+/// Future non-engine settings (CEFR level, persona, theme) should follow this
+/// same pattern: dedicated notifier, write-through to the repository, no
+/// cross-invalidation of engine providers.
+class OpenaiModelNotifier extends Notifier<String> {
+  @override
+  String build() {
+    return ref.read(appSettingsRepositoryProvider).openaiModel();
+  }
+
+  /// Persist [model] and update the cached value.
+  Future<void> setModel(String model) async {
+    final trimmed = model.trim();
+    if (trimmed.isEmpty || trimmed == state) return;
+    await ref.read(appSettingsRepositoryProvider).setOpenaiModel(trimmed);
+    state = trimmed;
+  }
+}
+
+/// Provider for the OpenAI model id (e.g. `gpt-4o-mini`).
+final openaiModelProvider = NotifierProvider<OpenaiModelNotifier, String>(
+  OpenaiModelNotifier.new,
+);

@@ -20,7 +20,11 @@ typedef EngineFactory = InferenceEngine Function(String modelPath);
 /// still override this provider directly to inject a fixed factory.
 final engineFactoryProvider = Provider<EngineFactory>((ref) {
   final kind = ref.watch(selectedEngineKindProvider);
-  return engineFactoryFor(kind);
+  final deps = EngineRegistryDeps(
+    apiKeyStore: ref.watch(apiKeyStoreProvider),
+    settings: ref.watch(appSettingsRepositoryProvider),
+  );
+  return engineFactoryFor(kind, deps);
 });
 
 /// Notifier that holds the active inference engine instance.

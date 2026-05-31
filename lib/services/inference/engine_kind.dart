@@ -31,15 +31,13 @@ extension EngineKindX on EngineKind {
 
   /// Whether a factory is registered for this kind in the engine registry.
   ///
-  /// Returns `false` for kinds that are reserved but not yet wired up.
-  /// 03.2 flips [openai] to `true` once `OpenAiInferenceEngine` lands.
+  /// Returns `false` only for kinds that are reserved but not yet wired up.
   bool get isImplemented {
     switch (this) {
       case EngineKind.fake:
       case EngineKind.gemma:
-        return true;
       case EngineKind.openai:
-        return false;
+        return true;
     }
   }
 }

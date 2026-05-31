@@ -18,6 +18,7 @@ dependencies:
   hive_flutter:
   json_annotation:
   logger:
+  openai_dart:
   path_provider:
   riverpod_annotation:
 
@@ -28,6 +29,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   freezed:
+  http:
   json_serializable:
   mockito:
   riverpod_generator:
