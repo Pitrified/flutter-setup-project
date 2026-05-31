@@ -145,7 +145,7 @@ void main() {
     expect(tutorMsg, isNotNull);
     expect(
       tutorMsg!.content,
-      'Sorry, I could not generate a response.',
+      'Error generating response: engine down',
     );
   });
 
