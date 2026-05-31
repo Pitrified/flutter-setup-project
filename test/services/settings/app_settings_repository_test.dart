@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fala/models/cefr_level.dart';
 import 'package:fala/services/inference/engine_kind.dart';
 import 'package:fala/services/settings/app_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,5 +45,24 @@ void main() {
     expect(repo.openaiModel(), 'gpt-4o-mini');
     await repo.setOpenaiModel('gpt-4o');
     expect(repo.openaiModel(), 'gpt-4o');
+  });
+
+  test('defaultCefr defaults to a1 and round-trips', () async {
+    expect(repo.defaultCefr(), CefrLevel.a1);
+    await repo.setDefaultCefr(CefrLevel.b2);
+    expect(repo.defaultCefr(), CefrLevel.b2);
+  });
+
+  test('defaultCefr falls back to default for an unknown stored value',
+      () async {
+    final box = await Hive.openBox<String>('test_app_settings');
+    await box.put(AppSettingsRepository.keyDefaultCefr, 'z9');
+    expect(repo.defaultCefr(), AppSettingsRepository.defaultCefrLevel);
+  });
+
+  test('defaultTopic defaults to empty and round-trips', () async {
+    expect(repo.defaultTopicValue(), '');
+    await repo.setDefaultTopic('Daily routine');
+    expect(repo.defaultTopicValue(), 'Daily routine');
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../models/cefr_level.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/inference/engine_kind.dart';
 
@@ -26,6 +27,21 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           _EngineDropdown(selected: selectedKind),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            'Default CEFR level',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Used for new conversations. Change the active conversation '
+            'from its chip in the app bar.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          const _CefrDropdown(),
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 8),
@@ -73,6 +89,33 @@ class _EngineDropdown extends ConsumerWidget {
       value: kind,
       enabled: kind.isImplemented,
       child: Text(kind.displayName),
+    );
+  }
+}
+
+class _CefrDropdown extends ConsumerWidget {
+  const _CefrDropdown();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(defaultCefrLevelProvider);
+    return DropdownButtonFormField<CefrLevel>(
+      initialValue: current,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Default level',
+      ),
+      items: [
+        for (final level in CefrLevel.values)
+          DropdownMenuItem<CefrLevel>(
+            value: level,
+            child: Text('${level.displayName} - ${level.description}'),
+          ),
+      ],
+      onChanged: (level) async {
+        if (level == null) return;
+        await ref.read(defaultCefrLevelProvider.notifier).select(level);
+      },
     );
   }
 }

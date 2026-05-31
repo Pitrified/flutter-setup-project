@@ -15,6 +15,7 @@ Single source of truth for progress across all phases.
 | [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
 | [07 Release](07_release/README.md) | in-progress | 3/3 plans written, 2/3 executed |
 | [08 LLM Integration](08_udpates/00_coalesced_plan.md) | complete | Qwen3 0.6B on-device, end-to-end working |
+| [09 UI Tweaks](09_ui_tweaks/README.md) | complete | 3/3 plans executed |
 
 ---
 
@@ -109,3 +110,13 @@ Single source of truth for progress across all phases.
 | 07.1 | 03.1_registry_and_settings_shell.md | complete | EngineKind registry + Settings screen shell (fake/gemma) |
 | 07.2 | 03.2_openai_engine.md | complete | OpenAiInferenceEngine + OpenAI section in Settings |
 | 08 | 04_api_key_distribution_production.md | deferred | Production key distribution design (proxy + Play Integrity) |
+
+---
+
+## Phase 09 - UI Tweaks
+
+| # | Plan file | Status | Produces |
+|---|-----------|--------|----------|
+| 01 | 01_show_translation.md | complete | Tap-to-reveal translation on tutor messages |
+| 02 | 02_cefr_level_picker.md | complete | CEFR chip + picker sheet + Settings default dropdown |
+| 03 | 03_topic_picker.md | complete | Topic picker sheet with curated suggestions + prompt wiring |

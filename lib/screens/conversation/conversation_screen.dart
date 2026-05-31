@@ -3,11 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app.dart';
+import '../../models/cefr_level.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
+import '../../models/topic.dart';
 import '../../providers/conversation_provider.dart';
+import '../../providers/settings_provider.dart';
+import '../../services/conversation/conversation_controller.dart';
+import 'widgets/cefr_picker_sheet.dart';
 import 'widgets/correction_card.dart';
 import 'widgets/message_bubble.dart';
+import 'widgets/topic_picker_sheet.dart';
 import 'widgets/typing_indicator.dart';
 
 /// Conversation screen - main chat interface.
@@ -36,7 +42,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final controller = ref.read(conversationControllerProvider);
     if (controller == null) return;
     if (controller.currentConversation == null) {
-      await controller.startConversation();
+      await controller.startConversation(
+        cefrLevel: ref.read(defaultCefrLevelProvider),
+        topic: ref.read(defaultTopicProvider),
+      );
     }
   }
 
@@ -84,7 +93,13 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('fala')),
+      appBar: AppBar(
+        title: const Text('fala'),
+        actions: [
+          _TopicAction(controller: controller),
+          _CefrAction(controller: controller),
+        ],
+      ),
       drawer: const _AppDrawer(),
       body: Column(
         children: [
@@ -214,4 +229,86 @@ class _AppDrawer extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CefrAction extends ConsumerWidget {
+  const _CefrAction({required this.controller});
+
+  final ConversationController controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return StreamBuilder<Conversation?>(
+      stream: controller.conversationStream,
+      initialData: controller.currentConversation,
+      builder: (context, snapshot) {
+        final current =
+            CefrLevelX.fromString(snapshot.data?.cefrLevel) ?? CefrLevel.a1;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: ActionChip(
+            label: Text(current.displayName),
+            tooltip: 'CEFR level: ${current.description}',
+            onPressed: () async {
+              final picked = await showCefrPickerSheet(
+                context,
+                current: current,
+              );
+              if (picked == null || picked == current) return;
+              await controller.setCefrLevel(picked);
+              await ref
+                  .read(defaultCefrLevelProvider.notifier)
+                  .select(picked);
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TopicAction extends ConsumerWidget {
+  const _TopicAction({required this.controller});
+
+  final ConversationController controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return StreamBuilder<Conversation?>(
+      stream: controller.conversationStream,
+      initialData: controller.currentConversation,
+      builder: (context, snapshot) {
+        final raw = snapshot.data?.topic ?? '';
+        final current = raw.isEmpty
+            ? Topic.none
+            : Topic(value: raw, isCustom: !_isSuggested(raw));
+        final label = raw.isEmpty
+            ? 'Pick a topic'
+            : raw.length > 18
+                ? '${raw.substring(0, 17)}\u2026'
+                : raw;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: TextButton.icon(
+            icon: const Icon(Icons.bookmark_outline, size: 18),
+            label: Text(label),
+            onPressed: () async {
+              final picked = await showTopicPickerSheet(
+                context,
+                current: current,
+              );
+              if (picked == null) return;
+              await controller.setTopic(picked.value);
+              await ref
+                  .read(defaultTopicProvider.notifier)
+                  .select(picked.value);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  bool _isSuggested(String value) =>
+      kSuggestedTopics.any((t) => t.value == value);
 }

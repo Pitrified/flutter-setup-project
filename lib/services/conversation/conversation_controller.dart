@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../../models/cefr_level.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
 import '../../models/tutor_response.dart';
@@ -41,7 +42,8 @@ class ConversationController {
   /// Start a new conversation.
   Future<Conversation> startConversation({
     String language = 'pt-BR',
-    String cefrLevel = 'A1',
+    CefrLevel cefrLevel = CefrLevel.a1,
+    String topic = '',
   }) async {
     final now = DateTime.now();
     final conversation = Conversation(
@@ -50,7 +52,8 @@ class ConversationController {
       updatedAt: now,
       messages: [],
       language: language,
-      cefrLevel: cefrLevel,
+      cefrLevel: cefrLevel.displayName,
+      topic: topic,
     );
     await repository.save(conversation);
     _currentConversation = conversation;
@@ -62,6 +65,42 @@ class ConversationController {
   Future<void> loadConversation(String id) async {
     _currentConversation = repository.load(id);
     _conversationController.add(_currentConversation);
+  }
+
+  /// Update the CEFR level of the active conversation without restarting it.
+  ///
+  /// The new level is persisted to the repository and is used by the very
+  /// next prompt. Returns immediately if there is no active conversation or
+  /// the level is unchanged.
+  Future<void> setCefrLevel(CefrLevel level) async {
+    final current = _currentConversation;
+    if (current == null) return;
+    final newLevel = level.displayName;
+    if (current.cefrLevel == newLevel) return;
+    final updated = current.copyWith(
+      cefrLevel: newLevel,
+      updatedAt: DateTime.now(),
+    );
+    await repository.save(updated);
+    _currentConversation = updated;
+    _conversationController.add(updated);
+  }
+
+  /// Update the topic of the active conversation without restarting it.
+  ///
+  /// Empty string clears the topic. Trims [topic] before persisting.
+  Future<void> setTopic(String topic) async {
+    final current = _currentConversation;
+    if (current == null) return;
+    final trimmed = topic.trim();
+    if (current.topic == trimmed) return;
+    final updated = current.copyWith(
+      topic: trimmed,
+      updatedAt: DateTime.now(),
+    );
+    await repository.save(updated);
+    _currentConversation = updated;
+    _conversationController.add(updated);
   }
 
   /// Send a user message and get a tutor response.
@@ -88,6 +127,7 @@ class ConversationController {
       name: 'tutor_response',
       variables: {
         'cefr_level': _currentConversation!.cefrLevel,
+        'topic': _currentConversation!.topic,
         'user_message': content,
         'conversation_history': _formatHistory(),
       },

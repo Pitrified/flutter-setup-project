@@ -15,6 +15,7 @@ abstract class Conversation with _$Conversation {
     required List<ConversationMessage> messages,
     @Default('pt-BR') String language,
     @Default('A1') String cefrLevel,
+    @Default('') String topic,
   }) = _Conversation;
 
   factory Conversation.fromJson(Map<String, dynamic> json) =>

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fala/models/cefr_level.dart';
 import 'package:fala/models/conversation_message.dart';
 import 'package:fala/models/inference_status.dart';
 import 'package:fala/models/tutor_response.dart';
@@ -68,12 +69,15 @@ StructuredOutputParser<TutorResponse> _dummyParser() {
 
 /// Fake PromptManager that returns a fixed string.
 class _FakePromptManager extends PromptManager {
+  Map<String, String>? lastVariables;
+
   @override
   Future<String> buildPrompt({
     required String name,
     required Map<String, String> variables,
     int? version,
   }) async {
+    lastVariables = variables;
     return 'fake prompt';
   }
 }
@@ -161,5 +165,42 @@ void main() {
     expect(tutorMsg, isNotNull);
     expect(tutorMsg!.content, 'some garbled output');
     expect(tutorMsg.tutorResponse, isNull);
+  });
+
+  test('startConversation persists CefrLevel.displayName and topic',
+      () async {
+    final conv = await controller.startConversation(
+      cefrLevel: CefrLevel.b1,
+      topic: 'Food',
+    );
+    expect(conv.cefrLevel, 'B1');
+    expect(conv.topic, 'Food');
+  });
+
+  test('setCefrLevel updates the active conversation without restarting it',
+      () async {
+    await controller.startConversation();
+    final originalId = controller.currentConversation!.id;
+    await controller.setCefrLevel(CefrLevel.c1);
+    expect(controller.currentConversation!.id, originalId);
+    expect(controller.currentConversation!.cefrLevel, 'C1');
+  });
+
+  test('setTopic trims input and updates the active conversation', () async {
+    await controller.startConversation();
+    await controller.setTopic('  Travel  ');
+    expect(controller.currentConversation!.topic, 'Travel');
+  });
+
+  test('sendMessage substitutes cefr_level and topic into the prompt',
+      () async {
+    await controller.startConversation(
+      cefrLevel: CefrLevel.a2,
+      topic: 'Music',
+    );
+    await controller.sendMessage('Oi');
+    expect(promptManager.lastVariables, isNotNull);
+    expect(promptManager.lastVariables!['cefr_level'], 'A2');
+    expect(promptManager.lastVariables!['topic'], 'Music');
   });
 }
