@@ -3,12 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/model_config.dart';
 import '../services/app/app_controller.dart';
+import '../services/inference/engine_registry.dart';
 import 'inference_provider.dart';
+import 'settings_provider.dart';
 
 /// Whether to skip model file verification during app init.
 ///
-/// Set to true when using FakeInferenceEngine (dev/test builds).
-final skipModelCheckProvider = Provider<bool>((ref) => false);
+/// Derived from the selected engine kind: only the on-device Gemma engine
+/// needs a model file on disk. Tests may still override this provider.
+final skipModelCheckProvider = Provider<bool>((ref) {
+  final kind = ref.watch(selectedEngineKindProvider);
+  return skipModelCheckFor(kind);
+});
 
 /// Provider for the AppController.
 final appControllerProvider = Provider<AppController>((ref) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../app.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
 import '../../providers/conversation_provider.dart';
@@ -83,6 +85,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('fala')),
+      drawer: const _AppDrawer(),
       body: Column(
         children: [
           Expanded(
@@ -175,6 +178,36 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.send),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppDrawer extends StatelessWidget {
+  const _AppDrawer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: SafeArea(
+        child: ListView(
+          children: [
+            const DrawerHeader(
+              child: Text(
+                'fala',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.of(context).pop();
+                context.push(AppRoutes.settings);
+              },
             ),
           ],
         ),
