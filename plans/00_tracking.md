@@ -106,6 +106,6 @@ Single source of truth for progress across all phases.
 | 05 | Step 7 (main.dart) | complete | FAKE_ENGINE toggle, FlutterGemma.initialize() |
 | 06 | Step 8 (smoke test) | complete | On-device: download, init, inference all working |
 | 07 | 03_openai_integration.md | planned | Parent plan: OpenAI cloud engine via openai_dart + Settings selector |
-| 07.1 | 03.1_registry_and_settings_shell.md | planned | EngineKind registry + Settings screen shell (fake/gemma) |
-| 07.2 | 03.2_openai_engine.md | planned | OpenAiInferenceEngine + OpenAI section in Settings |
+| 07.1 | 03.1_registry_and_settings_shell.md | complete | EngineKind registry + Settings screen shell (fake/gemma) |
+| 07.2 | 03.2_openai_engine.md | complete | OpenAiInferenceEngine + OpenAI section in Settings |
 | 08 | 04_api_key_distribution_production.md | deferred | Production key distribution design (proxy + Play Integrity) |
