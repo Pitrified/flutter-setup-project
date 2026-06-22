@@ -30,7 +30,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 
 | #  | Phase                                   | Plan                                                            | Status  |
 | -- | --------------------------------------- | -------------------------------------------------------------- | ------- |
-| 1  | Tolerant incremental JSON parser        | [`01_feat_partial_json_parser.md`](01_feat_partial_json_parser.md)       | planned |
+| 1  | Tolerant incremental JSON parser        | [`01_feat_partial_json_parser.md`](01_feat_partial_json_parser.md)       | done    |
 | 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | planned |
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | planned |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | planned |
@@ -56,3 +56,12 @@ Append-only. Newest at the bottom.
   surface is a sync pure `parse(cumulativeBuffer) -> map + per-node closed-flags`; the
   closed-flags would be hand-written on top of the dep regardless. Full analysis in
   [`01.1_analysis_vendored_vs_dep.md`](01.1_analysis_vendored_vs_dep.md).
+- 2026-06-22 : phase 1 **done**. Vendored
+  [`partial_json_parser.dart`](../../lib/services/inference/partial_json_parser.dart):
+  sync `PartialJsonParser.parse(buffer) -> PartialJsonResult { value, closure }`, where
+  `JsonClosure` carries per-node `closed` flags + `fields`/`elements` children. Single-pass
+  recursive-descent scanner, builds the map directly (no repair-then-decode) so closed vs
+  open falls out of seeing a real terminator. No Flutter imports. 20 unit tests cover the
+  plan's edge-case list (empty/`{`/`{"a"`/`{"a":`, mid-token string, escaped quote, unicode
+  escape complete + truncated, numbers mid-token, partial last array element, fence prefix,
+  full-doc round-trip vs `jsonDecode`); `flutter analyze` clean.
