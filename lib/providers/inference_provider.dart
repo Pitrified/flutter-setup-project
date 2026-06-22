@@ -5,6 +5,7 @@ import '../services/inference/engine_registry.dart';
 import '../services/inference/inference_engine.dart';
 import '../services/inference/structured_inference_engine.dart';
 import '../services/inference/structured_output_parser.dart';
+import '../services/inference/structured_stream_engine.dart';
 import 'settings_provider.dart';
 
 /// Factory that creates an [InferenceEngine] given a model file path.
@@ -64,6 +65,24 @@ final structuredInferenceEngineProvider =
   return StructuredInferenceEngine(
     engine: engine,
     parser: const StructuredOutputParser(fromJson: TutorResponse.fromJson),
+    timeout: const Duration(seconds: 60),
+  );
+});
+
+/// Provider for the structured *streaming* engine (TutorResponse).
+///
+/// Wraps the same active raw engine in a [StructuredStreamEngine], following
+/// the active engine kind exactly like [structuredInferenceEngineProvider].
+/// ConversationController depends on this for the live in-flight turn; the
+/// one-shot provider above stays available for non-streaming callers.
+/// Returns null when the engine is not yet initialized.
+final structuredStreamEngineProvider =
+    Provider<StructuredStreamEngine<TutorResponse>?>((ref) {
+  final engine = ref.watch(inferenceEngineProvider);
+  if (engine == null) return null;
+  return StructuredStreamEngine<TutorResponse>(
+    engine: engine,
+    fromJson: TutorResponse.fromJson,
     timeout: const Duration(seconds: 60),
   );
 });

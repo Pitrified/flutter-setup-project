@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 5 - Controller + provider wiring

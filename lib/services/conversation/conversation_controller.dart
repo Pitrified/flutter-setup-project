@@ -5,7 +5,7 @@ import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
 import '../../models/tutor_response.dart';
 import '../inference/inference_engine.dart';
-import '../inference/structured_inference_engine.dart';
+import '../inference/structured_stream_engine.dart';
 import '../persistence/conversation_repository.dart';
 import '../prompt/prompt_manager.dart';
 
@@ -13,18 +13,21 @@ import '../prompt/prompt_manager.dart';
 ///
 /// Responsibilities:
 /// - Build prompt from template + history + user message
-/// - Call structured inference engine
-/// - Persist messages to repository
+/// - Drive the structured streaming engine, exposing live partial deltas
+/// - Persist the final message to repository (from the terminal delta's value)
 /// - Expose conversation state for UI consumption
 class ConversationController {
   ConversationController({
-    required this.structuredEngine,
+    required this.streamEngine,
     required this.repository,
     required this.promptManager,
     this.maxHistoryMessages = 10,
   });
 
-  final StructuredInferenceEngine<TutorResponse> structuredEngine;
+  /// Streaming engine for the in-flight turn. Its terminal delta carries the
+  /// same fully-typed value the one-shot path would produce, which is what we
+  /// persist.
+  final StructuredStreamEngine<TutorResponse> streamEngine;
   final ConversationRepository repository;
   final PromptManager promptManager;
   final int maxHistoryMessages;
@@ -32,9 +35,24 @@ class ConversationController {
   Conversation? _currentConversation;
   final _conversationController = StreamController<Conversation?>.broadcast();
 
+  /// Live, ephemeral partial deltas for the in-flight tutor turn. Events flow
+  /// only during a [sendMessage]; the UI overlays them on top of the committed
+  /// [conversationStream]. Broadcast so it can be (re)bound across turns.
+  final _streamingReplyController =
+      StreamController<StructuredDelta<TutorResponse>>.broadcast();
+
+  bool _isSending = false;
+
   /// Stream of conversation updates for reactive UI.
   Stream<Conversation?> get conversationStream =>
       _conversationController.stream;
+
+  /// Live partial deltas for the in-flight tutor reply (empty between sends).
+  Stream<StructuredDelta<TutorResponse>> get streamingReply =>
+      _streamingReplyController.stream;
+
+  /// Whether a [sendMessage] is currently streaming.
+  bool get isSending => _isSending;
 
   /// Current active conversation.
   Conversation? get currentConversation => _currentConversation;
@@ -105,67 +123,98 @@ class ConversationController {
 
   /// Send a user message and get a tutor response.
   ///
-  /// Returns the tutor's ConversationMessage (or null on failure).
+  /// Streams partial deltas to [streamingReply] as the reply arrives, then
+  /// persists the final tutor message built from the terminal delta's typed
+  /// value (identical to the one-shot result). Returns the tutor's
+  /// ConversationMessage, or null if there is no active conversation or a send
+  /// is already in flight (concurrent sends are ignored; the UI also gates).
   Future<ConversationMessage?> sendMessage(String content) async {
     if (_currentConversation == null) return null;
+    if (_isSending) return null;
+    _isSending = true;
 
-    final userMessage = ConversationMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      role: MessageRole.user,
-      content: content,
-      timestamp: DateTime.now(),
-    );
+    try {
+      final userMessage = ConversationMessage(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        role: MessageRole.user,
+        content: content,
+        timestamp: DateTime.now(),
+      );
 
-    _currentConversation = await repository.appendMessage(
-      _currentConversation!.id,
-      userMessage,
-    );
-    _conversationController.add(_currentConversation);
+      _currentConversation = await repository.appendMessage(
+        _currentConversation!.id,
+        userMessage,
+      );
+      _conversationController.add(_currentConversation);
 
-    // Build prompt
-    final prompt = await promptManager.buildPrompt(
-      name: 'tutor_response',
-      variables: {
-        'cefr_level': _currentConversation!.cefrLevel,
-        'topic': _currentConversation!.topic,
-        'user_message': content,
-        'conversation_history': _formatHistory(),
-      },
-    );
+      // Build prompt
+      final prompt = await promptManager.buildPrompt(
+        name: 'tutor_response',
+        variables: {
+          'cefr_level': _currentConversation!.cefrLevel,
+          'topic': _currentConversation!.topic,
+          'user_message': content,
+          'conversation_history': _formatHistory(),
+        },
+      );
 
-    // Call structured inference engine
-    final result = await structuredEngine.generate(
-      InferenceRequest(prompt: prompt),
-    );
+      // Drive the streaming engine: forward each partial delta to the live
+      // channel and remember the terminal one for persistence.
+      StructuredDelta<TutorResponse>? terminal;
+      await for (final delta in streamEngine.generateStream(
+        InferenceRequest(prompt: prompt),
+      )) {
+        if (!_streamingReplyController.isClosed) {
+          _streamingReplyController.add(delta);
+        }
+        if (delta.isTerminal) terminal = delta;
+      }
 
-    // Handle three-state result
-    TutorResponse? tutorResponse;
-    String replyContent;
+      final (replyContent, tutorResponse) = _resolveReply(terminal);
 
-    switch (result) {
-      case StructuredSuccess(:final value):
-        tutorResponse = value;
-        replyContent = value.conversation.content;
-      case StructuredParseFailure(:final rawText):
-        replyContent = rawText;
-      case StructuredInferenceFailure(:final error):
-        replyContent = 'Error generating response: $error';
+      final tutorMessage = ConversationMessage(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        role: MessageRole.tutor,
+        content: replyContent,
+        timestamp: DateTime.now(),
+        tutorResponse: tutorResponse,
+      );
+
+      _currentConversation = await repository.appendMessage(
+        _currentConversation!.id,
+        tutorMessage,
+      );
+      _conversationController.add(_currentConversation);
+      return tutorMessage;
+    } finally {
+      _isSending = false;
     }
+  }
 
-    final tutorMessage = ConversationMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      role: MessageRole.tutor,
-      content: replyContent,
-      timestamp: DateTime.now(),
-      tutorResponse: tutorResponse,
-    );
-
-    _currentConversation = await repository.appendMessage(
-      _currentConversation!.id,
-      tutorMessage,
-    );
-    _conversationController.add(_currentConversation);
-    return tutorMessage;
+  /// Map the terminal delta to the persisted reply, preserving the existing
+  /// three-state outcome: typed success -> reply text + value; parse failure ->
+  /// the raw text; inference failure -> the error fallback text.
+  (String, TutorResponse?) _resolveReply(
+    StructuredDelta<TutorResponse>? terminal,
+  ) {
+    if (terminal == null) {
+      return ('Error generating response: no response received', null);
+    }
+    if (terminal.isComplete && terminal.value != null) {
+      final value = terminal.value!;
+      return (value.conversation.content, value);
+    }
+    final failure = terminal.failure;
+    if (failure != null) {
+      return switch (failure.kind) {
+        StructuredFailureKind.parse => (failure.rawText ?? '', null),
+        StructuredFailureKind.inference => (
+            'Error generating response: ${failure.error}',
+            null,
+          ),
+      };
+    }
+    return ('Error generating response: unknown', null);
   }
 
   /// Format recent history for prompt context.
@@ -184,5 +233,6 @@ class ConversationController {
   /// Dispose resources.
   Future<void> dispose() async {
     await _conversationController.close();
+    await _streamingReplyController.close();
   }
 }

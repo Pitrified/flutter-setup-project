@@ -6,44 +6,33 @@ import 'package:fala/models/inference_status.dart';
 import 'package:fala/models/tutor_response.dart';
 import 'package:fala/services/conversation/conversation_controller.dart';
 import 'package:fala/services/inference/inference_engine.dart';
-import 'package:fala/services/inference/structured_inference_engine.dart';
-import 'package:fala/services/inference/structured_output_parser.dart';
+import 'package:fala/services/inference/structured_stream_engine.dart';
 import 'package:fala/services/persistence/conversation_repository.dart';
 import 'package:fala/services/prompt/prompt_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 
-/// Fake StructuredInferenceEngine that returns a configurable result.
-class _FakeStructuredEngine extends StructuredInferenceEngine<TutorResponse> {
-  _FakeStructuredEngine()
-      : super(engine: _DummyEngine(), parser: _dummyParser());
+/// A complete, schema-conforming TutorResponse document (the "Ola!" reply).
+const _olaJson =
+    '{"correction":{"content":"","translation":"","errors":[]},'
+    '"conversation":{"content":"Ola!","translation":"Hello!"}}';
 
-  StructuredResult<TutorResponse> nextResult = const StructuredSuccess(
-    value: TutorResponse(
-      correction: CorrectionBlock(content: '', translation: '', errors: []),
-      conversation: ConversationBlock(content: 'Ola!', translation: 'Hello!'),
-    ),
-    rawText: '{}',
-  );
-
-  @override
-  Future<StructuredResult<TutorResponse>> generate(
-    InferenceRequest request,
-  ) async {
-    return nextResult;
+/// Cumulative buffers-so-far for [full], revealing [step] chars at a time.
+List<String> _cumulative(String full, {int step = 16}) {
+  final out = <String>[];
+  for (var end = step; end < full.length; end += step) {
+    out.add(full.substring(0, end));
   }
-
-  @override
-  bool get isReady => true;
-
-  @override
-  InferenceStatus get status => const InferenceStatus.ready();
-
-  @override
-  Stream<InferenceStatus> get statusStream => const Stream.empty();
+  out.add(full);
+  return out;
 }
 
-class _DummyEngine implements InferenceEngine {
+/// Raw engine that emits a scripted list of cumulative buffers, then optionally
+/// throws an [InferenceStreamException].
+class _ScriptedEngine implements InferenceEngine {
+  List<String> buffers = _cumulative(_olaJson);
+  String? throwMessage;
+
   @override
   InferenceStatus get status => const InferenceStatus.ready();
   @override
@@ -54,20 +43,20 @@ class _DummyEngine implements InferenceEngine {
   Future<void> initialize() async {}
   @override
   Future<InferenceResult> generate(InferenceRequest request) async =>
-      const InferenceSuccess(rawText: '');
+      const InferenceSuccess(rawText: _olaJson);
+
   @override
-  Stream<String> generateStream(InferenceRequest request) =>
-      bufferedGenerateStream(this, request);
+  Stream<String> generateStream(InferenceRequest request) async* {
+    for (final buffer in buffers) {
+      yield buffer;
+    }
+    if (throwMessage != null) {
+      throw InferenceStreamException(throwMessage!);
+    }
+  }
+
   @override
   Future<void> dispose() async {}
-}
-
-// Need a dummy parser just for the super constructor
-
-StructuredOutputParser<TutorResponse> _dummyParser() {
-  return const StructuredOutputParser<TutorResponse>(
-    fromJson: TutorResponse.fromJson,
-  );
 }
 
 /// Fake PromptManager that returns a fixed string.
@@ -88,7 +77,8 @@ class _FakePromptManager extends PromptManager {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late _FakeStructuredEngine engine;
+  late _ScriptedEngine engine;
+  late StructuredStreamEngine<TutorResponse> streamEngine;
   late ConversationRepository repo;
   late _FakePromptManager promptManager;
   late ConversationController controller;
@@ -98,19 +88,24 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('hive_cc_test_');
     Hive.init(tempDir.path);
 
-    engine = _FakeStructuredEngine();
+    engine = _ScriptedEngine();
+    streamEngine = StructuredStreamEngine<TutorResponse>(
+      engine: engine,
+      fromJson: TutorResponse.fromJson,
+    );
     repo = ConversationRepository(boxName: 'test_cc_convos');
     await repo.initialize();
     promptManager = _FakePromptManager();
 
     controller = ConversationController(
-      structuredEngine: engine,
+      streamEngine: streamEngine,
       repository: repo,
       promptManager: promptManager,
     );
   });
 
   tearDown(() async {
+    await controller.dispose();
     await repo.close();
     await tempDir.delete(recursive: true);
   });
@@ -144,8 +139,9 @@ void main() {
 
   test('sendMessage handles inference failure', () async {
     await controller.startConversation();
-    engine.nextResult =
-        const StructuredInferenceFailure(error: 'engine down');
+    engine
+      ..buffers = const ['{']
+      ..throwMessage = 'engine down';
 
     final tutorMsg = await controller.sendMessage('Oi');
 
@@ -154,14 +150,14 @@ void main() {
       tutorMsg!.content,
       'Error generating response: engine down',
     );
+    expect(tutorMsg.tutorResponse, isNull);
   });
 
   test('sendMessage handles parse failure with raw text', () async {
     await controller.startConversation();
-    engine.nextResult = const StructuredParseFailure(
-      rawText: 'some garbled output',
-      error: 'invalid json',
-    );
+    // A complete buffer that is not valid TutorResponse JSON: the strict final
+    // parse fails and the raw text becomes the reply.
+    engine.buffers = const ['some garbled output'];
 
     final tutorMsg = await controller.sendMessage('Oi');
 
@@ -205,5 +201,59 @@ void main() {
     expect(promptManager.lastVariables, isNotNull);
     expect(promptManager.lastVariables!['cefr_level'], 'A2');
     expect(promptManager.lastVariables!['topic'], 'Music');
+  });
+
+  test('sendMessage emits intermediate deltas then a terminal on streamingReply',
+      () async {
+    await controller.startConversation();
+
+    final deltas = <StructuredDelta<TutorResponse>>[];
+    final sub = controller.streamingReply.listen(deltas.add);
+
+    await controller.sendMessage('Oi');
+    await Future<void>.delayed(Duration.zero);
+    await sub.cancel();
+
+    expect(deltas.length, greaterThan(1));
+    // At least one in-flight delta with a partial map and no typed value yet.
+    expect(deltas.any((d) => !d.isTerminal && d.value == null), isTrue);
+    // The last delta is the terminal success with the typed value.
+    expect(deltas.last.isTerminal, isTrue);
+    expect(deltas.last.value, isNotNull);
+    expect(deltas.last.value!.conversation.content, 'Ola!');
+  });
+
+  test('persists exactly one tutor message with the terminal typed value',
+      () async {
+    await controller.startConversation();
+
+    final msg = await controller.sendMessage('Oi');
+
+    final tutors = controller.currentConversation!.messages
+        .where((m) => m.role == MessageRole.tutor)
+        .toList();
+    expect(tutors, hasLength(1));
+    expect(tutors.single.tutorResponse, isNotNull);
+    expect(tutors.single.tutorResponse!.conversation.content, 'Ola!');
+    expect(msg!.tutorResponse, tutors.single.tutorResponse);
+  });
+
+  test('on failure appends fallback text and stays usable for the next send',
+      () async {
+    await controller.startConversation();
+    engine
+      ..buffers = const ['{']
+      ..throwMessage = 'engine down';
+
+    final failMsg = await controller.sendMessage('Oi');
+    expect(failMsg!.content, 'Error generating response: engine down');
+    expect(controller.isSending, isFalse);
+
+    // The in-flight channel is not left open/broken: a second send succeeds.
+    engine
+      ..throwMessage = null
+      ..buffers = _cumulative(_olaJson);
+    final okMsg = await controller.sendMessage('De novo');
+    expect(okMsg!.content, 'Ola!');
   });
 }

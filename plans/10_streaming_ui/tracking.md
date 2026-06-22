@@ -35,7 +35,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | done    |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | done    |
 | 4.1| Golden OpenAI SSE capture (optional)    | [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md) | planned (deferred) |
-| 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | planned |
+| 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | done    |
 | 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | planned |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
@@ -116,3 +116,19 @@ Append-only. Newest at the bottom.
   Plan + analysis captured in [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md);
   revisit only if streaming bugs appear, an openai_dart major bump lands, or we move to the
   Responses API.
+- 2026-06-22 : phase 5 **done**. Wired streaming into the app.
+  [`conversation_controller.dart`](../../lib/services/conversation/conversation_controller.dart)
+  now takes a `StructuredStreamEngine<TutorResponse>` (was the one-shot engine); `sendMessage`
+  appends the user message, builds the prompt, drives `generateStream`, forwards each delta to a
+  lifetime broadcast `streamingReply` channel, and **derives the persisted final message from the
+  terminal delta's typed `value`** - no second one-shot call. Three-state outcome preserved
+  verbatim (success -> reply text + value; parse failure -> raw text; inference failure -> error
+  fallback). Concurrency: a second `sendMessage` while `_isSending` is ignored (returns null);
+  UI also gates. New `structuredStreamEngineProvider` wraps the active engine exactly like the
+  one-shot provider (same engine-kind path, no new circular dep); `conversationControllerProvider`
+  watches it. The one-shot `StructuredInferenceEngine` + its provider stay **defined** (additive,
+  not a rewrite) though the controller no longer calls them. Controller test harness reworked to a
+  `_ScriptedEngine` (raw) + real `StructuredStreamEngine`; +3 tests (intermediate-then-terminal on
+  `streamingReply`, exactly-one tutor message == terminal value, failure fallback + channel stays
+  usable). Full suite 128 pass, `flutter analyze` clean. Persistence format unchanged; UI still
+  renders only committed messages until phase 6.

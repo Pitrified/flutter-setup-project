@@ -10,10 +10,10 @@ import 'service_providers.dart';
 /// Depends on structured inference engine, repository, and prompt manager.
 final conversationControllerProvider =
     Provider<ConversationController?>((ref) {
-  final structuredEngine = ref.watch(structuredInferenceEngineProvider);
-  if (structuredEngine == null) return null;
+  final streamEngine = ref.watch(structuredStreamEngineProvider);
+  if (streamEngine == null) return null;
   return ConversationController(
-    structuredEngine: structuredEngine,
+    streamEngine: streamEngine,
     repository: ref.watch(conversationRepositoryProvider),
     promptManager: ref.watch(promptManagerProvider),
   );
