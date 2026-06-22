@@ -18,10 +18,19 @@ class FakeInferenceEngine implements InferenceEngine {
   FakeInferenceEngine({
     this.fixtureAssetPath = 'assets/fixtures/tutor_responses.json',
     this.responseDelayMs = 500,
+    this.streamChunkSize = 8,
+    this.streamChunkDelayMs = 10,
   });
 
   final String fixtureAssetPath;
   final int responseDelayMs;
+
+  /// Number of characters revealed per [generateStream] tick. Small so tests
+  /// and manual runs see genuinely partial buffers (mid-string, mid-array).
+  final int streamChunkSize;
+
+  /// Delay between [generateStream] ticks, simulating token latency.
+  final int streamChunkDelayMs;
 
   final _statusController = StreamController<InferenceStatus>.broadcast();
   InferenceStatus _status = const InferenceStatus.uninitialized();
@@ -59,21 +68,44 @@ class FakeInferenceEngine implements InferenceEngine {
     // Simulate inference latency
     await Future.delayed(Duration(milliseconds: responseDelayMs));
 
+    final rawText = _nextRawText();
+
+    _setStatus(const InferenceStatus.ready());
+    return InferenceSuccess(rawText: rawText);
+  }
+
+  @override
+  Stream<String> generateStream(InferenceRequest request) async* {
+    if (!isReady) {
+      throw const InferenceStreamException('Engine not initialized');
+    }
+
+    _setStatus(const InferenceStatus.generating());
+
+    final full = _nextRawText();
+    // Emit growing prefixes (cumulative buffer-so-far), then the full text.
+    for (var end = streamChunkSize; end < full.length; end += streamChunkSize) {
+      await Future.delayed(Duration(milliseconds: streamChunkDelayMs));
+      yield full.substring(0, end);
+    }
+    await Future.delayed(Duration(milliseconds: streamChunkDelayMs));
+    yield full;
+
+    _setStatus(const InferenceStatus.ready());
+  }
+
+  /// Next fixture serialized to JSON, advancing the round-robin cursor. Falls
+  /// back to a placeholder document when no fixtures are loaded.
+  String _nextRawText() {
     if (_responses.isEmpty) {
-      _setStatus(const InferenceStatus.ready());
-      return const InferenceSuccess(
-        rawText:
-            '{"correction": {"content": "", "translation": "", "errors": []}, '
-            '"conversation": {"content": "No fixtures loaded", '
-            '"translation": "No fixtures loaded"}}',
-      );
+      return '{"correction": {"content": "", "translation": "", "errors": []}, '
+          '"conversation": {"content": "No fixtures loaded", '
+          '"translation": "No fixtures loaded"}}';
     }
 
     final response = _responses[_nextIndex % _responses.length];
     _nextIndex++;
-
-    _setStatus(const InferenceStatus.ready());
-    return InferenceSuccess(rawText: jsonEncode(response));
+    return jsonEncode(response);
   }
 
   @override

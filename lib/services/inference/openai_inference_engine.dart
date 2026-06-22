@@ -135,6 +135,12 @@ class OpenAiInferenceEngine implements InferenceEngine {
     }
   }
 
+  @override
+  Stream<String> generateStream(InferenceRequest request) =>
+      // Temporary: OpenAI streaming arrives in phase 4. Until then, run the
+      // one-shot generate and emit its result as a single cumulative buffer.
+      bufferedGenerateStream(this, request);
+
   OpenAIClient _clientFor(String key) {
     if (_client != null && _cachedKey == key) {
       return _client!;

@@ -56,6 +56,9 @@ class _DummyEngine implements InferenceEngine {
   Future<InferenceResult> generate(InferenceRequest request) async =>
       const InferenceSuccess(rawText: '');
   @override
+  Stream<String> generateStream(InferenceRequest request) =>
+      bufferedGenerateStream(this, request);
+  @override
   Future<void> dispose() async {}
 }
 

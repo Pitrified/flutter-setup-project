@@ -80,6 +80,13 @@ class FlutterGemmaEngine implements InferenceEngine {
   }
 
   @override
+  Stream<String> generateStream(InferenceRequest request) =>
+      // Temporary: gemma token streaming arrives in phase 4. Until then, run
+      // the one-shot generate and emit its result as a single cumulative
+      // buffer.
+      bufferedGenerateStream(this, request);
+
+  @override
   Future<void> dispose() async {
     await _model?.close();
     _model = null;

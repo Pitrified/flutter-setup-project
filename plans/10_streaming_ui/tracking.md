@@ -31,7 +31,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | #  | Phase                                   | Plan                                                            | Status  |
 | -- | --------------------------------------- | -------------------------------------------------------------- | ------- |
 | 1  | Tolerant incremental JSON parser        | [`01_feat_partial_json_parser.md`](01_feat_partial_json_parser.md)       | done    |
-| 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | planned |
+| 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | done    |
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | planned |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | planned |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | planned |
@@ -65,3 +65,15 @@ Append-only. Newest at the bottom.
   plan's edge-case list (empty/`{`/`{"a"`/`{"a":`, mid-token string, escaped quote, unicode
   escape complete + truncated, numbers mid-token, partial last array element, fence prefix,
   full-doc round-trip vs `jsonDecode`); `flutter analyze` clean.
+- 2026-06-22 : phase 2 **done**. Added `InferenceEngine.generateStream(request) -> Stream<String>`.
+  Contract decision = **cumulative buffer-so-far** (each event is the full text to date,
+  monotonically growing; final event == complete output), so it pairs directly with phase
+  1's whole-buffer parser and consumers never accumulate. Failure surfaces as a thrown
+  `InferenceStreamException` (same message as `InferenceFailure`); status mirrors `generate`
+  (ready -> generating -> ready). `FakeInferenceEngine` streams a fixture in
+  `streamChunkSize`-char growing prefixes with a per-tick delay (refactored to share
+  `_nextRawText` with `generate`). OpenAI + gemma get a temporary `bufferedGenerateStream`
+  bridge (one-shot `generate`, single emission) until phase 4; the 3 test-fake engines got
+  the same bridge. 6 new fake-stream tests (monotonic growth, final == fixture, an
+  intermediate is a valid open partial via phase 1, status transitions, bridge emits once);
+  full suite 113 pass, `flutter analyze` clean.

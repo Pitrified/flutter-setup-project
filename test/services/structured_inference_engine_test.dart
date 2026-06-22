@@ -23,6 +23,10 @@ class _HangingEngine implements InferenceEngine {
   }
 
   @override
+  Stream<String> generateStream(InferenceRequest request) =>
+      bufferedGenerateStream(this, request);
+
+  @override
   Future<void> dispose() async {}
 }
 
