@@ -49,3 +49,10 @@ running app and are where the UX polish lives.
 Append-only. Newest at the bottom.
 
 - 2026-06-20 : bootstrapped the plan folder from 00.2; drafted phases 1-6, all `planned`.
+- 2026-06-22 : phase 1 dependency-vs-vendored decision = **vendored**. `llm_json_stream`
+  solves the tokenizer edge cases but its API is inverted against our needs: it is a
+  stateful `Stream<String>`-fed, path-subscription parser with no whole-map snapshot and
+  no per-node closed event (only node-start callbacks + a root `.future`). Our phase-1
+  surface is a sync pure `parse(cumulativeBuffer) -> map + per-node closed-flags`; the
+  closed-flags would be hand-written on top of the dep regardless. Full analysis in
+  [`01.1_analysis_vendored_vs_dep.md`](01.1_analysis_vendored_vs_dep.md).

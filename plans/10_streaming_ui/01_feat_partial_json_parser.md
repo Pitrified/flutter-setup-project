@@ -34,6 +34,10 @@ Record the choice and the why in the Log. Default lean: **vendored** for zero
 deps and full control, given the parser is generic and small. Keep the public
 API identical either way so the choice does not leak past this phase.
 
+**Decided 2026-06-22: vendored.** Full pro/con assessment of `llm_json_stream`
+(API shape, closed-flags gap, maintenance) in
+[`01.1_analysis_vendored_vs_dep.md`](01.1_analysis_vendored_vs_dep.md).
+
 ## Goals
 
 1. A `PartialJson` (name TBD) component exposing a pure function:
