@@ -34,6 +34,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | done    |
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | done    |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | done    |
+| 4.1| Golden OpenAI SSE capture (optional)    | [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md) | planned (deferred) |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | planned |
 | 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | planned |
 
@@ -108,3 +109,10 @@ Append-only. Newest at the bottom.
   mapping); the no-`abortTrigger` path uses the shared injected httpClient so MockClient
   intercepts. gemma needs a device - explicitly a manual check; its accumulation mirrors the
   OpenAI pattern the tests cover. Full suite 125 pass, `flutter analyze` clean.
+- 2026-06-22 : drafted phase **4.1** (golden OpenAI SSE capture + offline prefix-replay test)
+  and **deferred** it: the per-event format is covered by the OpenAI OpenAPI spec + openai_dart's
+  generated parser, which we trust; phase 1's tolerant parser is the safety net. A real call
+  would only validate the strict-`json_schema` *streaming behavior* (cadence / prefix-validity).
+  Plan + analysis captured in [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md);
+  revisit only if streaming bugs appear, an openai_dart major bump lands, or we move to the
+  Responses API.
