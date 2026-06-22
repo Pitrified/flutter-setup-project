@@ -1,5 +1,7 @@
 import 'package:fala/models/conversation_message.dart';
 import 'package:fala/models/tutor_response.dart';
+import 'package:fala/screens/conversation/widgets/correction_card.dart';
+import 'package:fala/screens/conversation/widgets/message_bubble.dart';
 import 'package:fala/screens/conversation/widgets/streaming_reply_view.dart';
 import 'package:fala/screens/conversation/widgets/streaming_tutor_entry.dart';
 import 'package:fala/services/inference/partial_json_parser.dart';
@@ -69,6 +71,22 @@ void main() {
       );
       expect(richTextWith('Eu gosto'), findsOneWidget);
       expect(find.text('Capitalize.'), findsOneWidget);
+    });
+
+    testWidgets('renders the correction card above the reply bubble',
+        (tester) async {
+      await tester.pumpWidget(
+        _wrap(StreamingTutorEntry(
+          delta: _delta(
+            '{"correction":{"errors":[{"original":"x","corrected":"y",'
+            '"explanation":"z"}]},"conversation":{"content":"Ola!"}}',
+          ),
+        )),
+      );
+
+      final cardY = tester.getTopLeft(find.byType(CorrectionCard)).dy;
+      final bubbleY = tester.getTopLeft(find.byType(MessageBubble)).dy;
+      expect(cardY, lessThan(bubbleY));
     });
 
     testWidgets('does not throw on null/absent leaves', (tester) async {

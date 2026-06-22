@@ -26,12 +26,15 @@ class StreamingTutorEntry extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Corrections comment on the user's previous message, so they sit above
+        // the reply - which also matches the generation order (correction block
+        // streams in first, then the conversational reply).
+        if (corrections.isNotEmpty)
+          CorrectionCard.partial(partials: corrections),
         MessageBubble.streaming(
           content: view.conversationContent ?? '',
           translation: view.conversationTranslation,
         ),
-        if (corrections.isNotEmpty)
-          CorrectionCard.partial(partials: corrections),
       ],
     );
   }

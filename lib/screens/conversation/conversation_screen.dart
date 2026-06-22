@@ -150,15 +150,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
           return _buildStreamingOverlay(controller);
         }
         final message = messages[index];
+        final errors = message.tutorResponse?.correction.errors;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Corrections annotate the user's message, so they render above the
+            // tutor reply (consistent with the live streaming order).
+            if (errors != null && errors.isNotEmpty)
+              CorrectionCard(corrections: errors),
             MessageBubble(message: message),
-            if (message.tutorResponse?.correction.errors != null &&
-                message.tutorResponse!.correction.errors.isNotEmpty)
-              CorrectionCard(
-                corrections: message.tutorResponse!.correction.errors,
-              ),
           ],
         );
       },

@@ -151,3 +151,11 @@ Append-only. Newest at the bottom.
   (widget: text grows, row partial->complete, no-throw on null leaves; unit: 4 overlay-predicate
   cases incl. handoff). Full suite 135 pass, `flutter analyze` clean. **Not done here:** end-to-end
   manual run on a device/emulator (Android-only app) - left as a manual check.
+- 2026-06-22 : on-device check (manual) found corrections appearing before the reply. Root cause:
+  OpenAI strict output emits keys in **schema property order**, and the schema/model/prompt all list
+  `correction` before `conversation`, so the whole correction block streams in first. This is a
+  deliberate quality choice (correct-then-converse is a CoT order that helps the small model), so we
+  kept the generation order and instead **moved the correction card above the reply bubble** in both
+  the live overlay (`StreamingTutorEntry`) and the committed list (`conversation_screen`) - the card
+  annotates the user's prior message, so above-the-reply reads correctly and now matches the
+  streaming order. +1 widget test asserting card-above-bubble. Full suite 136 pass, analyze clean.
