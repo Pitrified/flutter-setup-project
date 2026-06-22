@@ -136,10 +136,67 @@ class OpenAiInferenceEngine implements InferenceEngine {
   }
 
   @override
-  Stream<String> generateStream(InferenceRequest request) =>
-      // Temporary: OpenAI streaming arrives in phase 4. Until then, run the
-      // one-shot generate and emit its result as a single cumulative buffer.
-      bufferedGenerateStream(this, request);
+  Stream<String> generateStream(InferenceRequest request) async* {
+    if (!isReady) {
+      throw const InferenceStreamException('Engine not initialized');
+    }
+    final key = await apiKeyStore.read();
+    if (key == null || key.isEmpty) {
+      throw const InferenceStreamException(
+        'OpenAI key missing or rejected. Open Settings to update.',
+      );
+    }
+    _setStatus(const InferenceStatus.generating());
+    final buffer = StringBuffer();
+    try {
+      final client = _clientFor(key);
+      // createStream sends the same request with stream=true, so the strict
+      // json_schema constraint is preserved and every partial buffer is a
+      // well-formed-JSON prefix.
+      final events = client.chat.completions.createStream(
+        ChatCompletionCreateRequest(
+          model: modelProvider(),
+          messages: [ChatMessage.user(request.prompt)],
+          maxCompletionTokens: request.maxTokens,
+          temperature: request.temperature,
+          responseFormat: ResponseFormat.jsonSchema(
+            name: schemaName,
+            schema: schema,
+          ),
+        ),
+      );
+      await for (final event in events) {
+        final delta = event.textDelta;
+        if (delta != null && delta.isNotEmpty) {
+          buffer.write(delta);
+          yield buffer.toString(); // cumulative buffer-so-far
+        }
+      }
+      if (buffer.isEmpty) {
+        throw const InferenceStreamException('OpenAI returned empty response');
+      }
+    } on AuthenticationException {
+      throw const InferenceStreamException(
+        'OpenAI key missing or rejected. Open Settings to update.',
+      );
+    } on RateLimitException {
+      throw const InferenceStreamException(
+        'OpenAI rate limit reached. Try again shortly.',
+      );
+    } on RequestTimeoutException {
+      throw const InferenceStreamException(
+        'OpenAI request timed out. Check your connection.',
+      );
+    } on ConnectionException {
+      throw const InferenceStreamException(
+        'Network error reaching OpenAI. Check your connection.',
+      );
+    } on OpenAIException catch (e) {
+      throw InferenceStreamException('OpenAI error: ${e.message}');
+    } finally {
+      _setStatus(const InferenceStatus.ready());
+    }
+  }
 
   OpenAIClient _clientFor(String key) {
     if (_client != null && _cachedKey == key) {

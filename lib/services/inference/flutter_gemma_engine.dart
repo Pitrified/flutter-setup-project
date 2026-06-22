@@ -80,11 +80,37 @@ class FlutterGemmaEngine implements InferenceEngine {
   }
 
   @override
-  Stream<String> generateStream(InferenceRequest request) =>
-      // Temporary: gemma token streaming arrives in phase 4. Until then, run
-      // the one-shot generate and emit its result as a single cumulative
-      // buffer.
-      bufferedGenerateStream(this, request);
+  Stream<String> generateStream(InferenceRequest request) async* {
+    if (!isReady || _model == null) {
+      throw const InferenceStreamException('Engine not initialized');
+    }
+
+    _setStatus(const InferenceStatus.generating());
+    final buffer = StringBuffer();
+    try {
+      final chat = await _model!.createChat(
+        isThinking: false,
+        modelType: ModelType.qwen3,
+        temperature: request.temperature,
+        topK: request.topK,
+      );
+      await chat.addQueryChunk(
+        Message(text: request.prompt, isUser: true),
+      );
+      // No constrained decoding on-device, so partial buffers may not be
+      // valid-JSON prefixes; phase 1's tolerant parser handles that.
+      await for (final response in chat.generateChatResponseAsync()) {
+        if (response is TextResponse) {
+          buffer.write(response.token);
+          yield buffer.toString(); // cumulative buffer-so-far
+        }
+      }
+    } on Exception catch (e) {
+      throw InferenceStreamException(e.toString());
+    } finally {
+      _setStatus(const InferenceStatus.ready());
+    }
+  }
 
   @override
   Future<void> dispose() async {

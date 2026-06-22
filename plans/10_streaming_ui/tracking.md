@@ -33,7 +33,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | 1  | Tolerant incremental JSON parser        | [`01_feat_partial_json_parser.md`](01_feat_partial_json_parser.md)       | done    |
 | 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | done    |
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | done    |
-| 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | planned |
+| 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | done    |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | planned |
 | 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | planned |
 
@@ -91,3 +91,20 @@ Append-only. Newest at the bottom.
   was undetectable; switched to an explicit `StreamController` + reset-on-event `Timer`, and
   the onCancel must fire-and-forget `sub.cancel()` (awaiting a stalled-async* cancel never
   completes and would block the done event). Full suite 120 pass, `flutter analyze` clean.
+- 2026-06-22 : phase 4 **done**. Real streaming in both production engines, replacing the
+  phase-2 bridge. OpenAI uses `client.chat.completions.createStream(...)` (openai_dart
+  **6.0.0**) keeping `responseFormat: jsonSchema` - confirmed `createStream` just sets
+  `stream=true` on the same body, so partial buffers stay valid-JSON prefixes; accumulates
+  `event.textDelta` into a `StringBuffer`, yields the cumulative buffer per chunk. The
+  streaming error path throws the **same** typed exceptions as one-shot (`createApiException`
+  maps 401->Authentication, 429->RateLimit, etc.), so the existing auth/rate-limit/timeout/
+  connection/generic mapping carries over verbatim into `InferenceStreamException`; status
+  set in a `finally` so it returns to ready even on consumer cancel. gemma yields its running
+  buffer per `TextResponse.token` instead of discarding the loop (no on-device constrained
+  decoding, so partial buffers may not be JSON prefixes - phase 1 tolerates that).
+  `bufferedGenerateStream` demoted from temporary bridge to the documented base case for
+  non-streaming doubles (still used by the 3 test fakes). 5 OpenAI streaming tests via an
+  injected MockClient returning an SSE body (cumulative emission + 401/429/no-key/empty
+  mapping); the no-`abortTrigger` path uses the shared injected httpClient so MockClient
+  intercepts. gemma needs a device - explicitly a manual check; its accumulation mirrors the
+  OpenAI pattern the tests cover. Full suite 125 pass, `flutter analyze` clean.

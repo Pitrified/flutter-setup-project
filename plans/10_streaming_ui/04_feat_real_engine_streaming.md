@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 4 - Real engines streaming (OpenAI + flutter_gemma)

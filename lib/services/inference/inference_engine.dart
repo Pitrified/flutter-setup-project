@@ -93,13 +93,14 @@ abstract class InferenceEngine {
   Future<void> dispose();
 }
 
-/// Temporary bridge that satisfies [InferenceEngine.generateStream] for engines
-/// that do not yet stream natively: it runs the one-shot [generate] and emits
-/// the result as a single (already-complete) cumulative buffer.
+/// Bridge that satisfies [InferenceEngine.generateStream] for engines that do
+/// not stream natively: it runs the one-shot [generate] and emits the result as
+/// a single (already-complete) cumulative buffer.
 ///
-/// This is a phase-2 compile bridge for OpenAI / gemma; phase 4 replaces it
-/// with real token streaming. It honors the streaming contract: success yields
-/// one final buffer, failure throws [InferenceStreamException].
+/// The production engines (OpenAI, gemma) stream for real; this remains the
+/// base case for any engine or test double that genuinely cannot. It honors the
+/// streaming contract: success yields one final buffer, failure throws
+/// [InferenceStreamException].
 Stream<String> bufferedGenerateStream(
   InferenceEngine engine,
   InferenceRequest request,
