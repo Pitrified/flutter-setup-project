@@ -32,7 +32,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | -- | --------------------------------------- | -------------------------------------------------------------- | ------- |
 | 1  | Tolerant incremental JSON parser        | [`01_feat_partial_json_parser.md`](01_feat_partial_json_parser.md)       | done    |
 | 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | done    |
-| 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | planned |
+| 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | done    |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | planned |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | planned |
 | 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | planned |
@@ -77,3 +77,17 @@ Append-only. Newest at the bottom.
   the same bridge. 6 new fake-stream tests (monotonic growth, final == fixture, an
   intermediate is a valid open partial via phase 1, status transitions, bridge emits once);
   full suite 113 pass, `flutter analyze` clean.
+- 2026-06-22 : phase 3 **done**. Added
+  [`structured_stream_engine.dart`](../../lib/services/inference/structured_stream_engine.dart):
+  generic `StructuredStreamEngine<T>` (engine + `fromJson` + `PartialJsonParser`) yielding
+  `Stream<StructuredDelta<T>>`. G1 transport: `StructuredDelta` carries the best-effort
+  `partial` map + phase-1 `closure` flags each tick, a typed `value` only on the terminal
+  `isComplete` emission, and a terminal `StructuredFailure` (inference|parse kind) otherwise.
+  Final strict parse reuses `StructuredOutputParser<T>` so the terminal value equals the
+  one-shot path. Coalesces no-op ticks via a value+closed-flags signature. 7 tests incl.
+  arrive-as-you-go (a nested array element observed open before close), both failure modes,
+  and inactivity timeout. **Gotcha found:** `Stream.timeout` (and `StreamIterator.moveNext()
+  .timeout`) do NOT fire while an `async*` source is suspended on an await, so a real stall
+  was undetectable; switched to an explicit `StreamController` + reset-on-event `Timer`, and
+  the onCancel must fire-and-forget `sub.cancel()` (awaiting a stalled-async* cancel never
+  completes and would block the done event). Full suite 120 pass, `flutter analyze` clean.
