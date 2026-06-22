@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 6 - Live partial-tolerant widgets

@@ -9,9 +9,28 @@ import '../../../models/conversation_message.dart';
 /// [ConversationMessage.tutorResponse] toggle a smaller, dimmer translation
 /// line under the original reply when tapped.
 class MessageBubble extends StatefulWidget {
-  const MessageBubble({super.key, required this.message});
+  const MessageBubble({super.key, required ConversationMessage this.message})
+      : streamingContent = null,
+        streamingTranslation = null;
 
-  final ConversationMessage message;
+  /// A live tutor bubble bound to in-flight partial data (phase 6). [content]
+  /// is the reply prefix so far; [translation] is null until it arrives.
+  const MessageBubble.streaming({
+    super.key,
+    required String content,
+    String? translation,
+  })  : message = null,
+        streamingContent = content,
+        streamingTranslation = translation;
+
+  /// The committed message, or null for a streaming bubble.
+  final ConversationMessage? message;
+
+  /// Partial reply text for a streaming bubble (null for a committed one).
+  final String? streamingContent;
+
+  /// Partial translation for a streaming bubble (null until it arrives).
+  final String? streamingTranslation;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -23,11 +42,15 @@ class _MessageBubbleState extends State<MessageBubble> {
   @override
   Widget build(BuildContext context) {
     final message = widget.message;
-    final isUser = message.role == MessageRole.user;
+    final isUser = message?.role == MessageRole.user;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final translation = message.tutorResponse?.conversation.translation ?? '';
+    final content = message?.content ?? widget.streamingContent ?? '';
+    final translation =
+        message?.tutorResponse?.conversation.translation ??
+        widget.streamingTranslation ??
+        '';
     final canToggle = !isUser && translation.isNotEmpty;
 
     final bubble = Container(
@@ -47,7 +70,7 @@ class _MessageBubbleState extends State<MessageBubble> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            message.content,
+            content,
             style: TextStyle(
               color: isUser
                   ? colorScheme.onPrimaryContainer

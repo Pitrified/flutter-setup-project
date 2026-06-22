@@ -7,12 +7,16 @@ import '../../models/cefr_level.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
 import '../../models/topic.dart';
+import '../../models/tutor_response.dart';
 import '../../providers/conversation_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/conversation/conversation_controller.dart';
+import '../../services/inference/structured_stream_engine.dart';
 import 'widgets/cefr_picker_sheet.dart';
 import 'widgets/correction_card.dart';
 import 'widgets/message_bubble.dart';
+import 'widgets/streaming_reply_view.dart';
+import 'widgets/streaming_tutor_entry.dart';
 import 'widgets/topic_picker_sheet.dart';
 import 'widgets/typing_indicator.dart';
 
@@ -112,7 +116,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                 if (conversation == null) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                return _buildMessageList(conversation.messages);
+                return _buildMessageList(controller, conversation.messages);
               },
             ),
           ),
@@ -122,20 +126,28 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     );
   }
 
-  Widget _buildMessageList(List<ConversationMessage> messages) {
+  Widget _buildMessageList(
+    ConversationController controller,
+    List<ConversationMessage> messages,
+  ) {
     if (messages.isEmpty) {
       return const Center(
         child: Text('Say something in Portuguese!'),
       );
     }
 
+    final showOverlay = showStreamingOverlay(
+      isSending: _isSending,
+      messages: messages,
+    );
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
-      itemCount: messages.length + (_isSending ? 1 : 0),
+      itemCount: messages.length + (showOverlay ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == messages.length) {
-          return const TypingIndicator();
+          return _buildStreamingOverlay(controller);
         }
         final message = messages[index];
         return Column(
@@ -149,6 +161,23 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
               ),
           ],
         );
+      },
+    );
+  }
+
+  /// The live in-flight tutor entry. Shows the typing indicator until the first
+  /// delta arrives, then the partial-tolerant bubble + corrections.
+  Widget _buildStreamingOverlay(ConversationController controller) {
+    return StreamBuilder<StructuredDelta<TutorResponse>>(
+      stream: controller.streamingReply,
+      builder: (context, snapshot) {
+        final delta = snapshot.data;
+        if (delta == null) return const TypingIndicator();
+        final view = StreamingReplyView(delta);
+        final hasContent = (view.conversationContent ?? '').isNotEmpty ||
+            view.corrections.isNotEmpty;
+        if (!hasContent) return const TypingIndicator();
+        return StreamingTutorEntry(delta: delta);
       },
     );
   }

@@ -36,7 +36,7 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | done    |
 | 4.1| Golden OpenAI SSE capture (optional)    | [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md) | planned (deferred) |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | done    |
-| 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | planned |
+| 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | done    |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -132,3 +132,22 @@ Append-only. Newest at the bottom.
   `streamingReply`, exactly-one tutor message == terminal value, failure fallback + channel stays
   usable). Full suite 128 pass, `flutter analyze` clean. Persistence format unchanged; UI still
   renders only committed messages until phase 6.
+- 2026-06-22 : phase 6 **done**. Live partial-tolerant tutor UI.
+  [`streaming_reply_view.dart`](../../lib/screens/conversation/widgets/streaming_reply_view.dart)
+  is the thin nullable accessor over G1's map (the only place that knows the TutorResponse field
+  paths; no hand-written partial mirror) plus a `PartialCorrection` row model and the
+  `showStreamingOverlay` predicate. `MessageBubble` gained a `.streaming(content, translation)`
+  ctor (existing `message:` call sites untouched); `CorrectionCard` gained `.partial(...)` that
+  renders skeletons for absent leaves and **only draws the strike->replace once both original and
+  corrected exist** (the misleading-half-value gate), with stable `ValueKey(i)` per row.
+  `StreamingTutorEntry` binds one in-flight delta to bubble + card. The screen replaces the
+  `TypingIndicator`-only slot with a `StreamBuilder` on `controller.streamingReply`, shown via
+  `showStreamingOverlay` = `isSending && messages.last.role == user` - so the same
+  conversationStream rebuild that commits the tutor message removes the overlay: **duplicate-free
+  handoff, no gap**. Granular rebuild: only the single overlay entry rebuilds per delta (committed
+  ListView items don't); phase-3 coalescing limits emissions. **Scope call:** did not bind each
+  leaf to its own listenable - the bubble+card rebuild together within the one overlay entry, which
+  is cheap enough; revisit with a debounce only if profiling shows flicker (per plan). 7 tests
+  (widget: text grows, row partial->complete, no-throw on null leaves; unit: 4 overlay-predicate
+  cases incl. handoff). Full suite 135 pass, `flutter analyze` clean. **Not done here:** end-to-end
+  manual run on a device/emulator (Android-only app) - left as a manual check.
