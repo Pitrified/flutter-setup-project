@@ -42,13 +42,6 @@ class StreamingReplyView {
   String? get conversationTranslation =>
       _conversation?['translation'] as String?;
 
-  /// The corrected full sentence so far.
-  String? get correctionContent => _correction?['content'] as String?;
-
-  /// Whether the corrections array has stopped growing (no more rows coming).
-  bool get correctionsClosed =>
-      delta.closure.field('correction')?.field('errors')?.closed ?? false;
-
   /// Correction rows seen so far (length = elements-so-far, last may be open).
   List<PartialCorrection> get corrections {
     final errors = _correction?['errors'] as List<dynamic>?;

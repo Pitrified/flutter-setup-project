@@ -247,9 +247,9 @@ void main() {
 
     final failMsg = await controller.sendMessage('Oi');
     expect(failMsg!.content, 'Error generating response: engine down');
-    expect(controller.isSending, isFalse);
 
-    // The in-flight channel is not left open/broken: a second send succeeds.
+    // The send flag was reset and the in-flight channel is not left
+    // open/broken: a second send succeeds.
     engine
       ..throwMessage = null
       ..buffers = _cumulative(_olaJson);

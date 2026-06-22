@@ -155,6 +155,10 @@ class StructuredStreamEngine<T> {
       resetTimer();
       sub = engine.generateStream(request).listen(
         (buffer) {
+          // Already terminated (e.g. a timeout closed us): drop late buffered
+          // events before re-arming the timer, so no dangling timer outlives
+          // the stream.
+          if (controller.isClosed) return;
           resetTimer();
           lastBuffer = buffer;
           final result = parser.parse(buffer);
@@ -209,6 +213,12 @@ class StructuredStreamEngine<T> {
       // Fire-and-forget: cancelling an engine stream that is stalled on an
       // await returns a future that may never complete, which would block the
       // controller's done event. We do not need to wait for the cleanup.
+      //
+      // Consequence: the engine's own `finally { status = ready }` only runs
+      // when that abandoned async* actually unwinds, so on a stall the engine
+      // status can read `generating` a while after this stream already failed.
+      // That cosmetic lag is intentional - awaiting the cancel here to fix it
+      // would reintroduce the hang above.
       final cancelled = sub?.cancel();
       if (cancelled != null) unawaited(cancelled);
     };

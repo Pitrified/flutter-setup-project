@@ -51,9 +51,6 @@ class ConversationController {
   Stream<StructuredDelta<TutorResponse>> get streamingReply =>
       _streamingReplyController.stream;
 
-  /// Whether a [sendMessage] is currently streaming.
-  bool get isSending => _isSending;
-
   /// Current active conversation.
   Conversation? get currentConversation => _currentConversation;
 

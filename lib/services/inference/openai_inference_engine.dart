@@ -109,29 +109,9 @@ class OpenAiInferenceEngine implements InferenceEngine {
         return const InferenceFailure(error: 'OpenAI returned empty response');
       }
       return InferenceSuccess(rawText: raw);
-    } on AuthenticationException {
-      _setStatus(const InferenceStatus.ready());
-      return const InferenceFailure(
-        error: 'OpenAI key missing or rejected. Open Settings to update.',
-      );
-    } on RateLimitException {
-      _setStatus(const InferenceStatus.ready());
-      return const InferenceFailure(
-        error: 'OpenAI rate limit reached. Try again shortly.',
-      );
-    } on RequestTimeoutException {
-      _setStatus(const InferenceStatus.ready());
-      return const InferenceFailure(
-        error: 'OpenAI request timed out. Check your connection.',
-      );
-    } on ConnectionException {
-      _setStatus(const InferenceStatus.ready());
-      return const InferenceFailure(
-        error: 'Network error reaching OpenAI. Check your connection.',
-      );
     } on OpenAIException catch (e) {
       _setStatus(const InferenceStatus.ready());
-      return InferenceFailure(error: 'OpenAI error: ${e.message}');
+      return InferenceFailure(error: _messageFor(e));
     }
   }
 
@@ -175,27 +155,27 @@ class OpenAiInferenceEngine implements InferenceEngine {
       if (buffer.isEmpty) {
         throw const InferenceStreamException('OpenAI returned empty response');
       }
-    } on AuthenticationException {
-      throw const InferenceStreamException(
-        'OpenAI key missing or rejected. Open Settings to update.',
-      );
-    } on RateLimitException {
-      throw const InferenceStreamException(
-        'OpenAI rate limit reached. Try again shortly.',
-      );
-    } on RequestTimeoutException {
-      throw const InferenceStreamException(
-        'OpenAI request timed out. Check your connection.',
-      );
-    } on ConnectionException {
-      throw const InferenceStreamException(
-        'Network error reaching OpenAI. Check your connection.',
-      );
     } on OpenAIException catch (e) {
-      throw InferenceStreamException('OpenAI error: ${e.message}');
+      throw InferenceStreamException(_messageFor(e));
     } finally {
       _setStatus(const InferenceStatus.ready());
     }
+  }
+
+  /// Maps an OpenAI SDK exception to a user-facing message. Shared by [generate]
+  /// and [generateStream] so the two paths cannot drift. The specific subtypes
+  /// are matched before the generic [OpenAIException] fallback.
+  String _messageFor(OpenAIException e) {
+    return switch (e) {
+      AuthenticationException() =>
+        'OpenAI key missing or rejected. Open Settings to update.',
+      RateLimitException() => 'OpenAI rate limit reached. Try again shortly.',
+      RequestTimeoutException() =>
+        'OpenAI request timed out. Check your connection.',
+      ConnectionException() =>
+        'Network error reaching OpenAI. Check your connection.',
+      _ => 'OpenAI error: ${e.message}',
+    };
   }
 
   OpenAIClient _clientFor(String key) {

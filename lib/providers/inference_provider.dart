@@ -55,9 +55,13 @@ final inferenceEngineProvider =
 
 /// Provider for the structured inference engine (TutorResponse).
 ///
-/// Composes the raw engine with the tutor response parser.
-/// ConversationController depends on this, not on inferenceEngineProvider.
-/// Returns null when the engine is not yet initialized.
+/// Composes the raw engine with the tutor response parser. Returns null when
+/// the engine is not yet initialized.
+///
+/// Orphaned but kept: `ConversationController` now drives the streaming path
+/// ([structuredStreamEngineProvider]) for the live turn. This one-shot provider
+/// is valid and stays available for non-streaming callers (e.g. a future
+/// batch/regenerate path); nothing watches it today.
 final structuredInferenceEngineProvider =
     Provider<StructuredInferenceEngine<TutorResponse>?>((ref) {
   final engine = ref.watch(inferenceEngineProvider);
