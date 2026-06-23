@@ -328,10 +328,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
       child: SafeArea(
         top: false,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: TextField(
                 controller: _textController,
+                minLines: 1,
+                maxLines: 5,
+                keyboardType: TextInputType.multiline,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(
                   hintText: 'Type in Portuguese...',
                   border: OutlineInputBorder(),
