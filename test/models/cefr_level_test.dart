@@ -14,6 +14,12 @@ void main() {
     }
   });
 
+  test('guidance is non-empty for every level', () {
+    for (final level in CefrLevel.values) {
+      expect(level.guidance, isNotEmpty);
+    }
+  });
+
   group('CefrLevelX.fromString', () {
     test('parses the enum name (lowercase)', () {
       expect(CefrLevelX.fromString('a1'), CefrLevel.a1);

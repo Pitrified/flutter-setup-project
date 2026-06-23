@@ -26,8 +26,8 @@ Future<CefrLevel?> showCefrPickerSheet(
           ),
           for (final level in CefrLevel.values)
             ListTile(
-              title: Text(level.displayName),
-              subtitle: Text(level.description),
+              title: Text('${level.displayName} - ${level.description}'),
+              subtitle: Text(level.guidance),
               trailing: level == current
                   ? const Icon(Icons.check)
                   : null,

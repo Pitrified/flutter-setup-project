@@ -99,23 +99,35 @@ class _CefrDropdown extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = ref.watch(defaultCefrLevelProvider);
-    return DropdownButtonFormField<CefrLevel>(
-      initialValue: current,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        labelText: 'Default level',
-      ),
-      items: [
-        for (final level in CefrLevel.values)
-          DropdownMenuItem<CefrLevel>(
-            value: level,
-            child: Text('${level.displayName} - ${level.description}'),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<CefrLevel>(
+          initialValue: current,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Default level',
           ),
+          items: [
+            for (final level in CefrLevel.values)
+              DropdownMenuItem<CefrLevel>(
+                value: level,
+                child: Text('${level.displayName} - ${level.description}'),
+              ),
+          ],
+          onChanged: (level) async {
+            if (level == null) return;
+            await ref.read(defaultCefrLevelProvider.notifier).select(level);
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+          child: Text(
+            current.guidance,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
       ],
-      onChanged: (level) async {
-        if (level == null) return;
-        await ref.read(defaultCefrLevelProvider.notifier).select(level);
-      },
     );
   }
 }
