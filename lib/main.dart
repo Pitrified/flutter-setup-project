@@ -33,9 +33,11 @@ void main() async {
     await settings.setEngineKind(EngineKind.fake);
   }
 
-  if (settings.engineKind() == EngineKind.gemma) {
-    await FlutterGemma.initialize();
-  }
+  // flutter_gemma requires initialize() before any plugin call, including the
+  // model-installed check that runs when the on-device engine is selected.
+  // Always initialize so switching to Gemma at runtime works regardless of
+  // which engine the app booted with.
+  await FlutterGemma.initialize();
 
   final repo = ConversationRepository();
   await repo.initialize();

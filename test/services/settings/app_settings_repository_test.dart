@@ -22,8 +22,8 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  test('engineKind defaults to gemma when nothing is stored', () {
-    expect(repo.engineKind(), EngineKind.gemma);
+  test('engineKind defaults to openai when nothing is stored', () {
+    expect(repo.engineKind(), EngineKind.openai);
   });
 
   test('setEngineKind round-trips through the box', () async {

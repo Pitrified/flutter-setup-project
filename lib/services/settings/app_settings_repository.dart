@@ -30,7 +30,7 @@ class AppSettingsRepository {
   static const String keyDefaultTopic = 'default_topic';
 
   /// Fallback when no value is stored or the stored value is unknown.
-  static const EngineKind defaultEngineKind = EngineKind.gemma;
+  static const EngineKind defaultEngineKind = EngineKind.openai;
 
   /// Fallback OpenAI model id used by 03.2.
   static const String defaultOpenaiModel = 'gpt-4o-mini';
