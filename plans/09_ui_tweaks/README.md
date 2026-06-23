@@ -33,3 +33,7 @@ make the input higher when wrapping, max 5 lines
 ## 06 new conversation button
 
 lol there is no new conversation button
+
+## 07 model in home screen
+
+is wrong if openai is selected, should show the model name not qwen

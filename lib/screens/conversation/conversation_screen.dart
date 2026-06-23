@@ -31,14 +31,21 @@ class ConversationScreen extends ConsumerStatefulWidget {
       _ConversationScreenState();
 }
 
-class _ConversationScreenState extends ConsumerState<ConversationScreen> {
+class _ConversationScreenState extends ConsumerState<ConversationScreen>
+    with WidgetsBindingObserver {
+  static const _bottomThreshold = 80.0;
+
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
   bool _isSending = false;
+  bool _isPinnedToBottom = true;
+  int _lastMessageCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addObserver(this);
     _initConversation();
   }
 
@@ -57,7 +64,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
     final text = _textController.text.trim();
     if (text.isEmpty || _isSending) return;
 
-    setState(() => _isSending = true);
+    setState(() {
+      _isSending = true;
+      // Sending is an explicit intent to follow the reply, so re-pin even if
+      // the user had scrolled up.
+      _isPinnedToBottom = true;
+    });
     _textController.clear();
 
     final controller = ref.read(conversationControllerProvider);
@@ -65,6 +77,23 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
 
     setState(() => _isSending = false);
     _scrollToBottom();
+  }
+
+  /// Recompute whether the user is following the bottom of the list. A small
+  /// threshold keeps the user pinned through minor layout jitter (e.g. the
+  /// streaming overlay growing).
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    final atBottom = pos.maxScrollExtent - pos.pixels <= _bottomThreshold;
+    if (atBottom != _isPinnedToBottom) {
+      setState(() => _isPinnedToBottom = atBottom);
+    }
+  }
+
+  /// Follow new content only while the user is pinned to the bottom.
+  void _autoScrollIfPinned() {
+    if (_isPinnedToBottom) _scrollToBottom();
   }
 
   void _scrollToBottom() {
@@ -80,7 +109,15 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   }
 
   @override
+  void didChangeMetrics() {
+    // The soft keyboard opening grows the bottom inset; follow it if pinned.
+    _autoScrollIfPinned();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _scrollController.removeListener(_onScroll);
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -108,16 +145,27 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<Conversation?>(
-              stream: controller.conversationStream,
-              initialData: controller.currentConversation,
-              builder: (context, snapshot) {
-                final conversation = snapshot.data;
-                if (conversation == null) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                return _buildMessageList(controller, conversation.messages);
-              },
+            child: Stack(
+              children: [
+                StreamBuilder<Conversation?>(
+                  stream: controller.conversationStream,
+                  initialData: controller.currentConversation,
+                  builder: (context, snapshot) {
+                    final conversation = snapshot.data;
+                    if (conversation == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final messages = conversation.messages;
+                    // Follow a committed turn (message count grew) if pinned.
+                    if (messages.length != _lastMessageCount) {
+                      _lastMessageCount = messages.length;
+                      _autoScrollIfPinned();
+                    }
+                    return _buildMessageList(controller, messages);
+                  },
+                ),
+                _buildScrollToBottomButton(),
+              ],
             ),
           ),
           _buildInputBar(),
@@ -177,8 +225,34 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
         final hasContent = (view.conversationContent ?? '').isNotEmpty ||
             view.corrections.isNotEmpty;
         if (!hasContent) return const TypingIndicator();
+        // Each delta grows the overlay; follow it down if pinned.
+        _autoScrollIfPinned();
         return StreamingTutorEntry(delta: delta);
       },
+    );
+  }
+
+  /// Floating button shown only when the user has scrolled up; tapping it
+  /// re-pins and smooth-scrolls to the newest content.
+  Widget _buildScrollToBottomButton() {
+    return Positioned(
+      right: 16,
+      bottom: 16,
+      child: AnimatedOpacity(
+        opacity: _isPinnedToBottom ? 0 : 1,
+        duration: const Duration(milliseconds: 150),
+        child: IgnorePointer(
+          ignoring: _isPinnedToBottom,
+          child: FloatingActionButton.small(
+            heroTag: null,
+            onPressed: () {
+              setState(() => _isPinnedToBottom = true);
+              _scrollToBottom();
+            },
+            child: const Icon(Icons.keyboard_arrow_down),
+          ),
+        ),
+      ),
     );
   }
 
