@@ -37,3 +37,15 @@ lol there is no new conversation button
 ## 07 model in home screen
 
 is wrong if openai is selected, should show the model name not qwen
+
+## 08 long corrections
+
+while they stream, a long correction is not wrapped
+
+then when the correction is finished, it is wrapped well
+
+## 09 cefr picker overflow
+
+the cefr picker descriptions are too long and overflow the screen
+just make them short
+
