@@ -38,6 +38,10 @@ lol there is no new conversation button
 
 is wrong if openai is selected, should show the model name not qwen
 
+make openai default
+
+in the settings page, only show the openai related settings if openai is selected, and only show the qwen related settings if qwen is selected, and so on for the other models
+
 ## 08 long corrections
 
 while they stream, a long correction is not wrapped

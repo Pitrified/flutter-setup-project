@@ -1,4 +1,4 @@
-# 08 - Split CEFR text into guidance + description
+# 09 - Split CEFR text into guidance + description
 
 Part of phase 09 (UI tweaks and small functionality). Restores the detailed
 CEFR copy that was trimmed away, but splits it across two fields with distinct
