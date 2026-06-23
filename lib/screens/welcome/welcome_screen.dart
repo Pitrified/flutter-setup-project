@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app.dart';
+import '../../config/model_config.dart';
 import '../../providers/app_provider.dart';
+import '../../providers/settings_provider.dart';
 import '../../services/app/app_controller.dart';
+import '../../services/inference/engine_kind.dart';
 
 /// Welcome screen - app entry point.
 ///
@@ -117,12 +120,24 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
   Widget _buildStatusWidget(BuildContext context, AppState state) {
     return switch (state) {
       AppLoading() => const Text('Loading...'),
-      AppReady(:final modelInfo) => Text(
-          'Model: ${modelInfo.name}',
+      AppReady() => Text(
+          'Model: ${_modelLabel()}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       AppNeedsModel() => const Text('Model required'),
       AppError() => const SizedBox.shrink(),
+    };
+  }
+
+  /// Label for the active engine's model, derived from the selected engine
+  /// kind. Reading it here (rather than from `AppReady.modelInfo`) keeps it
+  /// reactive to an OpenAI-model change, which does not re-init the controller.
+  String _modelLabel() {
+    final kind = ref.watch(selectedEngineKindProvider);
+    return switch (kind) {
+      EngineKind.openai => ref.watch(openaiModelProvider),
+      EngineKind.gemma => ModelConfig.defaultModelFileName,
+      EngineKind.fake => EngineKind.fake.displayName,
     };
   }
 }

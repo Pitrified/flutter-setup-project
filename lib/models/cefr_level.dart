@@ -21,17 +21,17 @@ extension CefrLevelX on CefrLevel {
   String get description {
     switch (this) {
       case CefrLevel.a1:
-        return 'Beginner. Basic phrases, introductions, simple needs.';
+        return 'Beginner.';
       case CefrLevel.a2:
-        return 'Elementary. Familiar topics, short routine exchanges.';
+        return 'Elementary.';
       case CefrLevel.b1:
-        return 'Intermediate. Travel situations, opinions on familiar topics.';
+        return 'Intermediate.';
       case CefrLevel.b2:
-        return 'Upper-intermediate. Detailed discussion on a wide range of topics.';
+        return 'Upper-intermediate.';
       case CefrLevel.c1:
-        return 'Advanced. Fluent, flexible, nuanced expression.';
+        return 'Advanced.';
       case CefrLevel.c2:
-        return 'Mastery. Effortless, precise, near-native command.';
+        return 'Mastery.';
     }
   }
 

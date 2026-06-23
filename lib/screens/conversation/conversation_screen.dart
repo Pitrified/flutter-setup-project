@@ -62,6 +62,22 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     }
   }
 
+  /// Start a brand-new conversation seeded with the current defaults, clearing
+  /// the message list and input. The previous conversation stays persisted.
+  Future<void> _newConversation() async {
+    final controller = ref.read(conversationControllerProvider);
+    if (controller == null) return;
+    await controller.startConversation(
+      cefrLevel: ref.read(defaultCefrLevelProvider),
+      topic: ref.read(defaultTopicProvider),
+    );
+    _textController.clear();
+    setState(() {
+      _isPinnedToBottom = true;
+      _lastMessageCount = 0;
+    });
+  }
+
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty || _isSending) return;
@@ -191,6 +207,11 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
         actions: [
           _TopicAction(controller: controller),
           _CefrAction(controller: controller),
+          IconButton(
+            tooltip: 'New conversation',
+            icon: const Icon(Icons.add_comment_outlined),
+            onPressed: _isSending ? null : _newConversation,
+          ),
         ],
       ),
       drawer: const _AppDrawer(),
