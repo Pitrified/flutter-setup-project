@@ -9,8 +9,11 @@ import '../../../models/conversation_message.dart';
 /// [ConversationMessage.tutorResponse] toggle a smaller, dimmer translation
 /// line under the original reply when tapped.
 class MessageBubble extends StatefulWidget {
-  const MessageBubble({super.key, required ConversationMessage this.message})
-      : streamingContent = null,
+  const MessageBubble({
+    super.key,
+    required ConversationMessage this.message,
+    this.onTranslationRevealed,
+  })  : streamingContent = null,
         streamingTranslation = null;
 
   /// A live tutor bubble bound to in-flight partial data (phase 6). [content]
@@ -21,7 +24,8 @@ class MessageBubble extends StatefulWidget {
     String? translation,
   })  : message = null,
         streamingContent = content,
-        streamingTranslation = translation;
+        streamingTranslation = translation,
+        onTranslationRevealed = null;
 
   /// The committed message, or null for a streaming bubble.
   final ConversationMessage? message;
@@ -31,6 +35,10 @@ class MessageBubble extends StatefulWidget {
 
   /// Partial translation for a streaming bubble (null until it arrives).
   final String? streamingTranslation;
+
+  /// Called when a tap expands the translation (not when it collapses). Lets
+  /// the screen follow the grown bubble to the bottom if the user is pinned.
+  final VoidCallback? onTranslationRevealed;
 
   @override
   State<MessageBubble> createState() => _MessageBubbleState();
@@ -103,7 +111,10 @@ class _MessageBubbleState extends State<MessageBubble> {
       child: canToggle
           ? GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => setState(() => _showTranslation = !_showTranslation),
+              onTap: () {
+                setState(() => _showTranslation = !_showTranslation);
+                if (_showTranslation) widget.onTranslationRevealed?.call();
+              },
               child: bubble,
             )
           : bubble,

@@ -181,6 +181,25 @@ void main() {
     expect(pos.pixels, moveTo(pos.maxScrollExtent));
     expect(buttonOpacity(tester), 0);
   });
+
+  testWidgets('revealing the last translation follows the bottom when pinned',
+      (tester) async {
+    await pumpScreen(tester);
+
+    // Go to the bottom so the last tutor bubble is on screen and pinned.
+    await tester.drag(find.byType(ListView), const Offset(0, -2000));
+    await settle(tester);
+    final beforeMax = scrollPosition(tester).maxScrollExtent;
+
+    // Tap the last tutor bubble to reveal its translation; the bubble grows.
+    await tester.tap(find.text('Ola!').last);
+    await settle(tester);
+
+    final pos = scrollPosition(tester);
+    expect(find.text('Hello!'), findsOneWidget); // translation now visible
+    expect(pos.maxScrollExtent, greaterThan(beforeMax)); // the bubble grew
+    expect(pos.pixels, moveTo(pos.maxScrollExtent)); // and we followed it down
+  });
 }
 
 /// Matcher: equal within a 1px tolerance (animations can land a hair short).

@@ -210,3 +210,35 @@ feat(conversation): auto-scroll to bottom with scroll-to-bottom button
 when pressing the down arrow button, scrolls to last user message, not the last tutor message
 
 when pressing the tutor message to show the translation, does not scroll
+
+### Resolution
+
+Both fixed in `conversation_screen.dart` (+ a callback on `MessageBubble`).
+
+1. Button lands short. `ListView.builder` only estimates `maxScrollExtent` for
+   items still below the viewport, so a long `animateTo(maxScrollExtent)` from
+   far up targets a stale (too-small) extent and stops about one bubble short -
+   on the last user message instead of the taller tutor reply + correction card.
+   Fix: `_scrollToBottom` animates once, then snaps (`jumpTo`) to the
+   now-measured extent to close the residual gap - bounded, no re-animation.
+
+   First cut here used a recursive `_animateToBottom` that re-animated until the
+   gap closed; on device that could hang (the gap never settling to <=1px under
+   keyboard/SafeArea insets, plus the per-delta autoscroll during streaming,
+   spiralled into a runaway loop and a native crash). Replaced with the bounded
+   animate-then-snap above, and the pinned-follow path (`_autoScrollIfPinned`,
+   used for streaming deltas / committed turns / keyboard) now does a single
+   guarded `jumpTo` per frame rather than stacking animations.
+
+2. Translation reveal does not follow. The toggle is local state inside
+   `MessageBubble`, so the screen never knew. Added `onTranslationRevealed`,
+   fired only when expanding (not collapsing), wired for the last bubble only
+   (mid-list reveals still do not scroll, per the non-goal). It calls
+   `_followGrowthIfPinned`, a frame-by-frame re-pin over ~12 frames: the
+   `AnimatedSize` grows the bubble ~one line over 150ms, and a single animation
+   can't target an extent that does not exist yet, so we stick to the bottom
+   each frame for a short window (reads as a smooth reveal for the small change).
+
+Covered by a new test, `revealing the last translation follows the bottom when
+pinned`, in `conversation_scroll_test.dart` (7 tests total; full suite 140
+passing, `flutter analyze` clean).

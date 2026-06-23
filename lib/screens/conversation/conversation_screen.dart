@@ -40,6 +40,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
   bool _isSending = false;
   bool _isPinnedToBottom = true;
   int _lastMessageCount = 0;
+  int _bottomFollowFrames = 0;
+  bool _stickScheduled = false;
 
   @override
   void initState() {
@@ -91,21 +93,71 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     }
   }
 
-  /// Follow new content only while the user is pinned to the bottom.
+  /// Follow new content only while pinned. Incremental growth (a streaming
+  /// reply, a committed turn, the keyboard inset) is best tracked by snapping to
+  /// the bottom: the growth per frame is small, so a `jumpTo` reads as a smooth
+  /// stick - and unlike `animateTo` it cannot pile up into overlapping
+  /// animations when called on every delta/rebuild. The `_stickScheduled` guard
+  /// keeps at most one snap pending per frame.
   void _autoScrollIfPinned() {
-    if (_isPinnedToBottom) _scrollToBottom();
-  }
-
-  void _scrollToBottom() {
+    if (!_isPinnedToBottom || _stickScheduled) return;
+    _stickScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-        );
+      _stickScheduled = false;
+      if (!_isPinnedToBottom || !_scrollController.hasClients) return;
+      final pos = _scrollController.position;
+      if (pos.maxScrollExtent - pos.pixels > 1) {
+        _scrollController.jumpTo(pos.maxScrollExtent);
       }
     });
+  }
+
+  /// Smoothly scroll to the bottom for a discrete user intent (send, button).
+  /// `ListView.builder` only estimates `maxScrollExtent` for off-screen items,
+  /// so a long animation from far up lands short (e.g. on the last user message
+  /// instead of the taller tutor reply). By the time the animation finishes the
+  /// real items are measured, so one snap closes the residual gap - bounded, no
+  /// re-animation loop.
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController
+          .animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          )
+          .then((_) {
+        if (!_scrollController.hasClients) return;
+        final pos = _scrollController.position;
+        if (pos.maxScrollExtent - pos.pixels > 1) {
+          _scrollController.jumpTo(pos.maxScrollExtent);
+        }
+      });
+    });
+  }
+
+  /// Re-pin to the bottom across a short window of frames so *gradual* growth at
+  /// the bottom stays in view - specifically a translation expanding via
+  /// [AnimatedSize] on the last bubble. [_scrollToBottom]'s single animation
+  /// targets only the current frame's extent, so it misses growth that lands
+  /// over the next ~150ms; sticking frame-by-frame instead reads as a smooth
+  /// reveal for the small (~one line) change.
+  void _followGrowthIfPinned() {
+    if (!_isPinnedToBottom) return;
+    _bottomFollowFrames = 12;
+    WidgetsBinding.instance.addPostFrameCallback(_followBottomFrame);
+  }
+
+  void _followBottomFrame(Duration _) {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+    if (pos.maxScrollExtent - pos.pixels > 1) {
+      _scrollController.jumpTo(pos.maxScrollExtent);
+    }
+    if (_bottomFollowFrames-- > 0) {
+      WidgetsBinding.instance.addPostFrameCallback(_followBottomFrame);
+    }
   }
 
   @override
@@ -199,6 +251,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
         }
         final message = messages[index];
         final errors = message.tutorResponse?.correction.errors;
+        final isLast = index == messages.length - 1;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -206,7 +259,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
             // tutor reply (consistent with the live streaming order).
             if (errors != null && errors.isNotEmpty)
               CorrectionCard(corrections: errors),
-            MessageBubble(message: message),
+            MessageBubble(
+              message: message,
+              // Revealing the translation on the last bubble grows it below the
+              // fold; follow it down if the user is pinned.
+              onTranslationRevealed: isLast ? _followGrowthIfPinned : null,
+            ),
           ],
         );
       },
