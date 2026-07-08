@@ -55,7 +55,12 @@ Treat options 2 and 4 as follow-up phases gated on the open questions below.
 - Q1: Do we support armeabi-v7a at all? A 32-bit device running a local LLM is unrealistic;
   dropping it via abiFilters halves nothing for users (they download one ABI anyway)
   but shrinks the fat APK and CI artifacts.
+  ANS: drop it
 - Q2: Is x86_64 needed day-to-day? Only for PC emulators; the box is headless with no AVD yet.
+  ANS: keep it, we do have emulators (on other machines)
 - Q3: Are the vision / image-generator / embedding MediaPipe libs actually loaded by flutter_gemma
   for text inference, or safe to exclude (option 4)?
+  ANS: check
 - Q4: What is the acceptable download size target to replace the stale <30MB budget?
+  ANS: whatever, app needs to work
+
