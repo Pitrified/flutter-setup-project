@@ -14,7 +14,9 @@ Analysis and decisions in [`00_start.md`](00_start.md).
   in build.gradle.kts, NOT `ndk.abiFilters` (ignored for AAR libs + conflicts with --split-per-abi)
   and NOT `--target-platform` alone (only drops the engine lib, not plugin libs). Split builds must
   add `--target-platform android-arm64,android-x64` to avoid an empty v7a stub APK.
-- Phase 3 remains gated on Q3 (are the MediaPipe vision/embedding libs loaded for text inference).
+- Q3 investigated (2026-07-09): app is text-only (`InferenceModel`/qwen3/litertlm; no embedding/RAG/image-gen
+  API used in `lib/`). ~89 MB of arm64 libs (image-gen + RAG groups) are candidates to exclude - gated on
+  on-device runtime verification since a lib could load eagerly.
 
 ## Phases
 
@@ -22,7 +24,7 @@ Analysis and decisions in [`00_start.md`](00_start.md).
 | - | --------------------------------------- | -------------------------------------------------------- | ------ |
 | 1 | split-per-abi build, measure, docs       | [`01_split_per_abi.md`](01_split_per_abi.md)             | done |
 | 2 | restrict ABI set (drop armeabi-v7a)      | [`02_abi_set.md`](02_abi_set.md)                         | done |
-| 3 | trim unused MediaPipe libs               | [`03_trim_mediapipe_libs.md`](03_trim_mediapipe_libs.md) | draft  |
+| 3 | trim unused MediaPipe / RAG libs         | [`03_trim_mediapipe_libs.md`](03_trim_mediapipe_libs.md) | planned |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -48,3 +50,12 @@ Append-only. Newest at the bottom.
   android/app/build.gradle.kts. Fat APK 272.7->236.1 MB, AAB 230.9->195.4 MB, both now arm64+x86_64 only;
   splits drop the v7a stub when paired with --target-platform. Per-device download unchanged (arm64 64 MB).
   Updated docs/build-and-release.md (split command + size table). On-device runtime check deferred (headless).
+- 2026-07-09 : phase 2 committed (5395f41). Detailed phase 3 to `planned`: traced each arm64 .so to its
+  flutter_gemma Maven dep (tasks-genai=keep, tasks-vision-image-generator + localagents-rag=drop); confirmed
+  app never calls embedding/RAG/image-gen. Plan excludes 7 libs (~89 MB) via packaging jniLibs excludes,
+  gated on an on-device text-flow run (UnsatisfiedLinkError risk) that hands off to the user.
+- 2026-07-09 : phase 3 excludes APPLIED + committed (build-side only, status stays `in progress`).
+  7 libs stripped: arm64 split 160.4->70.8 MB, fat 236.1->146.5 MB, AAB 195.4->124.1 MB,
+  arm64 Play download 64->31 MB. x86_64 unchanged (never had them) - now the heavier ABI.
+  Updated docs table. Runtime verification NOT done (headless) - to be run on G7 per the checklist in
+  03_trim_mediapipe_libs.md; phase closes only after that passes.

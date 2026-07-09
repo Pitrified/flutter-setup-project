@@ -23,12 +23,27 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    // Drop 32-bit armeabi-v7a from all outputs (fat APK, AAB, splits). Unrealistic for
-    // on-device LLM; and neither --target-platform nor ndk.abiFilters removes the libs that
-    // flutter_gemma's AAR ships for v7a - packaging excludes does. See plans/12_abi_split/.
+    // Trim native libs we do not ship. See plans/12_abi_split/.
+    // - armeabi-v7a: 32-bit, unrealistic for on-device LLM. Neither --target-platform nor
+    //   ndk.abiFilters removes flutter_gemma's AAR v7a libs; packaging excludes does.
+    // - image-gen + RAG/embedding libs: unused - the app is text-only (InferenceModel/qwen3/
+    //   litertlm, no embedding/RAG/image API). Verified against flutter_gemma 0.13.6; re-check
+    //   on plugin upgrade (a new version could load these eagerly or rename them).
+    //   NOTE: on-device runtime verification of the text flow is still PENDING (see phase 3 TODO).
     packaging {
         jniLibs {
-            excludes += "lib/armeabi-v7a/**"
+            excludes += listOf(
+                "lib/armeabi-v7a/**",
+                // image generation
+                "**/libmediapipe_tasks_vision_jni.so",
+                "**/libmediapipe_tasks_vision_image_generator_jni.so",
+                "**/libimagegenerator_gpu.so",
+                // RAG / embeddings
+                "**/libgemma_embedding_model_jni.so",
+                "**/libgecko_embedding_model_jni.so",
+                "**/libtext_chunker_jni.so",
+                "**/libsqlite_vector_store_jni.so",
+            )
         }
     }
 

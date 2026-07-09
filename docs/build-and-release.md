@@ -122,22 +122,22 @@ flutter build appbundle --release
 
 ## Size budget
 
-The app bundles `flutter_gemma`'s MediaPipe native libraries, so the old "<30MB APK" target is
-not reachable while those ship in the binary. The LLM model itself still downloads separately at
-runtime and is not counted below. Measured on 2026-07-09 (Flutter 3.44.5, debug-signed release,
-armeabi-v7a excluded):
+The app ships only the text-inference native libs from `flutter_gemma`; the image-generation and
+RAG/embedding libs are excluded in `android/app/build.gradle.kts` (unused - the app is text-only).
+The LLM model itself downloads separately at runtime and is not counted below.
+Measured on 2026-07-09 (Flutter 3.44.5, debug-signed release, armeabi-v7a + unused libs excluded):
 
 | Artifact | Size | Notes |
 |----------|------|-------|
-| Fat APK (`app-release.apk`) | 236 MB | arm64 + x86_64; avoid for distribution |
-| Split APK, arm64-v8a | 160 MB | on-disk; what a phone installs when sideloaded |
-| Split APK, x86_64 | 80 MB | emulator |
-| **Play Store download, arm64-v8a** | **64 MB** | compressed delivery from the AAB - the real user number |
+| Fat APK (`app-release.apk`) | 147 MB | arm64 + x86_64; avoid for distribution |
+| Split APK, arm64-v8a | 71 MB | on-disk; what a phone installs when sideloaded |
+| Split APK, x86_64 | 80 MB | emulator (now the heavier ABI - it never carried the trimmed libs) |
+| **Play Store download, arm64-v8a** | **31 MB** | compressed delivery from the AAB - the real user number |
 | Play Store download, x86_64 | 33 MB | |
 
 Play Store numbers come from `bundletool get-size total --dimensions=ABI` on `app-release.aab`.
-arm64 is heaviest because it alone bundles the Gemma/Gecko embedding and MediaPipe vision libs;
-trimming unused ones is tracked in `plans/12_abi_split/`.
+The lib exclusions (~89 MB off arm64) are tracked in `plans/12_abi_split/` and are pending
+on-device runtime verification of the text flow (an eagerly-loaded lib would crash at startup).
 
 ## Install on device
 
