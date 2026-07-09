@@ -23,6 +23,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    // Drop 32-bit armeabi-v7a from all outputs (fat APK, AAB, splits). Unrealistic for
+    // on-device LLM; and neither --target-platform nor ndk.abiFilters removes the libs that
+    // flutter_gemma's AAR ships for v7a - packaging excludes does. See plans/12_abi_split/.
+    packaging {
+        jniLibs {
+            excludes += "lib/armeabi-v7a/**"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.fala.app"
         minSdk = 26
