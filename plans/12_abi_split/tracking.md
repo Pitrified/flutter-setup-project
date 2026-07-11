@@ -15,8 +15,8 @@ Analysis and decisions in [`00_start.md`](00_start.md).
 | # | Phase                                   | Plan                                                     | Status |
 | - | --------------------------------------- | -------------------------------------------------------- | ------ |
 | 1 | split-per-abi build, measure, docs       | [`01_split_per_abi.md`](01_split_per_abi.md)             | done |
-| 2 | decide ABI set (drop armeabi-v7a?)       | [`02_abi_set.md`](02_abi_set.md)                         | draft  |
-| 3 | trim unused MediaPipe libs               | [`03_trim_mediapipe_libs.md`](03_trim_mediapipe_libs.md) | draft  |
+| 2 | decide ABI set (drop armeabi-v7a?)       | [`02_abi_set.md`](02_abi_set.md)                         | done   |
+| 3 | trim unused MediaPipe libs               | [`03_trim_mediapipe_libs.md`](03_trim_mediapipe_libs.md) | done   |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -29,6 +29,11 @@ Append-only. Newest at the bottom.
   drafted 3 phases, open questions Q1-Q4 pending user input
 - 2026-07-09 : detailed phase 1 to `planned` - concrete build/measure/docs steps; confirmed bundletool
   is not installed (plan fetches the jar, no sudo needed); no existing `--split`/`abiFilters` refs in docs
+- 2026-07-09 : phase 1 DONE. Built split APKs (arm64 160.4 / x86_64 79.5 / armeabi-v7a 40.3 MB) and AAB (221 MB).
+  bundletool 1.18.3 fetched to ~/android-sdk/bundletool.jar (the /latest/download/ URL served HTML - used the
+  versioned asset). Per-device Play download: arm64 64 MB, x86_64 33 MB, armeabi-v7a 21 MB. Updated
+  docs/build-and-release.md with a split-per-abi subsection and a measured size-budget table (dropped the stale
+  <30MB line). arm64 carries 14 .so libs vs 7 for x86_64 -> confirms phase 3 (trim vision/embedding libs) is the big win.
 - 2026-07-11 : rebuilt split APKs on g7 (arm64 153 / x86_64 76 / armeabi-v7a 38 MB on disk;
   flutter reports 160.4 / 79.5 / 40.3 MB uncompressed). Debug-signed (no key.properties on this box).
   Installed app-arm64-v8a-release.apk on the connected Pixel 7 Pro (versionCode 2001) and launched it.
@@ -46,8 +51,13 @@ Append-only. Newest at the bottom.
   libmediapipe_tasks_vision_image_generator_jni, libgemma_embedding_model_jni,
   libgecko_embedding_model_jni (~75-90 MB/ABI). Must still verify on-device after excluding, since
   a static initializer could dlopen one at plugin init.
-- 2026-07-09 : phase 1 DONE. Built split APKs (arm64 160.4 / x86_64 79.5 / armeabi-v7a 40.3 MB) and AAB (221 MB).
-  bundletool 1.18.3 fetched to ~/android-sdk/bundletool.jar (the /latest/download/ URL served HTML - used the
-  versioned asset). Per-device Play download: arm64 64 MB, x86_64 33 MB, armeabi-v7a 21 MB. Updated
-  docs/build-and-release.md with a split-per-abi subsection and a measured size-budget table (dropped the stale
-  <30MB line). arm64 carries 14 .so libs vs 7 for x86_64 -> confirms phase 3 (trim vision/embedding libs) is the big win.
+- 2026-07-11 : phases 2 + 3 DONE and verified on-device. Phase 2: ndk.abiFilters does NOT work with
+  the Flutter plugin (it appends to a set the plugin re-seeds with all ABIs, and conflicts with
+  --split-per-abi) - dropped armeabi-v7a via `--target-platform android-arm64,android-x64` instead,
+  documented in docs/build-and-release.md. Phase 3: added `packaging { jniLibs.excludes }` in
+  android/app/build.gradle.kts for 8 unused libs (the 5 above + libimagegenerator_gpu,
+  libtext_chunker_jni, libsqlite_vector_store_jni found in the full APK inventory); kept
+  liblitertlm_jni and libsqlite3. Results: fat APK 273 -> 103 MB, split arm64 160 -> 43 MB,
+  x86_64 80 -> 48 MB, no v7a APK. Reinstalled trimmed arm64 on the Pixel 7 Pro: LiteRT-LM engine
+  initialized and a structured-output generation streamed valid JSON with no UnsatisfiedLinkError -
+  the excludes are safe. Re-verify the exclude list on flutter_gemma upgrades.

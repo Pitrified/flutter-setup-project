@@ -1,8 +1,12 @@
 ---
-status: draft
+status: done
 ---
 
 # Phase 3 - trim unused MediaPipe libs
+
+> Done 2026-07-11: excluded 8 unused .so files via `packaging { jniLibs.excludes }`; the app runs
+> only the LiteRT-LM / qwen3 path. Verified on-device (structured-output generation, no
+> UnsatisfiedLinkError). Split arm64 APK 160 -> 43 MB. See tracking.md.
 
 ## Overview
 

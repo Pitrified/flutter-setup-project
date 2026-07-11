@@ -1,8 +1,12 @@
 ---
-status: draft
+status: done
 ---
 
 # Phase 2 - decide the supported ABI set
+
+> Done 2026-07-11: armeabi-v7a dropped. Note `ndk.abiFilters` (the mechanism this plan proposed)
+> conflicts with `--split-per-abi` and is overridden by the Flutter plugin; the working lever is
+> `flutter build ... --target-platform android-arm64,android-x64`. See tracking.md.
 
 ## Overview
 

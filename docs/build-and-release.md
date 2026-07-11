@@ -24,25 +24,36 @@ flutter run --release
 ### Smaller APKs (split per ABI)
 
 The default `flutter build apk` produces one fat APK carrying native libraries for every
-CPU architecture (arm64-v8a, armeabi-v7a, x86_64). For direct install it is faster to build
-one APK per architecture and hand a device only the one it runs:
+CPU architecture. We only ship arm64-v8a (phones) and x86_64 (emulators); 32-bit
+armeabi-v7a is dropped as unrealistic for an on-device LLM (`plans/12_abi_split/`).
+Restrict the ABI set with `--target-platform` and split per architecture so a device
+gets only the code it runs:
 
 ```bash
-flutter build apk --release --split-per-abi
+flutter build apk --release --split-per-abi --target-platform android-arm64,android-x64
 ```
+
+Note: the ABI set is controlled here, not in `build.gradle.kts` - `ndk.abiFilters`
+conflicts with `--split-per-abi` and is overridden by the Flutter plugin's target-platform
+handling, so the flag is the reliable lever. Pass the same `--target-platform` to a plain
+`flutter build apk` / `appbundle` to drop v7a from those outputs too.
 
 Outputs (install the arm64 one on any modern physical phone):
 
 | File | Use |
 |------|-----|
 | `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` | 64-bit ARM - all phones since ~2016 |
-| `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk` | 32-bit ARM - legacy devices |
 | `build/app/outputs/flutter-apk/app-x86_64-release.apk` | emulators on a PC |
 
 Flutter offsets each split's versionCode (adds 1000 / 2000 / ... per ABI). This is harmless for
 direct install and for AAB uploads; it only matters if you upload split APKs directly to Play.
 For the Play Store, upload the AAB instead (`flutter build appbundle`) - Google splits per ABI
 server-side and each user downloads only their architecture.
+
+The release build also excludes the flutter_gemma native libs this app never loads (MediaPipe,
+image-generator and RAG `.so` files) via `packaging { jniLibs.excludes }` in
+`android/app/build.gradle.kts`; the app runs only the LiteRT-LM / qwen3 path. See
+`plans/12_abi_split/` and re-verify that exclude list on flutter_gemma upgrades.
 
 ### Debugging a live app on device
 
@@ -119,23 +130,23 @@ flutter build appbundle --release
 
 ## Size budget
 
-The app bundles `flutter_gemma`'s MediaPipe native libraries, so the old "<30MB APK" target is
-not reachable while those ship in the binary. The LLM model itself still downloads separately at
-runtime and is not counted below. Measured on 2026-07-09 (Flutter 3.44.5, debug-signed release):
+`flutter_gemma` bundles native libs for engine paths this app never uses, so the old "<30MB APK"
+target is not reachable, but the release build now drops armeabi-v7a and excludes the unused
+MediaPipe / image-generator / RAG `.so` files (see `plans/12_abi_split/` and the split-per-ABI
+section above). The LLM model downloads separately at runtime and is not counted below.
+Measured on 2026-07-11 (Flutter 3.44.0, debug-signed release, on-device inference verified):
 
 | Artifact | Size | Notes |
 |----------|------|-------|
-| Fat APK (`app-release.apk`) | 273 MB | all three ABIs; avoid for distribution |
-| Split APK, arm64-v8a | 160 MB | on-disk; what a phone installs when sideloaded |
-| Split APK, x86_64 | 80 MB | emulator |
-| Split APK, armeabi-v7a | 40 MB | legacy 32-bit |
-| **Play Store download, arm64-v8a** | **64 MB** | compressed delivery from the AAB - the real user number |
-| Play Store download, x86_64 | 33 MB | |
-| Play Store download, armeabi-v7a | 21 MB | |
+| Fat APK (`app-release.apk`, arm64 + x86_64) | 103 MB | both shipped ABIs; avoid for distribution |
+| Split APK, arm64-v8a | 43 MB | on-disk; what a phone installs when sideloaded (was 160 MB) |
+| Split APK, x86_64 | 48 MB | emulator (was 80 MB) |
+| armeabi-v7a | dropped | 32-bit, unsupported (`--target-platform android-arm64,android-x64`) |
 
-Play Store numbers come from `bundletool get-size total --dimensions=ABI` on `app-release.aab`.
-arm64 is heaviest because it alone bundles the Gemma/Gecko embedding and MediaPipe vision libs;
-trimming unused ones is tracked in `plans/12_abi_split/`.
+The remaining native weight is `liblitertlm_jni.so` (~20 MB, the LiteRT-LM engine this app runs)
+plus `libflutter.so` and `libapp.so`. Build split APKs with
+`flutter build apk --release --split-per-abi --target-platform android-arm64,android-x64`; for
+per-device Play download sizes run `bundletool get-size total --dimensions=ABI` on `app-release.aab`.
 
 ## Install on device
 

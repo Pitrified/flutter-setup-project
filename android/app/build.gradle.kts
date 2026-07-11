@@ -42,6 +42,27 @@ android {
         }
     }
 
+    // Phase 3 (plans/12_abi_split): flutter_gemma 0.13.6 bundles native libs for engine
+    // paths this app never uses. It runs only the LiteRT-LM path (ModelType.qwen3 /
+    // ModelFileType.litertlm) with no embeddings/RAG and no MediaPipe .task/.bin models,
+    // so the MediaPipe, image-generator and RAG .so files are dead weight (~116 MB/ABI).
+    // Keep liblitertlm_jni.so (our engine) and libsqlite3.so (may have other consumers).
+    // Re-verify this list on flutter_gemma upgrades.
+    packaging {
+        jniLibs {
+            excludes += listOf(
+                "**/libllm_inference_engine_jni.so",              // MediaPipe LLM (tasks-genai), .task/.bin only
+                "**/libmediapipe_tasks_vision_jni.so",            // vision tasks
+                "**/libmediapipe_tasks_vision_image_generator_jni.so", // image generation
+                "**/libimagegenerator_gpu.so",                    // image generation GPU
+                "**/libgemma_embedding_model_jni.so",             // RAG embedding (localagents-rag)
+                "**/libgecko_embedding_model_jni.so",             // RAG embedding (localagents-rag)
+                "**/libtext_chunker_jni.so",                      // RAG text chunking
+                "**/libsqlite_vector_store_jni.so",               // RAG vector store
+            )
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = if (keystorePropertiesFile.exists()) {
