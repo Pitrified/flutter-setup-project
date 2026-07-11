@@ -60,7 +60,10 @@ Treat options 2 and 4 as follow-up phases gated on the open questions below.
   ANS: keep it, we do have emulators (on other machines)
 - Q3: Are the vision / image-generator / embedding MediaPipe libs actually loaded by flutter_gemma
   for text inference, or safe to exclude (option 4)?
-  ANS: check
+  ANS: no. The app uses only the LiteRT-LM path (ModelType.qwen3 / ModelFileType.litertlm,
+  Qwen3-0.6B.litertlm) with no embedding/RAG and no .task/.bin models. The MediaPipe libs
+  (tasks-genai, tasks-vision-image-generator) and RAG libs (localagents-rag) are unused ->
+  safe to exclude, pending an on-device re-test after excluding. See tracking.md 2026-07-11.
 - Q4: What is the acceptable download size target to replace the stale <30MB budget?
   ANS: whatever, app needs to work
 
