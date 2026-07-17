@@ -37,6 +37,9 @@ Note: the ABI set is controlled here, not in `build.gradle.kts` - `ndk.abiFilter
 conflicts with `--split-per-abi` and is overridden by the Flutter plugin's target-platform
 handling, so the flag is the reliable lever. Pass the same `--target-platform` to a plain
 `flutter build apk` / `appbundle` to drop v7a from those outputs too.
+As a guard, `build.gradle.kts` also excludes `lib/armeabi-v7a/**` via `packaging` jniLibs,
+so a build that forgets the flag still ships no v7a libs; the flag remains needed for split
+builds so Flutter does not emit an empty armeabi-v7a stub APK.
 
 Outputs (install the arm64 one on any modern physical phone):
 
@@ -147,6 +150,8 @@ The remaining native weight is `liblitertlm_jni.so` (~20 MB, the LiteRT-LM engin
 plus `libflutter.so` and `libapp.so`. Build split APKs with
 `flutter build apk --release --split-per-abi --target-platform android-arm64,android-x64`; for
 per-device Play download sizes run `bundletool get-size total --dimensions=ABI` on `app-release.aab`.
+An earlier bundletool measurement (2026-07-09, before `libllm_inference_engine_jni.so` was also
+excluded) gave a Play download of ~31 MB for arm64-v8a; the current build should come in below that.
 
 ## Install on device
 

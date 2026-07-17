@@ -51,6 +51,10 @@ android {
     packaging {
         jniLibs {
             excludes += listOf(
+                // 32-bit v7a guard: --target-platform (see docs/build-and-release.md) drops v7a
+                // from split builds, but a plain `flutter build apk`/`appbundle` without the flag
+                // would still package flutter_gemma's AAR v7a libs; this exclude makes that safe.
+                "lib/armeabi-v7a/**",
                 "**/libllm_inference_engine_jni.so",              // MediaPipe LLM (tasks-genai), .task/.bin only
                 "**/libmediapipe_tasks_vision_jni.so",            // vision tasks
                 "**/libmediapipe_tasks_vision_image_generator_jni.so", // image generation
