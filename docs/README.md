@@ -41,8 +41,8 @@ All documentation needed to go from zero to a working private alpha.
 
 ### Build and release
 
-- [build-and-release.md](build-and-release.md)
-- ~~build/google-play-alpha.md~~ - Not needed; covered by [build-and-release.md](build-and-release.md)
+- [build-and-release.md](build-and-release.md) - build, sign, size budget
+- [google-play-private-alpha.md](google-play-private-alpha.md) - Play Console manual steps for a private alpha
 
 ## Mental model
 

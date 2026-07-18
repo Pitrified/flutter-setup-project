@@ -10,6 +10,7 @@
         "libflutter",
         "liblitertlm",
         "libllm",
-        "libsqlite"
+        "libsqlite",
+        "Qwen"
     ]
 }
