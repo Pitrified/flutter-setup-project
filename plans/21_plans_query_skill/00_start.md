@@ -60,7 +60,11 @@ description: |
 
 Required on a folder's `00_start.md`. Optional on phase files, where the `## Overview` already says
 it. It exists so a listing can show one line per feature without opening anything, which is what makes
-the query output readable at all.
+the query output readable at all. Every existing folder gets one during normalisation (Q7); a listing
+with holes in it is not a listing.
+
+`priority` lives on `00_start.md` only (Q2). Phases inside a feature are already ordered, so a
+per-phase priority would be a second ordering to keep in sync with the first.
 
 ## What the data actually looks like (re-checked 2026-09-25)
 
@@ -118,7 +122,12 @@ the existing gates use.
 - No `NEW_ANS:` left in a folder whose phases are all done, since an unanswered question in finished
   work is either forgotten or finished.
 
-- Folder numbers are unique **across branches**, not just in the working tree. See below.
+- Folder numbers are unique **across branches**, not just in the working tree. See below. Behind a
+  flag (Q10), not on every run.
+- Nothing outside `plans/` cites a plan file or a decision id. See above for how it stays quiet.
+
+Two shapes are recognised rather than reported (Q9): a decimal side-document (`00.1_`, `04.1_`) belongs
+to its parent phase and carries no status, and a folder with no `00_start.md` is not a feature.
 
 Relative links are already covered by `scripts/gates/links.py` and are not re-checked here.
 
@@ -130,21 +139,25 @@ Given as a rule while this was being written, and it is the rule the repo is fur
 > decision, that decision should live in a docs file. Docs are the latest snapshot of the as-is of the
 > project.
 
-`flutter-setup-project` predates the rule and breaks it twenty times. The distinction that makes the
-count meaningful, because the two cases want opposite treatment:
+`flutter-setup-project` predates the rule and breaks it. The counts below are from a prototype grep
+run over `git ls-files`, not from reading, because the first two hand-counts were both wrong: they said
+fifteen and then thirteen, and they had missed a Gradle comment, a test file and the repo's own
+`README.md`. Three categories, wanting three different treatments:
 
-- **Citations of a specific decision, which have to go.** Thirteen of them, and they read the same way
-  everywhere: a `Qn`/`Dn` id from a plan file, quoted from code that the reader cannot then check
-  without opening a diary entry. `lib/models/target_language.dart:12`,
-  `lib/services/inference/openai_inference_engine.dart:24`,
-  `lib/services/conversation/conversation_controller.dart:41` and `:240`, `tool/mock_openai.py:15`,
+- **Citations of a decision, which have to go: fourteen, in eleven files.** A `Qn`/`Dn`/`TLn` id or a
+  folder path quoted as the authority for something the reader cannot then check without opening a
+  diary entry. `lib/models/target_language.dart:12`,
+  `lib/services/conversation/conversation_controller.dart:41` and `:240`,
+  `lib/services/inference/openai_inference_engine.dart:24`, `tool/mock_openai.py:15`,
   `scripts/e2e.sh:9`, `integration_test/app_test.dart:94` and `:160`,
-  `test/services/conversation_controller_test.dart`, `docs/prompt-engineering.md:161`, and
-  `docs/build-and-release.md` three times.
-- **Pointers to the plans tree as a place work is tracked, which are fine.** Seven, all in the
-  "how we work" files: `.github/copilot-instructions.md` twice, `docs/ai-development-playbook.md` four
-  times (naming `plans/<phase>/` as a template location), `docs/README.md` once. These cite no
-  decision; they say where the diary is kept, which is exactly what an instruction file is for.
+  `test/services/conversation_controller_test.dart:163`, `android/app/build.gradle.kts:45`,
+  `docs/prompt-engineering.md:161`, and `docs/build-and-release.md:28`, `:59`, `:138`.
+- **The repo's `README.md` phase table: eleven rows**, linking `plans/00_drafts/README.md` through
+  `plans/07_release/README.md` plus two start files. This is not a citation and not a stray comment: it
+  is the top-level README acting as the index of the diary. Its own case, Q16.
+- **Pointers naming where work is tracked: allowed.** `.github/copilot-instructions.md:32`,
+  `docs/README.md:65`, `docs/ai-development-playbook.md:102` and its `plans/<phase>/` template paths.
+  These cite no decision; they say where the diary is kept, which is what an instruction file is for.
 
 The rule the checker can enforce is therefore narrower than "no `plans/` outside `plans/`": a path to
 the tree or a folder is allowed, a reference to a *file* inside it, or to a `Qn`/`Dn`/`TLn` id, is not.
@@ -159,11 +172,38 @@ This lands on the feature in four places:
    citations. Once they are gone, a rename only has to fix links inside `plans/`, and the outside world
    has nothing to fix because it was never allowed to point there. The sweep survives as an assertion,
    not a rewrite.
-3. **Migration work that is not this feature's.** Removing the thirteen means finding each decision a
-   home in the topical doc that owns the subject, which is a docs change with product judgement in it,
-   not a mechanical pass. Scope question below.
-4. **The convention belongs in the skill.** `tracked-development` in dotfiles does not say this today;
-   it is where the rule should live, next to where this skill will.
+3. **A migration sub-phase, in this feature** (Q12). Removing the thirteen means finding each decision
+   a home in the topical doc that owns the subject: judgement, not a mechanical pass, and fourteen
+   citations across eleven files. It ships here rather than as a spin-off, because a check that lands
+   known-failing is the thing this folder exists to stop.
+4. **The convention belongs in the skill**, deferred (Q14). `tracked-development` does not say this
+   today: its `SKILL.md` has no mention of diary, as-is or snapshot, and nothing telling a reader not
+   to cite a plan from code. It is where the rule should live, next to where this skill will.
+
+### Can this be scripted without noise
+
+The objection to answer before this becomes a gate (Q13): a check that cries wolf gets bypassed with
+`--no-verify`, and then it protects nothing. Three things keep it quiet, and one makes it testable.
+
+- **It flags any reference to a numbered folder, not the word `plans`.** The first draft of this rule
+  flagged only a path ending in `.md`, and the measurement showed why that is too narrow: four of the
+  fourteen cite a decision by folder alone (`docs/build-and-release.md` three times,
+  `android/app/build.gradle.kts:45`). So the pattern is `plans/NN_something`, in any file outside
+  `plans/`. A bare `plans/` is a location and passes.
+- **Placeholder paths are skipped.** `plans/<phase>/10_audit.md` in the playbook is a template, and the
+  prototype flagged it. Any path containing `<` is a shape, not a reference.
+- **Tracking files are named, not cited.** `plans/00_tracking.md` in `docs/README.md` and
+  `.github/copilot-instructions.md` says where work is tracked, which is the one file reference that is
+  process rather than a decision. `tracking.md` and `00_tracking.md` are allowed by name, and that is
+  the whole allowance: no skip list, no per-file exceptions, because a list of exceptions is the thing
+  that rots.
+- **`plans/` is skipped entirely.** The diary cites itself constantly and should.
+
+What makes it more than a hope: the prototype has already run, and it already earned its keep by
+falsifying the count twice and finding one false positive of exactly the kind the objection predicted.
+The pass mark for shipping is the corrected set: fourteen citations in eleven named files, plus
+whatever Q16 decides about the README's eleven rows, and nothing else. If it cannot hit that with no
+false positive, it does not ship as a gate and the rule stays prose in the skill.
 
 ## Numbering across branches
 
@@ -238,9 +278,17 @@ with nothing installed.
 - **The rename is the one thing that writes**, and it writes only when a person has given it a target
   number. It is a separate script for that reason, not a `--fix` flag on the checker: a gate that can
   edit the files it is judging is the anti-pattern this convention is supposed to avoid.
+- **Both scripts live in the repo**, at `scripts/gates/`, and the skill calls whatever it finds in the
+  repo it is pointed at (Q8). The queries have to work anywhere; a gate lives in the repo it guards
+  because the hook and CI have to run it. A repo without the script gets told so rather than silently
+  passing.
+- **The roadmap view is a command**, with an `--out` flag that writes an untracked `.md` or `.html`
+  when there is a reason to attach one in chat (Q4). The generated file is a message, not a second copy
+  of the truth in the tree, so it gets a gitignore line.
 
-Once normalisation has run, the checker is cheap enough to join `scripts/check.sh` as a gate. It
-cannot join before, because it would fail on day one for reasons that are not anybody's mistake.
+Once normalisation has run, the checker joins `scripts/check.sh` (Q6), which `.githooks/pre-commit`
+already execs: a bad plan file is then found before the push rather than in a CI log. It cannot join
+before, because it would fail on day one for reasons that are not anybody's mistake.
 
 Prior art: klide has `scripts/gates/plan_status.py` (the tracking-table check) and `links.py`, which
 this repo already borrowed. `tracked-development` itself is the convention being parsed, and
@@ -248,6 +296,26 @@ this repo already borrowed. `tracked-development` itself is the convention being
 [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices),
 whose relevant points here are progressive disclosure, matching freedom to fragility, and preferring a
 script to generated code for anything deterministic.
+
+## The work this implies
+
+Not phases yet, and no `tracking.md` until they are agreed. What the answers add up to, in the order
+that keeps each step verifiable:
+
+- **The parser plus the query command**, written against the folders as they are now, which is the only
+  way to know what the parser has to recognise. Its own output is the to-do list for the next step.
+- **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): frontmatter on the eleven
+  start files without it, `00_intro.md` and `00_tracking.md` renamed, `00_start.md` and `tracking.md`
+  where they are missing, descriptions backfilled.
+- **The checker**, measured against the normalised tree, then wired into `scripts/check.sh`.
+- **Rehoming the thirteen citations** into the topical docs that own them (Q12, Q15), which arms the
+  no-citation check.
+- **The cross-branch scan and the rename script**, which are the folder-creation workflow rather than
+  the gate.
+- **The skill itself**, last, because a `SKILL.md` written before the scripts exist documents a guess.
+
+Two items are deliberately outside: writing the diary rule into `tracked-development` (Q14, deferred),
+and moving this skill to dotfiles (Q3, after it has been used here).
 
 ## Open questions
 
@@ -260,15 +328,17 @@ script to generated code for anything deterministic.
 - Q2: does the priority live only in `00_start.md`, or on each phase file too?
   Recommended: folder level only. Priority is about which feature to pick up next; phases inside a
   feature are already ordered.
-  NEW_ANS:
+  ANS: `00_start.md` only.
 - Q3: does this ship as a repo script, or straight into dotfiles as a skill?
   Recommended: build it here where the data is, move it to dotfiles once its queries survive a week of
   use. A skill that has never run against real folders is a guess.
-  NEW_ANS:
+  ANS: here first.
 - Q4: should it also write the roadmap view to a file, or stay a command?
   Recommended: stay a command. A generated file in the repo is a second copy of the truth, and it goes
   stale exactly like the hand-maintained index it replaces.
-  NEW_ANS:
+  ANS: stay a command, and it can also write a generated `.md`/`.html`, untracked, for attaching in
+  chat when asked. So an `--out` flag plus a gitignore entry, not a file in the tree: the artifact is a
+  message, and the tree keeps one copy of the truth.
 
 ### Second batch (2026-09-25)
 
@@ -278,16 +348,18 @@ script to generated code for anything deterministic.
   b. Folder 10 onward, with 00-09 declared pre-convention and skipped by name.
   Recommended: a, because "skipped by name" is a list someone has to maintain, and adding three lines
   of frontmatter to a finished folder costs less than the exception does.
-  NEW_ANS:
+  ANS: a. Every folder, so the checker runs clean over `plans/`.
 - Q6: does the checker become a gate in `scripts/check.sh`?
   Recommended: yes, after normalisation, in the same feature. A checker that has to be remembered is
   prose with extra steps.
-  NEW_ANS:
+  ANS: yes. Side note that settles where: it runs in the pre-commit hook, so a bad plan file is found
+  before the push rather than in CI. `.githooks/pre-commit` already execs `scripts/check.sh`, so adding
+  the gate there does exactly this with no second wiring.
 - Q7: does `description` get backfilled for every existing folder during normalisation, or only for
   new ones?
   Recommended: backfill all of them. The whole point is a listing with one line per feature, and a
   listing with holes in it is not one.
-  NEW_ANS:
+  ANS: yes, backfill all of them.
 
 ### Third batch, raised while brainstorming the branch work (2026-09-25)
 
@@ -303,7 +375,7 @@ script to generated code for anything deterministic.
   live in the repo they guard because CI has to run them. The skill then holds prose plus a documented
   contract for the script's arguments and output, and a repo without the script gets told so rather
   than silently skipped. c trades one duplicated file for a version-skew bug nobody will look for.
-  NEW_ANS:
+  ANS: b. Canonical copy in the repo at `scripts/gates/`; the skill calls what it finds in the repo it is pointed at.
 - Q9: what happens to the decimal side-documents (`00.1_`, `04.1_`) and the three non-feature folders
   (`00_drafts`, `01_plan_polishing`, `99_notes`)?
   a. Recognise both in the parser: a decimal file is a side-document of its parent phase and carries
@@ -314,7 +386,8 @@ script to generated code for anything deterministic.
   phase it belongs to, and the three folders are genuinely not features. Recognising a real pattern is
   not the same as tolerating a mess, which is what Q1 ruled out. b is a large rewrite of finished
   history for no query anyone wants.
-  NEW_ANS:
+  ANS: it is a valid convention, so the parser recognises it: a decimal file is a side-document of its
+  parent phase and carries no status, and a folder with no `00_start.md` is not a feature.
 - Q10: does the cross-branch scan run in the checker by default, or only on request?
   a. Always, as part of the check.
   b. Only under a flag, and always in the rename workflow.
@@ -322,14 +395,15 @@ script to generated code for anything deterministic.
   nobody's business during a `check.sh` run, and a gate that fails because of a folder on someone
   else's unmerged branch is a gate that gets skipped. The collision matters when a folder is being
   created, which is exactly when the skill is in use.
-  NEW_ANS:
+  ANS: b. Behind a flag, and always in the rename workflow.
 - Q11: what does the rename script rewrite? Narrowed after the diary rule above: it cannot be
   "everything that points at the folder", because outside `plans/` nothing may.
   Recommended: rewrite `../NN_name/` links between plan folders and nothing else, print a diff
   summary, and refuse to run while a citation from outside `plans/` still exists. Half a rename is the
   failure mode worth scripting away; a rename that edits Dart comments is the rule being broken by the
   tool meant to enforce it.
-  NEW_ANS:
+  ANS: as recommended. `../NN_name/` links between plan folders and nothing else, a printed diff
+  summary, and a refusal to run while a citation from outside `plans/` exists.
 
 ### Fourth batch, raised by the diary rule (2026-09-25)
 
@@ -341,19 +415,26 @@ script to generated code for anything deterministic.
   until the spin-off lands. The two jobs share nothing but a grep: one is renaming files nobody reads,
   the other is deciding where "the base URL is a build-time define, not a Settings field" belongs in
   `docs/`. Bundling them makes this folder the thing that rewrites nine source files.
-  NEW_ANS:
+  ANS: a, overriding the recommendation. It is a sub-phase of this feature, not a spin-off. The count
+  is fourteen in eleven files, the destinations are decided by Q15, and a check that ships known-failing is
+  the thing this folder exists to stop.
 - Q13: does the no-citation check go in `scripts/check.sh` as a gate, and if so, before or after the
   thirteen are removed?
   Recommended: same answer as Q6 and the same reason. It is a gate whose value is stopping the
   fourteenth, so it wants to be in `check.sh`, and it cannot go in while it fails. If Q12 goes to a
   spin-off, this check ships red-but-unwired and is armed by that spin-off's last commit.
-  NEW_ANS:
+  ANS: yes, subject to a measurement rather than a hope, because the objection is the right one: a
+  noisy gate gets bypassed with `--no-verify` and then protects nothing. See "Can this be scripted without
+  noise" above. The ground truth is fourteen, measured rather than counted by hand, so the check is
+  falsifiable before it ships.
 - Q14: does the rule get written into `tracked-development` in dotfiles now, or when this skill moves
   there?
   Recommended: now, as a few lines in that skill, because it is a convention that applies to every
   repo using the skill and the cost is a paragraph. It also stops the next feature folder in this repo
   from adding a fourteenth citation while Q12 is still open. Separate repo, separate commit.
-  NEW_ANS:
+  ANS: correct, it is not in `tracked-development` today: that `SKILL.md` has no mention of diary,
+  as-is or snapshot, and nothing telling a reader not to cite a plan from code. Deferred to the skill move
+  rather than done now.
 - Q15: what is the destination for a rehomed decision, once Q12 is settled?
   a. The topical doc that owns the subject (`docs/build-and-release.md` for the ABI exclusions,
      `docs/getting-started.md` for the base-URL override, `docs/prompt-engineering.md` for the prompt
@@ -362,4 +443,29 @@ script to generated code for anything deterministic.
   Recommended: a. b is the plans diary copied into `docs/` under a different name, and it would go
   stale the same way, whereas the topical docs are already the as-is snapshot and are what a reader
   opens. Where no topical doc exists, that is a missing doc rather than an argument for an index.
+  ANS: a. Docs are a semantic grouping of related topics, and that grouping is where a decision
+  belongs. A topic with no doc yet gets one as ordinary docs maintenance, not as an exception.
+
+### Fifth batch, raised by the prototype grep (2026-09-25)
+
+- Q16: the repo's top-level `README.md` has a phase table with eleven links into `plans/`, including
+  folder `README.md` files and two `00_start.md` files. It is the index of the diary, written when the
+  diary was the project.
+  a. Allowed as an index: the README may link plan folders, and the checker permits `README.md` at the
+     repo root.
+  b. Rewritten to link `plans/` once and say the phase folders are the development diary, with the
+     as-is pointing at `docs/`. The table itself moves into `plans/00_tracking.md` if it is wanted.
+  c. Allowed to link folders, not files.
+  Recommended: b. A visitor reading the README gets a table of contents for eighteen months of diary
+  before they get what the app is, and half its links are to folders whose content has been superseded
+  by the code. It is also the largest single source of plan references, so leaving it as an exception
+  means the check's output is mostly exception. b is a README edit, which is cheap, and it happens to be
+  the change that makes the front page about the project.
+  NEW_ANS:
+- Q17: does anything keep a plan reference on purpose after all this, and if so how is it marked?
+  a. No. Outside `plans/`, only the tracking pointers in the instruction files survive, and they are
+     matched by name.
+  b. Yes, with an inline marker the checker honours, the way a linter suppression works.
+  Recommended: a. b invents a suppression syntax whose first use would be the case the rule was written
+  for, and every suppression is a citation with a note saying so.
   NEW_ANS:
