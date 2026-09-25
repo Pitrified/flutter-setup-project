@@ -26,6 +26,12 @@ from dataclasses import dataclass, field
 from html import escape
 from pathlib import Path
 
+# The canonical copy of this file lives in the tracked-development skill in
+# dotfiles; a repo carries a vendored copy so its gate runs without dotfiles.
+# Bump this on any change to the canonical copy, so two copies can be told apart
+# by `--version` as well as by comparing the files.
+VERSION = "1.0.0"
+
 STATUSES = ("draft", "planned", "in progress", "done", "superseded", "discarded")
 
 # A phase file is NN_name.md; NN.M_name.md is a side-document of phase NN, which
@@ -752,6 +758,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--version", action="version", version=f"plans.py {VERSION}")
     parser.add_argument(
         "--root",
         type=Path,
