@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 01 - Frontmatter as a typed object
@@ -32,6 +32,17 @@ changes.
 - The unknown keys stay: 27 phase files carry `depends_on` and `produces` from an older convention, and
   the checker validates what it knows and ignores the rest.
 
+## What the implementation found
+
+- **`priority: 0` is falsy**, and the presence check was `not getattr(front, key)`, so every folder in the
+  tree reported "no priority in frontmatter". Twenty-two findings from a refactor that was supposed to
+  change nothing. `Frontmatter.missing()` now tests `priority_raw is None` and the comment says why.
+- **The `pri` column broke** once the value was an int, because `print_table` measures with `len`. It
+  formats at the boundary now.
+- Both were caught by diffing the four captured outputs rather than by reading the code, which is the
+  whole argument for capturing them first: a refactor whose success condition is "nothing changes" needs
+  something to compare against, or it is just a rewrite nobody checked.
+
 ## Out of scope
 
 - `depends_on` in any form (phase 02).
@@ -45,4 +56,6 @@ changes.
 - The two broken copies of `plans/` from folder 21 phase 3 still produce the same thirteen findings, in
   the same words. That is the regression test, and it is a real one because it was built by breaking one
   rule at a time.
-- A file with a malformed `---` block and a missing `description` reports both, not just the first.
+- A file with two faults reports two: `priority: -2` and no `description` gives two findings from one
+  file. Corrected from "a malformed block and a missing description", which cannot both be reported: if
+  the block does not parse there is no way to know whether `description` was there.

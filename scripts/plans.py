@@ -44,13 +44,65 @@ class FrontmatterError(PlansError):
 
 
 @dataclass
+class Frontmatter:
+    """A plan file's `---` block, typed, with its own problems collected.
+
+    Built once per file so that a rule such as "priority is a non-negative
+    integer" lives here rather than at each place a caller looks at the value.
+    Problems are collected rather than raised: a file with two faults should
+    report two.
+    """
+
+    status: str | None = None
+    priority: int | None = None
+    priority_raw: str | None = None
+    description: str | None = None
+    extra: dict[str, str] = field(default_factory=dict)
+    problems: list[str] = field(default_factory=list)
+
+    KNOWN = ("status", "priority", "description")
+
+    def missing(self, key: str) -> bool:
+        """Whether `key` is absent. `priority: 0` is present and falsy, which is
+        why this is not a truth test on the value."""
+        if key == "priority":
+            return self.priority_raw is None
+        return not getattr(self, key)
+
+    @classmethod
+    def read(cls, md: Path) -> "Frontmatter":
+        """Parse `md`'s frontmatter. A block that does not parse is one problem."""
+        try:
+            raw = parse_frontmatter(md.read_text(encoding="utf-8"), md)
+        except FrontmatterError as exc:
+            return cls(problems=[str(exc).split(": ", 1)[-1]])
+        front = cls(
+            status=raw.get("status"),
+            description=raw.get("description"),
+            extra={k: v for k, v in raw.items() if k not in cls.KNOWN},
+        )
+        front.priority_raw = raw.get("priority")
+        if front.priority_raw is not None:
+            if front.priority_raw.isdigit():
+                front.priority = int(front.priority_raw)
+            else:
+                front.problems.append(
+                    f"priority {front.priority_raw!r} is not a non-negative integer"
+                )
+        return front
+
+
+@dataclass
 class Phase:
     """One `NN_name.md` sub-plan."""
 
     path: Path
     number: str
-    status: str | None
-    error: str | None = None
+    front: Frontmatter
+
+    @property
+    def status(self) -> str | None:
+        return self.front.status
 
 
 @dataclass
@@ -61,24 +113,23 @@ class Folder:
     number: str
     name: str
     start: Path | None
-    front: dict[str, str] = field(default_factory=dict)
+    front: Frontmatter = field(default_factory=lambda: Frontmatter())
     phases: list[Phase] = field(default_factory=list)
     sides: list[Path] = field(default_factory=list)
     tracking: Path | None = None
-    error: str | None = None
 
     @property
     def status(self) -> str | None:
-        return self.front.get("status")
+        return self.front.status
 
     @property
-    def priority(self) -> str | None:
-        return self.front.get("priority")
+    def priority(self) -> int | None:
+        return self.front.priority
 
     @property
     def summary(self) -> str:
         """First line of `description`, which is what a listing has room for."""
-        text = self.front.get("description", "")
+        text = self.front.description or ""
         return text.strip().splitlines()[0] if text.strip() else ""
 
 
@@ -119,18 +170,6 @@ def parse_frontmatter(text: str, where: Path) -> dict[str, str]:
     return front
 
 
-def read_status(md: Path) -> tuple[str | None, str | None]:
-    """The file's status, or the reason its frontmatter could not be read.
-
-    A file whose frontmatter does not parse is one finding, not a crash: a broken
-    file must not hide every other fault in the tree.
-    """
-    try:
-        return parse_frontmatter(md.read_text(encoding="utf-8"), md).get("status"), None
-    except FrontmatterError as exc:
-        return None, str(exc)
-
-
 def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
     """Every numbered folder under `root`, in number order.
 
@@ -150,18 +189,13 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if skipped is not None:
                 skipped.append(path.name)
             continue
-        try:
-            front, error = parse_frontmatter(start.read_text(encoding="utf-8"), start), None
-        except FrontmatterError as exc:
-            front, error = {}, str(exc)
         folder = Folder(
             path=path,
             number=match.group(1),
             name=match.group(2),
             start=start,
-            front=front,
+            front=Frontmatter.read(start),
             tracking=(path / "tracking.md") if (path / "tracking.md").exists() else None,
-            error=error,
         )
         for md in sorted(path.glob("*.md")):
             if md.name in ("00_start.md", "tracking.md"):
@@ -169,8 +203,7 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if SIDE.match(md.name):
                 folder.sides.append(md)
             elif phase := PHASE.match(md.name):
-                status, error = read_status(md)
-                folder.phases.append(Phase(md, phase.group(1), status, error))
+                folder.phases.append(Phase(md, phase.group(1), Frontmatter.read(md)))
         folders.append(folder)
     return folders
 
@@ -206,11 +239,7 @@ def rows(folders: list[Folder]) -> list[tuple[str, ...]]:
     """One row per folder, sorted by priority descending then number."""
 
     def sort_key(folder: Folder) -> tuple[int, int]:
-        try:
-            priority = int(folder.priority or 0)
-        except ValueError:
-            priority = 0
-        return (-priority, int(folder.number))
+        return (-(folder.priority or 0), int(folder.number))
 
     out = []
     for folder in sorted(folders, key=sort_key):
@@ -221,7 +250,7 @@ def rows(folders: list[Folder]) -> list[tuple[str, ...]]:
                 folder.number,
                 folder.name,
                 folder.status or "-",
-                folder.priority or "-",
+                "-" if folder.priority is None else str(folder.priority),
                 phases,
                 folder.summary or "-",
             )
@@ -281,26 +310,24 @@ def check_folder(folder: Folder) -> list[str]:
     """Every mechanical fault in one folder, each naming its file."""
     out = []
     start = folder.start.relative_to(folder.path.parent.parent)
-    if folder.error:
-        out.append(f"{start}: {folder.error.split(': ', 1)[-1]}")
+    out += [f"{start}: {problem}" for problem in folder.front.problems]
+    unreadable = any("never closes" in p for p in folder.front.problems)
     for key in REQUIRED_START:
-        if not folder.error and not folder.front.get(key):
+        if not unreadable and folder.front.missing(key):
             out.append(f"{start}: no {key} in frontmatter")
     if folder.status and folder.status not in STATUSES:
         out.append(f"{start}: status {folder.status!r} is not one of {list(STATUSES)}")
-    if folder.priority is not None:
-        if not folder.priority.isdigit():
-            out.append(f"{start}: priority {folder.priority!r} is not a non-negative integer")
-        elif folder.status == "done" and folder.priority != "0":
-            out.append(
-                f"{start}: status is done, so priority should be back at 0, not {folder.priority}"
-            )
+    if folder.status == "done" and folder.priority not in (None, 0):
+        out.append(
+            f"{start}: status is done, so priority should be back at 0, not {folder.priority}"
+        )
 
     numbers: dict[str, str] = {}
     for phase in folder.phases:
         name = phase.path.relative_to(folder.path.parent.parent)
-        if phase.error:
-            out.append(f"{name}: {phase.error.split(': ', 1)[-1]}")
+        out += [f"{name}: {problem}" for problem in phase.front.problems]
+        if phase.front.problems:
+            pass
         elif phase.status is None:
             out.append(f"{name}: no status in frontmatter")
         elif phase.status not in STATUSES:

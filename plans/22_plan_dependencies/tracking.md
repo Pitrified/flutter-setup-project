@@ -25,7 +25,7 @@ still depends on. Analysis, the five answered questions and the complexity budge
 
 | #  | Phase                            | Plan                                                     | Status  |
 | -- | -------------------------------- | -------------------------------------------------------- | ------- |
-| 01 | Frontmatter as a typed object    | [`01_typed_frontmatter.md`](01_typed_frontmatter.md)     | planned |
+| 01 | Frontmatter as a typed object    | [`01_typed_frontmatter.md`](01_typed_frontmatter.md)     | done    |
 | 02 | The field, parsed and listed     | [`02_depends_on_field.md`](02_depends_on_field.md)       | planned |
 | 03 | The hard rules, and the cascade  | [`03_hard_rules.md`](03_hard_rules.md)                   | planned |
 | 04 | The soft rule, across branches   | [`04_soft_rule_cross_ref.md`](04_soft_rule_cross_ref.md) | planned |
@@ -53,3 +53,8 @@ Append-only. Newest at the bottom.
   ordering the phase numbers already give, dependencies pointing at docs a phase had produced, or empty.
   That measurement is also the best evidence for Q1. Phase 02 absorbed the conversion, and the frontmatter
   gains a freeform `comment:` for what is worth keeping and should not be checked.
+- 2026-09-26 : phase 01 - `Frontmatter` dataclass, problems collected per file rather than raised on the
+  first. Two bugs, both found by diffing the four captured outputs and neither by reading the code:
+  `priority: 0` is falsy so the presence check reported every folder as missing it, and the `pri` column
+  broke once the value was an int. `list`, `check --citations` and both broken copies now produce output
+  identical to before, which was the phase's entire success condition.
