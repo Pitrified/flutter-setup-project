@@ -27,7 +27,7 @@ Full reasoning in `00_start.md`; these are the ones that cut across phases.
 
 | #  | Phase                              | Plan                                                          | Status  |
 | -- | ---------------------------------- | ------------------------------------------------------------- | ------- |
-| 1  | Parser and query command           | [`01_parser_and_queries.md`](01_parser_and_queries.md)         | planned |
+| 1  | Parser and query command           | [`01_parser_and_queries.md`](01_parser_and_queries.md)         | done    |
 | 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | planned |
 | 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | planned |
 | 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | planned |
@@ -55,3 +55,8 @@ Append-only. Newest at the bottom.
   the `feat` segment would have cost about fifty renames for a word no parser reads. Both answered
   before the phases were written, which is why phase 2 is a table rather than a guess.
 - 2026-09-25 : phases derived, `tracking.md` and the five sub-plans written. Nothing executed yet.
+- 2026-09-25 : phase 1 - `scripts/plans.py` with a `list` subcommand. Revised the layout decision first:
+  one small file with subcommands, not a `scripts/plans/` package, and no test framework. Verified
+  against the hand-built inventory, with `--index`, `--status`, `--out` in both formats, `--root`
+  pointing at a copy outside the repo, and a named error when run outside a git repo with no `--root`.
+  The listing covers eleven folders and names the twelve it skips, which is phase 2's work list.

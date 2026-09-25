@@ -15,7 +15,7 @@ scripted without noise".
 
 ## Goals
 
-1. `python3 scripts/plans/check.py` reports every mechanical fault in `plans/`, or nothing.
+1. `python3 scripts/plans.py check` reports every mechanical fault in `plans/`, or nothing.
 2. It runs in `scripts/check.sh`, which `.githooks/pre-commit` already execs, so a bad plan file is
    caught before the push rather than in a CI log (Q6).
 3. The citation rule is written and measured here, and armed in phase 4.

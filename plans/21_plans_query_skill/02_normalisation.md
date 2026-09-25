@@ -54,7 +54,7 @@ In this order, because the last step consumes the others' inputs:
 
 ## Done when
 
-- `python3 scripts/plans/query.py` prints no `-` in the status, priority or description columns for any
+- `python3 scripts/plans.py list` prints no `-` in the status, priority or description columns for any
   feature folder.
 - `plans/00_tracking.md` does not exist, and its `Produces` text is findable in the descriptions.
 - `scripts/gates/links.py` green, and `scripts/check.sh` green.

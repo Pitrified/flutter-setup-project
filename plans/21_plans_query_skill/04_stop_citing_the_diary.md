@@ -16,7 +16,7 @@ Context: [`00_start.md`](00_start.md), "Plans are a diary, not documentation".
 
 ## Goals
 
-1. `python3 scripts/plans/check.py --no-citations` reports nothing.
+1. `python3 scripts/plans.py check --no-citations` reports nothing.
 2. Every decision that was being cited is written in a docs file, so the reader who followed the old
    reference still finds the answer, in fewer hops.
 3. The check is in `scripts/check.sh`, so the fifteenth citation cannot land.

@@ -20,12 +20,12 @@ Depends on [`01_parser_and_queries.md`](01_parser_and_queries.md) for the parser
 
 ## Plan
 
-- `scripts/plans/query.py --branches`: read refs rather than the working tree, with no checkout:
+- `scripts/plans.py branches`: read refs rather than the working tree, with no checkout:
   `git for-each-ref refs/heads refs/remotes` then `git ls-tree -d --name-only <ref> plans/`. Each number
   maps to a set of names; more than one name behind a number is a collision, the same name on five refs
   is a branch that has not merged. Behind a flag, not on every run (Q10): a gate that fails because of
   someone else's unmerged branch is a gate that gets skipped.
-- `scripts/plans/rename.py <old> <new>`: `git mv`, then rewrite `../NN_name/` links between plan folders,
+- `python3 scripts/plans.py rename <old> <new>`: `git mv`, then rewrite `../NN_name/` links between plan folders,
   then print a summary of what changed. It refuses to run while `--no-citations` reports anything, rather
   than editing code to keep a diary reference alive (Q11). It does not choose the number: two people
   renaming into the same free slot reproduce the collision one number along, so the target is an argument
