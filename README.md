@@ -26,12 +26,12 @@ All work so far lives in the `plans/` folder as structured blueprints.
 |---|-------|------|
 | 00 | [Drafts](plans/00_drafts/README.md) | Raw research material (architecture, LLM SDK options) |
 | 01 | [Plan Polishing](plans/01_plan_polishing/README.md) | Meta-plan, gap analysis, execution order |
-| 02 | [Foundation](plans/02_foundation/README.md) | All documentation before any code (spec, standards, AI playbook) |
-| 03 | [Scaffold](plans/03_scaffold/README.md) | Create Flutter project, configure deps, validate it runs |
-| 04 | [Core Systems](plans/04_core_systems/README.md) | Inference interface, fake provider, structured output, persistence |
-| 05 | [Controllers and Screens](plans/05_controllers/README.md) | End-to-end tutoring interaction wired together |
-| 06 | [Stabilization](plans/06_stabilization/README.md) | Error handling, tests, performance validation |
-| 07 | [Release](plans/07_release/README.md) | Signed APK, Google Play private alpha |
+| 02 | [Foundation](plans/02_foundation/00_start.md) | All documentation before any code (spec, standards, AI playbook) |
+| 03 | [Scaffold](plans/03_scaffold/00_start.md) | Create Flutter project, configure deps, validate it runs |
+| 04 | [Core Systems](plans/04_core_systems/00_start.md) | Inference interface, fake provider, structured output, persistence |
+| 05 | [Controllers and Screens](plans/05_controllers/00_start.md) | End-to-end tutoring interaction wired together |
+| 06 | [Stabilization](plans/06_stabilization/00_start.md) | Error handling, tests, performance validation |
+| 07 | [Release](plans/07_release/00_start.md) | Signed APK, Google Play private alpha |
 
 See [plans/01_plan_polishing/00_start.md](plans/01_plan_polishing/00_start.md) for the full breakdown.
 

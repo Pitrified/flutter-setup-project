@@ -11,7 +11,7 @@ question for this whole initiative lives here: does `flutter_gemma` (MediaPipe
 GenAI) run on macOS desktop? The answer determines whether macOS is a real
 target or just the host for iOS builds.
 
-Context: [`00_intro.md`](00_intro.md), depends on
+Context: [`00_start.md`](00_start.md), depends on
 [`01_feat_toolchain_setup.md`](01_feat_toolchain_setup.md).
 
 ## Goals

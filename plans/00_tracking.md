@@ -9,14 +9,14 @@ folder, so this file is not the index for them.
 |-------|--------|----------|
 | [00 Drafts](00_drafts/README.md) | complete | Reference material, not maintained |
 | [01 Plan Polishing](01_plan_polishing/README.md) | complete | Master plan finalized |
-| [02 Foundation](02_foundation/README.md) | complete | 8/8 plans drafted, docs produced |
-| [03 Scaffold](03_scaffold/README.md) | complete | 5/5 plans executed |
-| [04 Core Systems](04_core_systems/README.md) | complete | 8/8 plans executed |
-| [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
-| [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
-| [07 Release](07_release/README.md) | in-progress | 3/3 plans written, 2/3 executed |
-| [08 LLM Integration](08_llm_integration/00_coalesced_plan.md) | complete | Qwen3 0.6B on-device, end-to-end working |
-| [09 UI Tweaks](09_ui_tweaks/README.md) | complete | 3/3 plans executed |
+| [02 Foundation](02_foundation/00_start.md) | complete | 8/8 plans drafted, docs produced |
+| [03 Scaffold](03_scaffold/00_start.md) | complete | 5/5 plans executed |
+| [04 Core Systems](04_core_systems/00_start.md) | complete | 8/8 plans executed |
+| [05 Controllers](05_controllers/00_start.md) | complete | 6/6 plans executed |
+| [06 Stabilization](06_stabilization/00_start.md) | complete | 4/4 plans executed |
+| [07 Release](07_release/00_start.md) | in-progress | 3/3 plans written, 2/3 executed |
+| [08 LLM Integration](08_llm_integration/00_start.md) | complete | Qwen3 0.6B on-device, end-to-end working |
+| [09 UI Tweaks](09_ui_tweaks/00_start.md) | complete | 3/3 plans executed |
 
 ---
 
