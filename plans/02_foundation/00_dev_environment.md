@@ -1,6 +1,5 @@
 ---
 status: done
-depends_on: []
 produces: [docs/getting-started.md]
 ---
 

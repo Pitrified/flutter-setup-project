@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [05_controllers/00_conversation_controller.md]
 produces: [lib/screens/conversation/conversation_screen.dart, lib/widgets/message_bubble.dart, lib/widgets/correction_card.dart]
+comment: after 00_conversation_controller.md
 ---
 
 # Plan: Conversation Screen

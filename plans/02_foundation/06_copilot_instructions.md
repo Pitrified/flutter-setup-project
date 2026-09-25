@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [02_foundation/01_functional_spec.md, 02_foundation/02_project_structure.md, 02_foundation/03_coding_standards.md, 02_foundation/04_ai_development_playbook.md]
 produces: [.github/copilot-instructions.md]
+comment: after 01_functional_spec.md, 02_project_structure.md, 03_coding_standards.md, 04_ai_development_playbook.md
 ---
 
 # Plan: Copilot Instructions

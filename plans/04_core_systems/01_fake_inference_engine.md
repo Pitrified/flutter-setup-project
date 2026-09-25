@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [04_core_systems/00_inference_interface.md]
 produces: [lib/services/inference/fake_inference_engine.dart, assets/fixtures/tutor_responses.json]
+comment: after 00_inference_interface.md
 ---
 
 # Plan: FakeInferenceEngine

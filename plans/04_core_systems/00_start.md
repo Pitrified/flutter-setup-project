@@ -1,6 +1,7 @@
 ---
 status: done
 priority: 0
+depends_on: [03_scaffold]
 description: |
   The engine-agnostic core: the InferenceEngine interface, the fake engine every test uses, the
   flutter_gemma engine, the structured-output parser, Hive persistence, the model manager and

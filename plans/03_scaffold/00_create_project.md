@@ -1,6 +1,5 @@
 ---
 status: done
-depends_on: [docs/getting-started.md, docs/functional-specs.md]
 produces: [fala/ (Flutter project root), fala/pubspec.yaml, fala/android/app/build.gradle]
 ---
 

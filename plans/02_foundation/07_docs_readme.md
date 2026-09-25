@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [02_foundation/01_functional_spec.md, 02_foundation/02_project_structure.md, 02_foundation/04_ai_development_playbook.md, 02_foundation/05_system_specs_template.md]
 produces: [docs/README.md]
+comment: after 01_functional_spec.md, 02_project_structure.md, 04_ai_development_playbook.md, 05_system_specs_template.md
 ---
 
 # Plan: Docs README

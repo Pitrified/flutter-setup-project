@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 02 - The field, the legacy keys, and the listing
@@ -42,6 +42,20 @@ Depends on [`01_typed_frontmatter.md`](01_typed_frontmatter.md).
 - `list` gains a `needs` column showing the prerequisite numbers, and marks a row that is not startable.
   Two markers, not one: a prerequisite missing from the tree needs a merge, and one present but unfinished
   needs work (`00_start.md`, "Two severities").
+
+## What the implementation found
+
+- **Three folder-level edges, not two.** The measurement predicted `04` needing `03` and `05` needing
+  `04`; folder 23's own `[20_repo_split]`, written by hand before any of this, is the third. So the tree
+  now holds the two edges that were buried in 27 phase files plus the one someone wrote on purpose, which
+  is a fair picture of how much of this information is real.
+- **18 phase files gained a `comment:`**, all of the form `after 00_x.md, 01_y.md`. Reading them back, they
+  are worth having and worth not checking: `05_integration.md` came after all five of its siblings, which
+  is history that explains the phase order and would be noise as a constraint.
+- **Two markers, and the legend only prints when one is used.** `20*` is a prerequisite that is not done,
+  `20?` one that is not in this tree. The legend costs a line and is suppressed on a clean tree.
+- `produces:` survived untouched on all 27 files, including the two `produces: []`, which were left because
+  this phase's scope was `depends_on`.
 
 ## Out of scope
 

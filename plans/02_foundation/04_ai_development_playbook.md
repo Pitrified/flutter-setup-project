@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [02_foundation/01_functional_spec.md, 02_foundation/03_coding_standards.md]
 produces: [docs/ai-development-playbook.md]
+comment: after 01_functional_spec.md, 03_coding_standards.md
 ---
 
 # Plan: AI Development Playbook

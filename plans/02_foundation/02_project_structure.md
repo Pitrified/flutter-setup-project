@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [02_foundation/01_functional_spec.md]
 produces: [docs/project-structure.md]
+comment: after 01_functional_spec.md
 ---
 
 # Plan: Project Structure

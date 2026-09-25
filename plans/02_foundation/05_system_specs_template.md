@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [02_foundation/02_project_structure.md]
 produces: [template for docs/library/*.md]
+comment: after 02_project_structure.md
 ---
 
 # Plan: System Specs Template

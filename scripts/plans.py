@@ -57,10 +57,17 @@ class Frontmatter:
     priority: int | None = None
     priority_raw: str | None = None
     description: str | None = None
+    # Prerequisites, as folder names, on a 00_start.md. Folders rather than phases:
+    # the working unit is a whole feature, so a prerequisite is a folder being
+    # finished rather than a phase inside one being reached.
+    depends_on: list[str] = field(default_factory=list)
+    # Freeform, never parsed and never checked: the place for something worth
+    # keeping that the schema has no field for.
+    comment: str | None = None
     extra: dict[str, str] = field(default_factory=dict)
     problems: list[str] = field(default_factory=list)
 
-    KNOWN = ("status", "priority", "description")
+    KNOWN = ("status", "priority", "description", "depends_on", "comment")
 
     def missing(self, key: str) -> bool:
         """Whether `key` is absent. `priority: 0` is present and falsy, which is
@@ -79,8 +86,20 @@ class Frontmatter:
         front = cls(
             status=raw.get("status"),
             description=raw.get("description"),
+            comment=raw.get("comment"),
             extra={k: v for k, v in raw.items() if k not in cls.KNOWN},
         )
+        listed = raw.get("depends_on")
+        if listed is not None:
+            inner = listed.strip()
+            if not (inner.startswith("[") and inner.endswith("]")):
+                front.problems.append(
+                    f"depends_on {listed!r} is not an inline list, as [20_repo_split]"
+                )
+            else:
+                front.depends_on = [
+                    name.strip() for name in inner[1:-1].split(",") if name.strip()
+                ]
         front.priority_raw = raw.get("priority")
         if front.priority_raw is not None:
             if front.priority_raw.isdigit():
@@ -125,6 +144,10 @@ class Folder:
     @property
     def priority(self) -> int | None:
         return self.front.priority
+
+    @property
+    def depends_on(self) -> list[str]:
+        return self.front.depends_on
 
     @property
     def summary(self) -> str:
@@ -241,10 +264,22 @@ def rows(folders: list[Folder]) -> list[tuple[str, ...]]:
     def sort_key(folder: Folder) -> tuple[int, int]:
         return (-(folder.priority or 0), int(folder.number))
 
+    by_name = {f"{f.number}_{f.name}": f for f in folders}
     out = []
     for folder in sorted(folders, key=sort_key):
         done = sum(1 for p in folder.phases if p.status == "done")
         phases = f"{done}/{len(folder.phases)}" if folder.phases else "-"
+        needs = []
+        for name in folder.depends_on:
+            prerequisite = by_name.get(name)
+            if prerequisite is None:
+                # Not in this tree: it may be on a branch that has not merged, which
+                # needs a merge rather than work. A different marker for that reason.
+                needs.append(f"{name[:2]}?")
+            elif prerequisite.status != "done":
+                needs.append(f"{name[:2]}*")
+            else:
+                needs.append(name[:2])
         out.append(
             (
                 folder.number,
@@ -252,13 +287,14 @@ def rows(folders: list[Folder]) -> list[tuple[str, ...]]:
                 folder.status or "-",
                 "-" if folder.priority is None else str(folder.priority),
                 phases,
+                ",".join(needs) if needs else "-",
                 folder.summary or "-",
             )
         )
     return out
 
 
-HEADERS = ("NN", "folder", "status", "pri", "phases", "description")
+HEADERS = ("NN", "folder", "status", "pri", "phases", "needs", "description")
 
 
 def print_table(table: list[tuple[str, ...]], width: int = 66) -> None:
@@ -557,6 +593,8 @@ def cmd_list(args: argparse.Namespace) -> int:
         print_table(table)
     if args.index:
         skipped = [s for s in skipped if in_range(s[:2], args.index)]
+    if any("*" in row[5] or "?" in row[5] for row in table):
+        print("\nneeds: * a prerequisite that is not done, ? one not in this tree (needs a merge)")
     if skipped and not args.out:
         print(f"\nno 00_start.md, so not listed: {', '.join(skipped)}")
     if args.index or args.status:
