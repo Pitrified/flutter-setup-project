@@ -30,7 +30,7 @@ Full reasoning in `00_start.md`; these are the ones that cut across phases.
 | 1  | Parser and query command           | [`01_parser_and_queries.md`](01_parser_and_queries.md)         | done    |
 | 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | done    |
 | 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | done    |
-| 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | planned |
+| 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | done    |
 | 5  | Folder-creation workflow and skill | [`05_workflow_and_skill.md`](05_workflow_and_skill.md)         | planned |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
@@ -70,3 +70,7 @@ Append-only. Newest at the bottom.
   `planned (deferred)` and two phase files listed in no table. Two rules were wrong when tested rather
   than read: a side-document row skipped status validation, and a malformed frontmatter aborted the run
   instead of being one finding. All five gates green, 167 tests.
+- 2026-09-25 : phase 4 - 33 citations rehomed and the rule armed in `check.sh`. Sixteen were the README's
+  phase table, which still described a repo with no code in it; it was rewritten to point at `docs/` for
+  the as-is and `plans/` for the diary. Four decisions got the doc section they never had, which is why
+  the citations existed at all.

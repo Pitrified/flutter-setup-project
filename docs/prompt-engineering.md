@@ -157,7 +157,8 @@ The on-device model (Qwen3 0.6B) produces reasonable responses at this scale but
 - Struggle with idiomatic expressions
 - Produce shorter replies than larger models would
 
-Cloud (OpenAI) is the engine the prompt is tuned against; see
-`plans/15_target_language/00_start.md` TL5.
+Cloud (OpenAI) is the engine the prompt is tuned against. Where the two engines
+disagree about a prompt, the cloud output is the target and the on-device one is
+the compromise.
 
 These limitations are expected for a 0.6B parameter model and can be improved by upgrading to a larger model later (the `InferenceEngine` interface makes this a config-level change).

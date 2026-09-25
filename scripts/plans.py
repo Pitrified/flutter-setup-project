@@ -28,7 +28,7 @@ from pathlib import Path
 STATUSES = ("draft", "planned", "in progress", "done", "superseded", "discarded")
 
 # A phase file is NN_name.md; NN.M_name.md is a side-document of phase NN, which
-# carries no status of its own (plans/21_plans_query_skill/00_start.md Q9).
+# carries no status of its own.
 PHASE = re.compile(r"^(\d\d)_([a-z0-9_.]+)\.md$")
 SIDE = re.compile(r"^(\d\d)\.(\d+)_([a-z0-9_.]+)\.md$")
 FOLDER = re.compile(r"^(\d\d)_([a-z0-9_]+)$")

@@ -20,9 +20,9 @@ the work and `main` is ceremony with nothing on the other side of it.
 **Its own branch**: the planning *and* implementation of a feature folder, from
 `00_start.md` through the last sub-phase.
 
-The branch takes the folder's own name, `feat/<NN_feat_name>`, so
-`plans/21_plans_query_skill/` is worked on in `feat/21_plans_query_skill`. The
-number is the useful half: it sorts the branch list the way the plans sort, and
+The branch takes the folder's own name, `feat/<NN_feat_name>`, so a folder
+numbered 21 is worked on in a branch whose name starts with 21. The number is the
+useful half: it sorts the branch list the way the plans sort, and
 it answers "what is this branch for" with a folder to read rather than a name to
 interpret. A branch with no folder behind it is a small change that should have
 gone straight to main.

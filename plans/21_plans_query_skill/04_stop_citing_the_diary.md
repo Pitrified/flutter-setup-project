@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 4 - The repo stops citing the diary
@@ -16,7 +16,7 @@ Context: [`00_start.md`](00_start.md), "Plans are a diary, not documentation".
 
 ## Goals
 
-1. `python3 scripts/plans.py check --no-citations` reports nothing.
+1. `python3 scripts/plans.py check --citations` reports nothing.
 2. Every decision that was being cited is written in a docs file, so the reader who followed the old
    reference still finds the answer, in fewer hops.
 3. The check is in `scripts/check.sh`, so the fifteenth citation cannot land.
@@ -41,7 +41,7 @@ comment to point there or to say the thing outright.
   MediaPipe exclusions. The doc already explains them, so these become internal references.
 - `README.md` - the phase table goes; it points at `docs/` for what the project is and at `plans/` for
   the diary (Q16).
-- Last commit: add `--no-citations` to `scripts/check.sh`.
+- Last commit: add `--citations` to `scripts/check.sh`.
 
 ## Out of scope
 
@@ -57,3 +57,24 @@ comment to point there or to say the thing outright.
 - Each rehomed decision is findable by reading `docs/` alone, checked by opening the doc and not the
   plan.
 - `scripts/gates/links.py` green, and nothing in the README links into `plans/` except `plans/` itself.
+
+## What the implementation found
+
+- **33 references in 14 files, not 28 in 13.** The renames in phase 2 turned README rows into
+  `plans/NN_*/00_start.md` links, and three were mine from the same day, in `scripts/plans.py`,
+  `scripts/check.sh` and `docs/git-workflow.md`. Writing a rule does not exempt the author from it.
+- **The README was the real finding.** Sixteen of the 33 were its phase table, and rewriting it showed
+  why: it still said "The project is in the planning phase. No code exists yet", described `docs/` as
+  "empty until Phase 02 executes", listed the tech stack as "planned" and the Flutter SDK as "not yet
+  installed", and stopped at phase 07 of 21. A front page that indexes the diary rots with the diary.
+  It now says what the app does, points at `docs/` for the as-is and at `plans/` for the diary, and
+  shows the `list` command instead of a table to maintain.
+- **Four decisions had no doc and now do**: the target language rules (`docs/functional-specs.md`,
+  a new "Target language" subsection), what a parse failure shows the learner
+  (`docs/library/structured-output-system.md`), how the app is pointed at the mock and what the mock
+  does not prove (`docs/getting-started.md`, two new subsections). That is Q15 working as intended: the
+  missing doc was the reason the citation existed.
+- **Two citations were only ever a shorthand.** `docs/prompt-engineering.md` cited a `TLn` id to say
+  cloud is the tuning target, and `docs/build-and-release.md` cited folder 12 three times for exclusions
+  it already explains. Both became the statement itself, which is shorter than the reference was.
+- All five gates green with `--citations` armed.

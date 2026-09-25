@@ -12,8 +12,8 @@ From an emulator the host is `10.0.2.2`; `127.0.0.1` there means the emulator
 itself. `adb reverse tcp:8080 tcp:8080` makes `http://127.0.0.1:8080/v1` work
 too, on an emulator or a cabled phone.
 
-What it deliberately does NOT do (plans/17_emulator_e2e/00_start.md D5): validate
-the request against our JSON schema. It replies with scripted text whatever it is
+What it deliberately does NOT do (docs/getting-started.md, "What the mock does not
+prove"): validate the request against our JSON schema. It replies with scripted text whatever it is
 asked, so these runs prove the app handles a well-formed response, not that our
 `response_format` is one the real API accepts.
 

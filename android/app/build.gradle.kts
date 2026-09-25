@@ -42,7 +42,7 @@ android {
         }
     }
 
-    // Phase 3 (plans/12_abi_split): flutter_gemma 0.13.6 bundles native libs for engine
+    // See docs/build-and-release.md: flutter_gemma 0.13.6 bundles native libs for engine
     // paths this app never uses. It runs only the LiteRT-LM path (ModelType.qwen3 /
     // ModelFileType.litertlm) with no embeddings/RAG and no MediaPipe .task/.bin models,
     // so the MediaPipe, image-generator and RAG .so files are dead weight (~116 MB/ABI).

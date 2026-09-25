@@ -9,7 +9,7 @@
 /// `en-US` is deliberately absent: the prompt writes corrections and
 /// translations in English, so an English target would make every translation a
 /// restatement. It becomes available when the explanation language is itself a
-/// setting (see `plans/15_target_language/00_start.md` Q3, Q9).
+/// setting (see `docs/functional-specs.md`, "Target language").
 enum TargetLanguage {
   ptBr,
   esEs,
