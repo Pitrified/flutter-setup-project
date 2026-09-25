@@ -17,6 +17,7 @@ Analysis and decisions in [`00_start.md`](00_start.md).
 | 1 | split-per-abi build, measure, docs       | [`01_split_per_abi.md`](01_split_per_abi.md)             | done |
 | 2 | decide ABI set (drop armeabi-v7a?)       | [`02_abi_set.md`](02_abi_set.md)                         | done   |
 | 3 | trim unused MediaPipe libs               | [`03_trim_mediapipe_libs.md`](03_trim_mediapipe_libs.md) | done   |
+| 99| fix the merge histories                  | [`99_fix_merge.md`](99_fix_merge.md)                     | done   |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 

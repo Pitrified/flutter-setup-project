@@ -19,6 +19,10 @@ run() {
 }
 
 run "links"    python3 scripts/gates/links.py
+# The plan folders against their own convention: frontmatter, the status enum,
+# and a tracking table that agrees with the files. Not --citations yet; that set
+# is not empty until plans/21_plans_query_skill/04_stop_citing_the_diary.md lands.
+run "plans"    python3 scripts/plans.py check
 # Codegen first, and not only in CI: *.freezed.dart and *.g.dart are gitignored,
 # so a fresh checkout has none and everything after this step fails with
 # undefined getters. Warm it is ~2s; cold (a clean clone) about a minute.

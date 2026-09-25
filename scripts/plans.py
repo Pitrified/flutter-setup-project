@@ -49,6 +49,7 @@ class Phase:
     path: Path
     number: str
     status: str | None
+    error: str | None = None
 
 
 @dataclass
@@ -63,6 +64,7 @@ class Folder:
     phases: list[Phase] = field(default_factory=list)
     sides: list[Path] = field(default_factory=list)
     tracking: Path | None = None
+    error: str | None = None
 
     @property
     def status(self) -> str | None:
@@ -116,8 +118,16 @@ def parse_frontmatter(text: str, where: Path) -> dict[str, str]:
     return front
 
 
-def read_status(md: Path) -> str | None:
-    return parse_frontmatter(md.read_text(encoding="utf-8"), md).get("status")
+def read_status(md: Path) -> tuple[str | None, str | None]:
+    """The file's status, or the reason its frontmatter could not be read.
+
+    A file whose frontmatter does not parse is one finding, not a crash: a broken
+    file must not hide every other fault in the tree.
+    """
+    try:
+        return parse_frontmatter(md.read_text(encoding="utf-8"), md).get("status"), None
+    except FrontmatterError as exc:
+        return None, str(exc)
 
 
 def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
@@ -139,13 +149,18 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if skipped is not None:
                 skipped.append(path.name)
             continue
+        try:
+            front, error = parse_frontmatter(start.read_text(encoding="utf-8"), start), None
+        except FrontmatterError as exc:
+            front, error = {}, str(exc)
         folder = Folder(
             path=path,
             number=match.group(1),
             name=match.group(2),
             start=start,
-            front=parse_frontmatter(start.read_text(encoding="utf-8"), start),
+            front=front,
             tracking=(path / "tracking.md") if (path / "tracking.md").exists() else None,
+            error=error,
         )
         for md in sorted(path.glob("*.md")):
             if md.name in ("00_start.md", "tracking.md"):
@@ -153,7 +168,8 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if SIDE.match(md.name):
                 folder.sides.append(md)
             elif phase := PHASE.match(md.name):
-                folder.phases.append(Phase(md, phase.group(1), read_status(md)))
+                status, error = read_status(md)
+                folder.phases.append(Phase(md, phase.group(1), status, error))
         folders.append(folder)
     return folders
 
@@ -248,6 +264,155 @@ def write_out(table: list[tuple[str, ...]], out: Path) -> None:
     print(f"wrote {out}")
 
 
+# A row of a tracking table: `| 4.1 | Phase name | [`04.1_x.md`](04.1_x.md) | done |`
+ROW = re.compile(
+    r"^\|\s*([\d.]+)\s*\|[^|]*\|\s*\[`([^`]+)`\]\([^)]*\)\s*\|\s*([^|]+?)\s*\|\s*$"
+)
+
+# A reference to a specific plan folder from outside `plans/`. The `NN_` is what
+# turns a description of the convention into a citation of an instance, so that is
+# what this keys on; a bare `plans/` is a location and passes.
+CITATION = re.compile(r"plans/\d\d_[A-Za-z0-9_]+")
+REQUIRED_START = ("status", "priority", "description")
+
+
+def check_folder(folder: Folder) -> list[str]:
+    """Every mechanical fault in one folder, each naming its file."""
+    out = []
+    start = folder.start.relative_to(folder.path.parent.parent)
+    if folder.error:
+        out.append(f"{start}: {folder.error.split(': ', 1)[-1]}")
+    for key in REQUIRED_START:
+        if not folder.error and not folder.front.get(key):
+            out.append(f"{start}: no {key} in frontmatter")
+    if folder.status and folder.status not in STATUSES:
+        out.append(f"{start}: status {folder.status!r} is not one of {list(STATUSES)}")
+    if folder.priority is not None:
+        if not folder.priority.isdigit():
+            out.append(f"{start}: priority {folder.priority!r} is not a non-negative integer")
+        elif folder.status == "done" and folder.priority != "0":
+            out.append(
+                f"{start}: status is done, so priority should be back at 0, not {folder.priority}"
+            )
+
+    numbers: dict[str, str] = {}
+    for phase in folder.phases:
+        name = phase.path.relative_to(folder.path.parent.parent)
+        if phase.error:
+            out.append(f"{name}: {phase.error.split(': ', 1)[-1]}")
+        elif phase.status is None:
+            out.append(f"{name}: no status in frontmatter")
+        elif phase.status not in STATUSES:
+            out.append(f"{name}: status {phase.status!r} is not one of {list(STATUSES)}")
+        if phase.number in numbers:
+            out.append(f"{name}: number {phase.number} is already used by {numbers[phase.number]}")
+        else:
+            numbers[phase.number] = phase.path.name
+
+    for md in sorted(folder.path.glob("*.md")):
+        if md.name in ("00_start.md", "tracking.md") or PHASE.match(md.name) or SIDE.match(md.name):
+            continue
+        out.append(
+            f"{md.relative_to(folder.path.parent.parent)}: not a plan file name "
+            "(00_start.md, tracking.md, NN_name.md or NN.M_name.md)"
+        )
+
+    if folder.phases and folder.tracking is None:
+        out.append(f"{folder.path.name}/: {len(folder.phases)} phase file(s) and no tracking.md")
+    if folder.tracking is not None:
+        out += check_tracking(folder)
+
+    if folder.phases and all(p.status == "done" for p in folder.phases):
+        for md in [folder.start, folder.tracking, *(p.path for p in folder.phases)]:
+            if md and "NEW_ANS:" in md.read_text(encoding="utf-8").replace("`NEW_ANS:`", ""):
+                out.append(
+                    f"{md.relative_to(folder.path.parent.parent)}: NEW_ANS: left in a folder "
+                    "whose phases are all done"
+                )
+    return out
+
+
+def check_tracking(folder: Folder) -> list[str]:
+    """The table and the phase files have to agree, both ways."""
+    out = []
+    tracking = folder.tracking
+    where = tracking.relative_to(folder.path.parent.parent)
+    by_name = {p.path.name: p for p in folder.phases}
+    listed = set()
+    for number, line in enumerate(tracking.read_text(encoding="utf-8").splitlines(), 1):
+        row = ROW.match(line)
+        if not row:
+            continue
+        _, name, table_status = row.groups()
+        listed.add(name)
+        if table_status not in STATUSES:
+            out.append(
+                f"{where}:{number}: status {table_status!r} is not one of {list(STATUSES)}"
+            )
+        phase = by_name.get(name)
+        if phase is None:
+            if not (folder.path / name).exists():
+                out.append(f"{where}:{number}: table names {name}, which does not exist")
+            continue  # a side-document may be listed; it carries no status of its own
+        if table_status in STATUSES and phase.status != table_status:
+            out.append(
+                f"{where}:{number}: table says {table_status!r}, {name} says {phase.status!r}"
+            )
+    for name in sorted(by_name):
+        if name not in listed:
+            out.append(f"{where}: {name} is missing from the phases table")
+    return out
+
+
+def check_citations(repo: Path) -> list[str]:
+    """Nothing outside `plans/` may cite a specific plan folder.
+
+    Plans are a diary of development; docs are the as-is. A decision worth citing
+    belongs in the docs file whose topic it is, so the reader finds the answer
+    rather than a plan from four phases ago. A path containing `<` is a shape
+    (`plans/<folder>/tracking.md`) rather than a reference, and passes.
+    """
+    try:
+        files = subprocess.run(
+            ["git", "-C", str(repo), "ls-files"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.split()
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        raise PlansError(f"{repo}: cannot list tracked files, so citations cannot be checked") from exc
+    out = []
+    for name in files:
+        if name.startswith("plans/") or not (repo / name).is_file():
+            continue
+        try:
+            text = (repo / name).read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        for number, line in enumerate(text.splitlines(), 1):
+            for hit in CITATION.finditer(line):
+                if "plans/<" in line[max(0, hit.start() - 8) : hit.end()]:
+                    continue
+                out.append(f"{name}:{number}: cites {hit.group(0)}; a decision belongs in docs/")
+    return out
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    folders = load(args.root)
+    findings = []
+    for folder in folders:
+        findings += check_folder(folder)
+    if args.citations:
+        findings += check_citations(args.root.parent)
+    for finding in findings:
+        print(f"plans: {finding}")
+    if findings:
+        print(f"\n{len(findings)} finding(s). The files have to agree with the convention.")
+        return 1
+    print(f"plans: {len(folders)} folder(s) agree with the convention")
+    return 0
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     skipped: list[str] = []
     folders = load(args.root, skipped)
@@ -296,6 +461,14 @@ def main(argv: list[str] | None = None) -> int:
     listing.add_argument("--index", help="NN or NN-MM")
     listing.add_argument("--out", type=Path, help="write .md or .html instead of printing")
     listing.set_defaults(func=cmd_list)
+
+    checking = sub.add_parser("check", help="mechanical faults in the plan files")
+    checking.add_argument(
+        "--citations",
+        action="store_true",
+        help="also check that nothing outside plans/ cites a specific plan folder",
+    )
+    checking.set_defaults(func=cmd_check)
 
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

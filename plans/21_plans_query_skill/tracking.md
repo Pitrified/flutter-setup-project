@@ -29,7 +29,7 @@ Full reasoning in `00_start.md`; these are the ones that cut across phases.
 | -- | ---------------------------------- | ------------------------------------------------------------- | ------- |
 | 1  | Parser and query command           | [`01_parser_and_queries.md`](01_parser_and_queries.md)         | done    |
 | 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | done    |
-| 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | planned |
+| 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | done    |
 | 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | planned |
 | 5  | Folder-creation workflow and skill | [`05_workflow_and_skill.md`](05_workflow_and_skill.md)         | planned |
 
@@ -65,3 +65,8 @@ Append-only. Newest at the bottom.
   `plans/00_tracking.md`. `list` now shows 21 folders with no holes. The statuses in 02-05 turned out to
   be stale in three different vocabularies, and those folders already carried `produces` keys the
   inventory had not noticed.
+- 2026-09-25 : phase 3 - `check` subcommand, thirteen rules, wired into `scripts/check.sh` as the second
+  gate. It found three faults on its first run over the normalised tree: a table status of
+  `planned (deferred)` and two phase files listed in no table. Two rules were wrong when tested rather
+  than read: a side-document row skipped status validation, and a malformed frontmatter aborted the run
+  instead of being one finding. All five gates green, 167 tests.
