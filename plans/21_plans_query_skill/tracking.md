@@ -80,3 +80,7 @@ Append-only. Newest at the bottom.
   citation existed, then renamed and fixed the sibling links. Using the skill for real showed it cannot
   say what a folder depends on, because nothing records that; noted rather than papered over.
 - 2026-09-25 : all five phases done. Folder closed, priority back to 0.
+- 2026-09-25 : Q8 flipped from b to c while planning the move to dotfiles
+  ([`../25_skill_to_dotfiles/00_start.md`](../25_skill_to_dotfiles/00_start.md) Q2, Q6). The key decision
+  above, "Scripts live in this repo", is superseded by that: the script's canonical copy moves into the
+  skill and this repo keeps a vendored copy for CI.
