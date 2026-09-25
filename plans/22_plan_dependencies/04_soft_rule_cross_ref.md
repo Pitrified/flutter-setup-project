@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 04 - The soft rule, across branches
@@ -30,6 +30,22 @@ Context: [`00_start.md`](00_start.md), Q4 and "Two severities". Depends on
 - Stronger wording when the dependent folder is itself `in progress`: the merge is then what the current
   work is waiting on rather than housekeeping, and the line should read as something to act on. Still a
   warning, because the person who has to act may not be the one running the gate.
+
+## What the implementation found
+
+- **Demonstrated on a clone** with `24_someone_elses_work` created on a second branch: `check` warns,
+  names the ref, and exits 0 with "23 folder(s) agree with the convention, 1 warning(s)".
+- **The in-progress wording fires** and reads as something to act on: "in progress, and needs
+  24_someone_elses_work, which is only on feat/24_someone_else. That merge is what this work is waiting
+  for."
+- **Renaming it to something nobody has** turns it back into a finding with the close-match suffix, which
+  is the phase-03 behaviour narrowed rather than replaced.
+- **The passing path makes no ref calls**, measured with `strace -e trace=execve` rather than asserted:
+  zero `ls-tree` and zero `for-each-ref` on a clean tree, against 13 `for-each-ref` and 117 `ls-tree`
+  execs once one name is missing. The only git call on the clean path is the `rev-parse` that finds the
+  root.
+- Warnings print above findings and are labelled `warning:`, so a reader scanning output does not have to
+  infer severity from the exit code.
 
 ## Out of scope
 

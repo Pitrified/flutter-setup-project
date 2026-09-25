@@ -551,23 +551,70 @@ def suggestion(name: str, folders: list[Folder]) -> str:
     return f"; did you mean {close[0]}" if close else ""
 
 
+def resolve_elsewhere(
+    repo: Path, folders: list[Folder], missing: list[tuple[Folder, str]]
+) -> tuple[list[str], list[str]]:
+    """Split unresolved prerequisites into warnings and findings.
+
+    A prerequisite may be on a branch that has not merged: someone else may be
+    implementing it, and merging their plans in so that a name resolves is
+    overkill. That is a warning. A name that exists nowhere is a typo, and stays a
+    finding.
+
+    The refs are read only when something is missing, which is why this does not
+    undo folder 21's decision to keep ref-reading out of every run.
+    """
+    if not missing:
+        return [], []
+    on_refs = folders_on_refs(repo)
+    elsewhere = {
+        name: refs
+        for names in on_refs.values()
+        for name, refs in names.items()
+    }
+    warnings, findings = [], []
+    for folder, name in missing:
+        where = folder.start.relative_to(repo)
+        refs = elsewhere.get(name)
+        if refs is None:
+            findings.append(
+                f"{where}: depends on {name}, which is not a plan folder"
+                f"{suggestion(name, folders)}"
+            )
+        elif folder.status == "in progress":
+            warnings.append(
+                f"{where}: in progress, and needs {name}, which is only on "
+                f"{', '.join(sorted(refs))}. That merge is what this work is waiting for."
+            )
+        else:
+            warnings.append(
+                f"{where}: needs {name}, which is not in this tree yet; it is on "
+                f"{', '.join(sorted(refs))}"
+            )
+    return warnings, findings
+
+
 def cmd_check(args: argparse.Namespace) -> int:
     folders = load(args.root)
     findings = []
     for folder in folders:
         findings += check_folder(folder)
     findings += check_dependencies(folders)
-    for folder, name in unresolved(folders):
-        where = folder.start.relative_to(args.root.parent)
-        findings.append(f"{where}: depends on {name}, which is not a plan folder{suggestion(name, folders)}")
+    warnings, unresolved_findings = resolve_elsewhere(
+        args.root.parent, folders, unresolved(folders)
+    )
+    findings += unresolved_findings
     if args.citations:
         findings += check_citations(args.root.parent)
+    for warning in warnings:
+        print(f"plans: warning: {warning}")
     for finding in findings:
         print(f"plans: {finding}")
     if findings:
         print(f"\n{len(findings)} finding(s). The files have to agree with the convention.")
         return 1
-    print(f"plans: {len(folders)} folder(s) agree with the convention")
+    tail = f", {len(warnings)} warning(s)" if warnings else ""
+    print(f"plans: {len(folders)} folder(s) agree with the convention{tail}")
     return 0
 
 

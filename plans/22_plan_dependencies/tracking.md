@@ -28,7 +28,7 @@ still depends on. Analysis, the five answered questions and the complexity budge
 | 01 | Frontmatter as a typed object    | [`01_typed_frontmatter.md`](01_typed_frontmatter.md)     | done    |
 | 02 | The field, the legacy keys, list  | [`02_depends_on_field.md`](02_depends_on_field.md)       | done    |
 | 03 | The hard rules, and the cascade  | [`03_hard_rules.md`](03_hard_rules.md)                   | done    |
-| 04 | The soft rule, across branches   | [`04_soft_rule_cross_ref.md`](04_soft_rule_cross_ref.md) | planned |
+| 04 | The soft rule, across branches   | [`04_soft_rule_cross_ref.md`](04_soft_rule_cross_ref.md) | done    |
 | 05 | Document the field               | [`05_document_the_field.md`](05_document_the_field.md)   | planned |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
@@ -66,3 +66,8 @@ Append-only. Newest at the bottom.
   `plans/`. The three-folder cycle needed its own case, since the two-folder one passes with almost any
   implementation. The cycle message named a folder rather than a file and was fixed before closing: this
   repo's gates name the file.
+- 2026-09-26 : phase 04 - severities. A prerequisite living on another ref is a warning that names the ref
+  and does not fail the gate; one existing nowhere stays a finding with the close match. Demonstrated on a
+  clone with the prerequisite on a second branch, including the stronger wording when the dependent is
+  itself in progress. The claim that the passing path reads no refs was measured with strace rather than
+  asserted: zero `ls-tree` calls clean, 117 once a name is missing.
