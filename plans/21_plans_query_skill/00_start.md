@@ -118,7 +118,9 @@ the existing gates use.
   which is exactly the kind of thing nobody remembers).
 - Every phase file appears in its `tracking.md` table, and the table's status matches the file's
   frontmatter. This is klide's `scripts/gates/plan_status.py`, which this repo never adopted.
-- File naming: `00_start.md`, `tracking.md`, `NN_feat_*.md`, numbers unique within a folder.
+- File naming: `00_start.md`, `tracking.md`, `NN_<name>.md`, numbers unique within a folder. The
+  `feat` in the skill's `NN_feat_name.md` is part of the placeholder, not a required segment (Q20), so
+  `03_openai_integration.md` and `03_feat_structured_stream_engine.md` are both fine.
 - No `NEW_ANS:` left in a folder whose phases are all done, since an unanswered question in finished
   work is either forgotten or finished.
 
@@ -334,14 +336,33 @@ What is left after those three moves is the phase overview table, which is what 
 prints. Then the file goes, and the two references to it in `docs/README.md` and
 `docs/ai-development-playbook.md` become the general shape.
 
+## Start files, folder by folder (Q19)
+
+Two moves, chosen per folder: rename the file that is already the origin document, or write a new
+minimal `00_start.md` whose frontmatter is real and whose body is a few lines pointing at the file that
+holds the content. The second is for folders where nothing existing is a start file, and it beats
+promoting a file into a role it was not written for.
+
+| Folder | Today | Move |
+| ------ | ----- | ---- |
+| 02-07 | `README.md`, shaped as phase title plus goal and scope | rename to `00_start.md`; the phase table from `plans/00_tracking.md` becomes `tracking.md` |
+| 08 | `00_coalesced_plan.md`, the one plan drawn from three analysis reports | rename to `00_start.md`; it is already the origin document |
+| 09 | `README.md`, the idea dump per tweak | rename to `00_start.md` |
+| 10 | `tracking.md` plus `00.1_initial_research.md` and `00.2_structured_streaming_asis.md` | new minimal `00_start.md` pointing at the two research files; neither is an origin document on its own |
+| 11 | `00_intro.md` and `00_tracking.md` | rename both to `00_start.md` and `tracking.md` |
+| 01, 12, 13, 15, 17 | `00_start.md` with no frontmatter | frontmatter only |
+| 14, 16, 18-21 | `00_start.md` with frontmatter | nothing |
+| `00_drafts`, `99_notes` | reference dumps, no candidate start file | left out; with every real feature carrying a `00_start.md`, Q9's rule stops misfiring |
+
 ## The work this implies
 
 Five phases, in the order that keeps each step verifiable. `tracking.md` and the sub-plans come next.
 
 1. **The parser and the query command**, written against the folders as they are now, which is the only
    way to know what the parser has to recognise. Its own output is the to-do list for phase 2.
-2. **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): frontmatter on the start
-   files without it, `00_intro.md` renamed, `tracking.md` where it is missing, descriptions backfilled
+2. **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): the start-file moves in
+   the table above, frontmatter on the five start files without it, `tracking.md` where it is missing
+   (eight folders), descriptions backfilled
    from the `Produces` column, and `plans/00_tracking.md` emptied into the folders it describes and then
    deleted (Q18). The teardown lives here rather than in its own phase because that file is the input to
    this one: it holds the statuses and the `Produces` text the frontmatter is written from, so deleting
@@ -551,7 +572,9 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   Recommended: a. Q5 already chose to normalise every folder, and this is what that costs; b makes the
   roadmap view lie about the project's own history, and c is the tolerant parser Q1 ruled out, one file
   name later. The rename is cheap and `links.py` catches anything that pointed at the old name.
-  NEW_ANS:
+  ANS: a, per folder, with a second option where no file fits: rename the most relevant candidate, or
+  write a new minimal `00_start.md` with good frontmatter and a couple of lines pointing at the file
+  that already holds the content. Per-folder table below.
 - Q20: does the checker require the `feat` segment in `NN_feat_name.md`, which `tracked-development`
   specifies and only folders 10, 15 and 17 follow? Folders 02-09 and 12 use `NN_name.md`, which is
   roughly fifty files.
@@ -562,4 +585,5 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   habit, not a rule anything depends on, and b spends a large rename plus every inbound link on making
   the files agree with a word. Worth deciding before normalisation, since it is the difference between
   renaming three files and renaming fifty.
-  NEW_ANS:
+  ANS: a. `NN_<name>.md`. The whole `feat_name` is a placeholder that changes from feature to feature,
+  so `feat` is a convention someone can follow, not a rule the checker enforces. No renames.
