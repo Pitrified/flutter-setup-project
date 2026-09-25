@@ -136,8 +136,35 @@ After cloning this repo:
 ```bash
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
+scripts/install-hooks.sh   # runs the gates on every commit
 flutter run
 ```
+
+## Gates
+
+`scripts/check.sh` is the one command that runs every check: markdown links resolve,
+`flutter analyze`, `flutter test`. CI runs the same script, and `scripts/install-hooks.sh`
+points git at `.githooks` so a commit runs it too (bypass with `git commit --no-verify`).
+
+```bash
+scripts/check.sh                   # everything
+python3 scripts/gates/links.py     # one gate on its own
+```
+
+## End-to-end on an emulator
+
+`scripts/e2e.sh` is the slow check, kept out of `check.sh` because it takes minutes and needs an
+emulator. It boots a headless AVD (`fala_api36`), starts the mock OpenAI server
+(`tool/mock_openai.py`), and runs `integration_test/app_test.dart` against it, so a full conversation
+is exercised with no API key and no network. Logs and the app's actual requests land in `build/e2e/`.
+
+```bash
+scripts/e2e.sh                     # reuse a running emulator, or boot one
+scripts/e2e.sh --stop-emulator     # and shut it down afterwards
+```
+
+To drive the app by hand instead, `source tool/adb_ui.sh` gives `ui_tap`, `ui_text`, `ui_shot` and
+friends, which find widgets in the view tree rather than guessing coordinates.
 
 ## Target versions
 

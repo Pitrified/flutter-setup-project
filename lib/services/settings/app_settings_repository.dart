@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '../../models/cefr_level.dart';
+import '../../models/target_language.dart';
 import '../inference/engine_kind.dart';
 
 /// Hive-backed store for non-secret app settings.
@@ -29,6 +30,9 @@ class AppSettingsRepository {
   /// Hive key storing the default topic seed for new conversations.
   static const String keyDefaultTopic = 'default_topic';
 
+  /// Hive key storing the default [TargetLanguage] as its BCP-47 code.
+  static const String keyDefaultLanguage = 'default_language';
+
   /// Fallback when no value is stored or the stored value is unknown.
   static const EngineKind defaultEngineKind = EngineKind.openai;
 
@@ -40,6 +44,10 @@ class AppSettingsRepository {
 
   /// Empty string means "no topic" (the prompt template degrades gracefully).
   static const String defaultTopic = '';
+
+  /// Fallback target language, which is what every conversation stored before
+  /// the language became a setting already carries.
+  static const TargetLanguage defaultTargetLanguage = TargetLanguage.ptBr;
 
   final String boxName;
   late Box<String> _box;
@@ -95,6 +103,19 @@ class AppSettingsRepository {
   /// Persist [topic] as the default topic seed for new conversations.
   Future<void> setDefaultTopic(String topic) async {
     await _box.put(keyDefaultTopic, topic);
+  }
+
+  /// Returns the persisted default [TargetLanguage], or
+  /// [defaultTargetLanguage] when none is stored or the stored code is not one
+  /// of the supported languages.
+  TargetLanguage defaultLanguage() {
+    return TargetLanguageX.fromCode(_box.get(keyDefaultLanguage)) ??
+        defaultTargetLanguage;
+  }
+
+  /// Persist [language] as the default for new conversations.
+  Future<void> setDefaultLanguage(TargetLanguage language) async {
+    await _box.put(keyDefaultLanguage, language.code);
   }
 
   /// Close the underlying Hive box.

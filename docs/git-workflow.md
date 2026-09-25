@@ -28,6 +28,24 @@ Examples:
 - `chore: configure analysis_options.yaml`
 - `fix: correct DateTime serialization in ConversationMessage`
 
+## Commit cadence
+
+Commit as the code is written, in logical chunks of functionality, rather than
+saving everything for one commit at the end. A reader should be able to follow
+how the work was built, not just what it ended up as.
+
+How that maps to a plan folder is left to judgement:
+
+- A sub-phase can be several commits when it adds distinct pieces (a model, then
+  the UI that uses it).
+- A sub-phase can be one commit when it is one coherent change.
+- A sub-phase can be zero commits of its own when the whole feature is small
+  enough to read as one, or when it only produced plan text that ships with the
+  next code commit.
+
+What does not vary: a commit compiles and its tests pass, one concern per commit,
+and the message says why the change was made rather than restating the diff.
+
 ## Rules
 
 - One concern per commit (matches "small atomic diffs" from coding-standards.md)

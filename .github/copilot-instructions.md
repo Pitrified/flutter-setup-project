@@ -1,10 +1,17 @@
-# Project: fala
+# fala
 
 ## Overview
 
-On-device language-tutoring app. User chats in Portuguese, receives structured
-corrections + conversational replies. Runs Gemma 3 1B entirely on the phone
-(Android only). Fully offline after model download.
+Android language-tutoring app. The user chats in Portuguese and gets structured
+corrections plus a conversational reply, streamed token by token.
+
+Two inference engines sit behind one `InferenceEngine` interface, selected in Settings:
+
+- **on-device**: Qwen3-0.6B (`.litertlm`, LiteRT-LM path of `flutter_gemma`), downloaded on
+  first launch, offline afterwards.
+- **cloud**: OpenAI via `openai_dart`, with the key stored in `flutter_secure_storage`.
+
+`FakeInferenceEngine` is the third implementation and the one every test uses.
 
 ## Source of truth
 
@@ -13,36 +20,122 @@ corrections + conversational replies. Runs Gemma 3 1B entirely on the phone
 - Coding rules: [docs/coding-standards.md](../docs/coding-standards.md)
 - AI collaboration: [docs/ai-development-playbook.md](../docs/ai-development-playbook.md)
 - System specs: [docs/library/](../docs/library/)
-- Progress: [plans/00_tracking.md](../plans/00_tracking.md)
+- Build and release: [docs/build-and-release.md](../docs/build-and-release.md)
 
-If a request contradicts these, the docs win. Stop, highlight the contradiction, and ask for clarification.
+The docs lag the code in places, because the phases after 09 moved faster than the docs did.
+Where a doc and the code disagree, the code is the fact and the doc is the bug: say so rather
+than coding to the stale line. Where a doc and a *request* disagree, stop and ask.
 
-## Stack (locked)
+## Progress
 
-Flutter (Dart) - Riverpod - GoRouter - Hive - flutter_gemma (swappable) -
-freezed + json_serializable - Android only - min API 26
+Each phase folder under [plans/](../plans/) owns its own tracking file, written in the shape the
+`tracked-development` skill describes. [plans/00_tracking.md](../plans/00_tracking.md) covers
+phases 00 to 09 only and is not the index for anything newer; read the phase folder itself.
+
+## Stack
+
+Flutter (Dart) - Riverpod - GoRouter - Hive - flutter_gemma - openai_dart -
+freezed + json_serializable - Android, min API 26, target 36
 
 ## Hard rules
 
-- Follow layer boundaries in [project-structure.md](../docs/project-structure.md)
-- No business logic in widgets - go through providers
-- No `print`/`debugPrint` - use project logger
-- No new dependencies without explicit approval
-- No features not in [functional-specs.md](../docs/functional-specs.md)
-- No iOS, web, or desktop code
-- Touch only the files explicitly listed in the request
-- Use FakeInferenceEngine for all tests
+- Follow the layer boundaries in [project-structure.md](../docs/project-structure.md)
+- No business logic in widgets, go through providers
+- No `print`/`debugPrint`, use the project logger
+- A new dependency needs approval first, with the reason it beats what is already here
+- Tests use `FakeInferenceEngine`, never a real engine or the network
 - Trailing commas on multi-line argument lists
-- Generated files (*.freezed.dart, *.g.dart) are gitignored, not committed
+- Generated files (`*.freezed.dart`, `*.g.dart`) are gitignored, not committed
+- No iOS, macOS, web or desktop code until phase 11 is actually being executed
+- Touch the files the request is about and leave the rest alone
+
+## Gates
+
+`scripts/check.sh` runs every gate: markdown links resolve, `flutter analyze`, `flutter test`.
+One command, and CI runs the same script, so green here means green there.
+`scripts/install-hooks.sh` points git at `.githooks` so a commit runs them too.
+
+A gate has to name the file and the line when it fails, and be fast enough that nobody skips it.
+Something that has never been seen failing is an assumption, not a gate.
+
+Adding a check to `check.sh` beats writing the rule down a second time: when a correction has to
+be given twice, the fix is a mechanism, not more prose.
+
+## Which machine
+
+This box is headless: no device, no emulator, and `flutter devices` is empty. It builds, analyzes
+and tests. Anything that needs the Pixel (install, on-device smoke test, timing) and every `git push`
+happens from a `g7` session, so hand those back rather than working around them.
+
+`flutter` and the Android SDK are on the PATH in every shell here, including non-interactive ones
+(`~/.bashrc` sets them above its interactivity guard, 2026-09-24). `scripts/check.sh` still falls
+back to `$HOME/flutter/bin` so it works on a machine without that edit.
+
+## How to write
+
+Technical prose: dry, concrete, and short without leaving anything out. The two failure modes are
+padding that makes a page longer without making it say more, and cutting the detail that was the
+reason to write the sentence. Aim between them.
+
+Behind most of the habits below is one failure: reaching for the unusual word to show what the
+writer is, rather than to show the reader what he means. Prose is a window onto the subject, and the
+mannered kind has the writer's face reflected in it. An agent inherits the tic from its training
+data, so the rule is the same for both of us: the word that carries the meaning.
+
+- **No hype.** Adjectives and adverbs that carry tone but no information: seamless, robust,
+  powerful, elegantly, simply, blazing. Cut them, or replace them with the concrete fact, subject
+  to the next rule.
+- **No volatile numbers.** A number that changes with the next run is a measurement with a date on
+  it, and belongs in a plan log rather than in a doc. Numbers that hold still, such as APK sizes
+  measured once, counts, API levels and versions, are facts and stay.
+- **No padding.** One idea stated once. Do not restate a point in three framings, and do not open a
+  paragraph by announcing what it is about to say.
+- **No fake drama.** The "it is not X, it is Y" reveal. The countdown that rules out two things
+  before naming the third. The one-sentence paragraph as a punchline. The "X is the Y of Z"
+  metaphor. These are the most-cited tells of machine writing.
+- **No thesaurus reach.** delve, leverage, unleash, realm, landscape, ever-evolving, meticulous,
+  underscore, boast, harness, tapestry, testament, quietly, bites, load-bearing. A sample, not an
+  exhaustive blacklist. Ordinary words instead.
+- **Plain copulas.** "is" and "are", not "serves as a", "stands as", "represents".
+- **No closing summary** repeating what the page just said, and no motivational sign-off.
+- **No emoji**, and no decorative headers. Headers are plain labels.
+- **No confident filler where a fact is missing.** If a value is unknown, say it is unknown and say
+  who or what would know. A plausible invented number is the worst possible output.
+- **Mechanical.** No em dashes (`--`, `---`, or Unicode). Use a hyphen or rewrite the sentence. Do
+  not wrap markdown to a fixed column; break lines on logical boundaries instead, such as after a
+  period or between clauses.
+
+The list is the recurring failures, not the definition. The rule is technical, dry, complete prose.
+
+## Planning
+
+Plans keep the reasoning from being re-derived, not from being reopened. Anything in them can be
+reopened: a decision, an answered question, a phase, the shape of the whole effort. Reopening on new
+evidence is the plan working. Record what changed and leave the previous answer visible rather than
+editing it away.
+
+Write each point at the strength it actually has. "for now", "until the spike reports", "unless X
+changes" are accurate about most choices and cost nothing. Reserve "never" and "hard requirement"
+for the few things that are fixed, such as a cost ceiling or a device that has to go back intact. A
+line written as an absolute gets read a month later as a deal breaker, and then something obvious
+does not get tried.
+
+Weight remarks by how they were made. An offhand comment is a signal, not an instruction. When one
+would become a constraint, either mark it provisional or ask before promoting it.
+
+`Qn` and `Dn` numbers are local to the file that raised them, so a bare `(Q4)` in a file that did
+not raise it is a broken reference: name the file, as ``13_key_distribution/00_start.md` Q4`.
 
 ## Output style
 
-- Small atomic diffs. One concern per change.
-- Public types/methods get `///` doc comments.
-- Tests for non-trivial logic.
-- Ask one clarifying question if scope is ambiguous; do not invent scope.
-- No em dashes, curly quotes, or other fancy punctuation.
+- Small atomic diffs, one concern each.
+- Public types and methods get `///` doc comments.
+- Tests for non-trivial logic, and a failing test before its fix where that is possible.
+- Verify against the real thing. `scripts/check.sh` green is the claim; "looks right" is not.
+- Ask one clarifying question if the scope is ambiguous. Do not invent scope.
+- End a task by asking the one follow-up question that would most change what happens next.
 
-## Permanent chat
+## Spellcheck
 
-At the end of all tasks assigned, always ask a follow-up question using the tool #askQuestions to let the user give feedback and guide next steps.
+When the spellchecker flags a technical term or a British/American spelling, add it to
+`.vscode/settings.json` under `cSpell.words` rather than rewording around it.

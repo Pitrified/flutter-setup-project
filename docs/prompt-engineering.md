@@ -130,21 +130,34 @@ When the model produces unexpected output:
 
 ---
 
-## Current prompt: tutor_response v1
+## Current prompt: tutor_response v3
 
-The current prompt instructs the model to:
+The template names no language of its own. It takes `{{target_language}}` (the language being
+learned, e.g. `Portuguese (Brazilian)`) and `{{explanation_language}}` (the language corrections and
+translations are written in, English today), alongside `{{cefr_level}}`, `{{topic}}`,
+`{{user_message}}` and `{{conversation_history}}`. `PromptManager.buildPrompt` throws if any of them
+is left unsubstituted, because a literal `{{target_language}}` reaching the model produces a reply in
+a guessed language rather than an error.
 
-- Act as a Portuguese tutor
+The prompt instructs the model to:
+
+- Act as a tutor in the target language
 - Correct errors in the user's message (max 3)
-- Reply conversationally in Portuguese
-- Include English translations
+- Reply conversationally in the target language
+- Include translations in the explanation language
 - Output structured JSON matching `TutorResponse` schema
 - Match complexity to the user's CEFR level
 
-The model (Qwen3 0.6B) produces reasonable responses at this scale but may:
+Worked example, with Portuguese as the target: the model is told it is a
+"Portuguese (Brazilian) language tutor", replies in Portuguese and translates into English.
+
+The on-device model (Qwen3 0.6B) produces reasonable responses at this scale but may:
 
 - Give generic corrections for unusual sentences
-- Struggle with idiomatic Portuguese expressions
+- Struggle with idiomatic expressions
 - Produce shorter replies than larger models would
+
+Cloud (OpenAI) is the engine the prompt is tuned against; see
+`plans/15_target_language/00_start.md` TL5.
 
 These limitations are expected for a 0.6B parameter model and can be improved by upgrading to a larger model later (the `InferenceEngine` interface makes this a config-level change).

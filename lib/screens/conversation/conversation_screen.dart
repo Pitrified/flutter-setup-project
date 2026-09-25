@@ -6,6 +6,7 @@ import '../../app.dart';
 import '../../models/cefr_level.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
+import '../../models/target_language.dart';
 import '../../models/topic.dart';
 import '../../models/tutor_response.dart';
 import '../../providers/conversation_provider.dart';
@@ -14,6 +15,7 @@ import '../../services/conversation/conversation_controller.dart';
 import '../../services/inference/structured_stream_engine.dart';
 import 'widgets/cefr_picker_sheet.dart';
 import 'widgets/correction_card.dart';
+import 'widgets/language_picker_sheet.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/streaming_reply_view.dart';
 import 'widgets/streaming_tutor_entry.dart';
@@ -56,6 +58,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     if (controller == null) return;
     if (controller.currentConversation == null) {
       await controller.startConversation(
+        language: ref.read(defaultTargetLanguageProvider),
         cefrLevel: ref.read(defaultCefrLevelProvider),
         topic: ref.read(defaultTopicProvider),
       );
@@ -68,6 +71,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     final controller = ref.read(conversationControllerProvider);
     if (controller == null) return;
     await controller.startConversation(
+      language: ref.read(defaultTargetLanguageProvider),
       cefrLevel: ref.read(defaultCefrLevelProvider),
       topic: ref.read(defaultTopicProvider),
     );
@@ -205,6 +209,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
       appBar: AppBar(
         title: const Text('fala'),
         actions: [
+          _LanguageAction(controller: controller),
           _TopicAction(controller: controller),
           _CefrAction(controller: controller),
           IconButton(
@@ -247,13 +252,24 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     );
   }
 
+  /// Language named in the screen's copy: the active conversation's, or the app
+  /// default before one exists. Watching the default keeps the copy correct when
+  /// it changes in Settings while no conversation is open.
+  TargetLanguage get _copyLanguage {
+    final controller = ref.read(conversationControllerProvider);
+    return TargetLanguageX.fromCode(
+          controller?.currentConversation?.language,
+        ) ??
+        ref.watch(defaultTargetLanguageProvider);
+  }
+
   Widget _buildMessageList(
     ConversationController controller,
     List<ConversationMessage> messages,
   ) {
     if (messages.isEmpty) {
-      return const Center(
-        child: Text('Say something in Portuguese!'),
+      return Center(
+        child: Text('Say something in ${_copyLanguage.displayName}!'),
       );
     }
 
@@ -358,10 +374,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
                 maxLines: 5,
                 keyboardType: TextInputType.multiline,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  hintText: 'Type in Portuguese...',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(
+                decoration: InputDecoration(
+                  hintText: 'Type in ${_copyLanguage.displayName}...',
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
@@ -446,6 +462,75 @@ class _CefrAction extends ConsumerWidget {
               await ref
                   .read(defaultCefrLevelProvider.notifier)
                   .select(picked);
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// App-bar chip showing the conversation's language, opening the picker.
+///
+/// Writes twice like the CEFR and topic chips: the conversation through the
+/// controller and the app default through the provider. The language of a
+/// conversation with messages cannot change, so picking a different one offers a
+/// new conversation instead, and the default is stored either way so the next
+/// conversation honours the choice.
+class _LanguageAction extends ConsumerWidget {
+  const _LanguageAction({required this.controller});
+
+  final ConversationController controller;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return StreamBuilder<Conversation?>(
+      stream: controller.conversationStream,
+      initialData: controller.currentConversation,
+      builder: (context, snapshot) {
+        final conversation = snapshot.data;
+        final TargetLanguage current =
+            TargetLanguageX.fromCode(conversation?.language) ??
+            ref.read(defaultTargetLanguageProvider);
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: ActionChip(
+            label: Text(current.endonym),
+            tooltip: 'Learning ${current.displayName}',
+            onPressed: () async {
+              final picked = await showLanguagePickerSheet(
+                context,
+                current: current,
+              );
+              final action = languageSwitchAction(
+                picked: picked,
+                current: current,
+                hasMessages:
+                    controller.currentConversation?.messages.isNotEmpty ?? false,
+              );
+              if (action == LanguageSwitchAction.none) return;
+
+              // The default moves even when the restart is declined: the user
+              // said which language they want next.
+              await ref
+                  .read(defaultTargetLanguageProvider.notifier)
+                  .select(picked!);
+
+              if (action == LanguageSwitchAction.switchInPlace) {
+                await controller.setLanguage(picked);
+                return;
+              }
+              if (!context.mounted) return;
+              final confirmed = await showLanguageSwitchDialog(
+                context,
+                language: picked,
+              );
+              if (!confirmed) return;
+              await controller.startConversation(
+                language: picked,
+                cefrLevel: ref.read(defaultCefrLevelProvider),
+                topic: ref.read(defaultTopicProvider),
+              );
             },
           ),
         );

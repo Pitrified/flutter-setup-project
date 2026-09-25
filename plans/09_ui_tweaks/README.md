@@ -53,3 +53,11 @@ then when the correction is finished, it is wrapped well
 the cefr picker descriptions are too long and overflow the screen
 just make them short
 
+## 10 malformed reply shown as the tutor speaking
+
+when the model answers with something that is not the expected JSON, the raw text is shown as if the
+tutor had written it: model prose, in English, no correction card, nothing saying it went wrong
+show it as a failed turn instead, the way a network or key error already reads
+found on the emulator against `tool/mock_openai.py --scenario malformed`
+(from `plans/17_emulator_e2e/00_start.md` Q5)
+

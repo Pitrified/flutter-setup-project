@@ -29,7 +29,7 @@ All work so far lives in the `plans/` folder as structured blueprints.
 | 02 | [Foundation](plans/02_foundation/README.md) | All documentation before any code (spec, standards, AI playbook) |
 | 03 | [Scaffold](plans/03_scaffold/README.md) | Create Flutter project, configure deps, validate it runs |
 | 04 | [Core Systems](plans/04_core_systems/README.md) | Inference interface, fake provider, structured output, persistence |
-| 05 | [Conversation Loop](plans/05_conversation_loop/README.md) | End-to-end tutoring interaction wired together |
+| 05 | [Controllers and Screens](plans/05_controllers/README.md) | End-to-end tutoring interaction wired together |
 | 06 | [Stabilization](plans/06_stabilization/README.md) | Error handling, tests, performance validation |
 | 07 | [Release](plans/07_release/README.md) | Signed APK, Google Play private alpha |
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../models/cefr_level.dart';
+import '../../models/target_language.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/inference/engine_kind.dart';
 
@@ -27,6 +28,21 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           _EngineDropdown(selected: selectedKind),
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            'Language',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'The language you are learning. Applies to new conversations: an '
+            'existing one keeps the language it started in.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          const _LanguageDropdown(),
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 8),
@@ -94,6 +110,49 @@ class _EngineDropdown extends ConsumerWidget {
       value: kind,
       enabled: kind.isImplemented,
       child: Text(kind.displayName),
+    );
+  }
+}
+
+/// Default target language. Built like [_CefrDropdown], with the language's own
+/// name under the dropdown so the user recognises it.
+class _LanguageDropdown extends ConsumerWidget {
+  const _LanguageDropdown();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(defaultTargetLanguageProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<TargetLanguage>(
+          initialValue: current,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Learning',
+          ),
+          items: [
+            for (final language in TargetLanguage.values)
+              DropdownMenuItem<TargetLanguage>(
+                value: language,
+                child: Text(language.promptName),
+              ),
+          ],
+          onChanged: (language) async {
+            if (language == null) return;
+            await ref
+                .read(defaultTargetLanguageProvider.notifier)
+                .select(language);
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+          child: Text(
+            current.endonym,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
     );
   }
 }

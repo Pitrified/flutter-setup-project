@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Runs every gate before a commit is written. Around half a minute, most of it
+# `flutter test`.
+#
+# It checks the working tree, not the staged snapshot, so with a partial stage it
+# can block on a change you did not stage, or pass a staged version that differs
+# from the file on disk. Stashing to fix that costs more than it buys here;
+# revisit if partial staging becomes a habit.
+#
+# Bypass with --no-verify.
+exec "$(git rev-parse --show-toplevel)/scripts/check.sh"

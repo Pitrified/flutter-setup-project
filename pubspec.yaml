@@ -1,5 +1,5 @@
 name: fala
-description: On-device Portuguese language tutor
+description: Conversational language tutor with structured corrections
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -30,6 +30,8 @@ dev_dependencies:
     sdk: flutter
   freezed:
   http:
+  integration_test:
+    sdk: flutter
   json_serializable:
   mockito:
   riverpod_generator:

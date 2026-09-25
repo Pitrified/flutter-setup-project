@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:fala/models/app_exception.dart';
 import 'package:fala/models/cefr_level.dart';
 import 'package:fala/models/conversation_message.dart';
 import 'package:fala/models/inference_status.dart';
+import 'package:fala/models/target_language.dart';
 import 'package:fala/models/tutor_response.dart';
 import 'package:fala/services/conversation/conversation_controller.dart';
 import 'package:fala/services/inference/inference_engine.dart';
@@ -153,16 +155,22 @@ void main() {
     expect(tutorMsg.tutorResponse, isNull);
   });
 
-  test('sendMessage handles parse failure with raw text', () async {
+  test('sendMessage shows a parse failure as a failed turn', () async {
     await controller.startConversation();
     // A complete buffer that is not valid TutorResponse JSON: the strict final
-    // parse fails and the raw text becomes the reply.
+    // parse fails. Until 2026-09-25 the raw text became the reply, which read as
+    // the tutor answering in English; see
+    // plans/09_ui_tweaks/10_malformed_reply_display.md.
     engine.buffers = const ['some garbled output'];
 
     final tutorMsg = await controller.sendMessage('Oi');
 
     expect(tutorMsg, isNotNull);
-    expect(tutorMsg!.content, 'some garbled output');
+    expect(
+      tutorMsg!.content,
+      'Error generating response: the reply was not in the expected format.',
+    );
+    expect(tutorMsg.content, isNot(contains('some garbled output')));
     expect(tutorMsg.tutorResponse, isNull);
   });
 
@@ -236,6 +244,78 @@ void main() {
     expect(tutors.single.tutorResponse, isNotNull);
     expect(tutors.single.tutorResponse!.conversation.content, 'Ola!');
     expect(msg!.tutorResponse, tutors.single.tutorResponse);
+  });
+
+  test('the prompt names the conversation language and the explanation language',
+      () async {
+    await controller.startConversation(language: TargetLanguage.esEs);
+    await controller.sendMessage('Hola');
+
+    expect(
+      promptManager.lastVariables!['target_language'],
+      'Spanish (European)',
+    );
+    expect(promptManager.lastVariables!['explanation_language'], 'English');
+  });
+
+  test('a pt-BR conversation is named to the model as before', () async {
+    await controller.startConversation();
+    await controller.sendMessage('Oi');
+
+    expect(
+      promptManager.lastVariables!['target_language'],
+      'Portuguese (Brazilian)',
+    );
+  });
+
+  test('an unsupported stored language falls back to the default', () async {
+    final conv = await controller.startConversation();
+    // Simulates a conversation stored before this language shipped, or by a
+    // newer build that offers more languages than this one.
+    await repo.save(conv.copyWith(language: 'ja-JP'));
+    await controller.loadConversation(conv.id);
+    await controller.sendMessage('Oi');
+
+    expect(
+      promptManager.lastVariables!['target_language'],
+      'Portuguese (Brazilian)',
+    );
+  });
+
+  test('startConversation stores the language code, defaulting to pt-BR',
+      () async {
+    final defaulted = await controller.startConversation();
+    expect(defaulted.language, 'pt-BR');
+
+    final spanish = await controller.startConversation(
+      language: TargetLanguage.esEs,
+    );
+    expect(spanish.language, 'es-ES');
+  });
+
+  test('setLanguage switches an empty conversation', () async {
+    await controller.startConversation();
+    await controller.setLanguage(TargetLanguage.frFr);
+    expect(controller.currentConversation!.language, 'fr-FR');
+  });
+
+  test('setLanguage throws once the conversation has messages', () async {
+    await controller.startConversation();
+    await controller.sendMessage('Oi');
+
+    expect(
+      () => controller.setLanguage(TargetLanguage.deDe),
+      throwsA(isA<LanguageLockedException>()),
+    );
+    expect(controller.currentConversation!.language, 'pt-BR');
+  });
+
+  test('setLanguage is a no-op when the language is unchanged', () async {
+    final conv = await controller.startConversation();
+    await controller.sendMessage('Oi');
+    // Same language on a non-empty conversation must not throw: nothing changes.
+    await controller.setLanguage(TargetLanguage.ptBr);
+    expect(controller.currentConversation!.id, conv.id);
   });
 
   test('on failure appends fallback text and stays usable for the next send',

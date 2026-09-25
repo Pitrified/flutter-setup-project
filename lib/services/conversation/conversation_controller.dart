@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import '../../models/app_exception.dart';
 import '../../models/cefr_level.dart';
 import '../../models/conversation.dart';
 import '../../models/conversation_message.dart';
+import '../../models/target_language.dart';
 import '../../models/tutor_response.dart';
 import '../inference/inference_engine.dart';
 import '../inference/structured_stream_engine.dart';
+import '../logging/app_logger.dart';
 import '../persistence/conversation_repository.dart';
 import '../prompt/prompt_manager.dart';
 
@@ -32,6 +35,14 @@ class ConversationController {
   final PromptManager promptManager;
   final int maxHistoryMessages;
 
+  /// Language the corrections, explanations and translations are written in.
+  ///
+  /// Fixed at English for now: the user's own language is not a setting yet, so
+  /// there is nothing to read it from (see `plans/15_target_language` Q3). The
+  /// prompt takes it as a variable, so exposing it later is a call-site change
+  /// and not a template edit.
+  static const String explanationLanguage = 'English';
+
   Conversation? _currentConversation;
   final _conversationController = StreamController<Conversation?>.broadcast();
 
@@ -56,7 +67,7 @@ class ConversationController {
 
   /// Start a new conversation.
   Future<Conversation> startConversation({
-    String language = 'pt-BR',
+    TargetLanguage language = TargetLanguage.ptBr,
     CefrLevel cefrLevel = CefrLevel.a1,
     String topic = '',
   }) async {
@@ -66,7 +77,7 @@ class ConversationController {
       createdAt: now,
       updatedAt: now,
       messages: [],
-      language: language,
+      language: language.code,
       cefrLevel: cefrLevel.displayName,
       topic: topic,
     );
@@ -118,6 +129,34 @@ class ConversationController {
     _conversationController.add(updated);
   }
 
+  /// Set the target language of the active conversation.
+  ///
+  /// Only valid while the conversation is still empty: once it has messages the
+  /// history is in the old language, so the caller starts a new conversation
+  /// instead of switching this one. Throws [LanguageLockedException] in that
+  /// case. Returns immediately if there is no active conversation or the
+  /// language is unchanged.
+  Future<void> setLanguage(TargetLanguage language) async {
+    final current = _currentConversation;
+    if (current == null) return;
+    if (current.language == language.code) return;
+    if (current.messages.isNotEmpty) {
+      throw LanguageLockedException(
+        message:
+            'Cannot switch to ${language.displayName}: this conversation '
+            'already has ${current.messages.length} message(s). Start a new '
+            'conversation instead.',
+      );
+    }
+    final updated = current.copyWith(
+      language: language.code,
+      updatedAt: DateTime.now(),
+    );
+    await repository.save(updated);
+    _currentConversation = updated;
+    _conversationController.add(updated);
+  }
+
   /// Send a user message and get a tutor response.
   ///
   /// Streams partial deltas to [streamingReply] as the reply arrives, then
@@ -145,9 +184,14 @@ class ConversationController {
       _conversationController.add(_currentConversation);
 
       // Build prompt
+      final language =
+          TargetLanguageX.fromCode(_currentConversation!.language) ??
+          TargetLanguage.ptBr;
       final prompt = await promptManager.buildPrompt(
         name: 'tutor_response',
         variables: {
+          'target_language': language.promptName,
+          'explanation_language': explanationLanguage,
           'cefr_level': _currentConversation!.cefrLevel,
           'topic': _currentConversation!.topic,
           'user_message': content,
@@ -188,9 +232,15 @@ class ConversationController {
     }
   }
 
-  /// Map the terminal delta to the persisted reply, preserving the existing
-  /// three-state outcome: typed success -> reply text + value; parse failure ->
-  /// the raw text; inference failure -> the error fallback text.
+  /// Map the terminal delta to the persisted reply: typed success -> reply text
+  /// + value; either failure kind -> an error line.
+  ///
+  /// A parse failure used to be shown as the model's raw text, on the grounds
+  /// that something beats nothing. Watching it happen on a device changed that
+  /// (`plans/09_ui_tweaks/10_malformed_reply_display.md`): the learner saw model
+  /// prose in English presented as the tutor's reply, with no correction card and
+  /// no sign of failure, which reads as the tutor answering rather than as a
+  /// broken turn. The raw text still goes to the log, where it is useful.
   (String, TutorResponse?) _resolveReply(
     StructuredDelta<TutorResponse>? terminal,
   ) {
@@ -203,8 +253,18 @@ class ConversationController {
     }
     final failure = terminal.failure;
     if (failure != null) {
+      if (failure.kind == StructuredFailureKind.parse) {
+        AppLogger.instance.warn(
+          'Unparseable tutor reply, showing an error line instead: '
+          '${failure.rawText}',
+        );
+      }
       return switch (failure.kind) {
-        StructuredFailureKind.parse => (failure.rawText ?? '', null),
+        StructuredFailureKind.parse => (
+            'Error generating response: '
+                'the reply was not in the expected format.',
+            null,
+          ),
         StructuredFailureKind.inference => (
             'Error generating response: ${failure.error}',
             null,
