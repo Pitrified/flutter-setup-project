@@ -2,10 +2,25 @@
 # Every gate, one command. Add a gate by adding a line; keep each one fast
 # enough that an agent will actually run it.
 #
+#   scripts/check.sh      one line per gate, and the full output of any that fails
+#   scripts/check.sh -v   everything, as each gate prints it
+#
+# Quiet by default because the interesting part is which gate failed, and the
+# noise (pub resolution, build_runner progress, every passing test) buried it:
+# every caller was piping this through the same grep. A failing gate still prints
+# all of its output, which is the only time it is wanted.
+#
 # The PATH fallback is for a machine whose shell config does not carry flutter;
 # where it does, this is a no-op.
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+verbose=0
+case "${1:-}" in
+  -v|--verbose) verbose=1 ;;
+  "") ;;
+  *) echo "usage: scripts/check.sh [-v]" >&2; exit 2 ;;
+esac
 
 if ! command -v flutter >/dev/null 2>&1; then
   export PATH="$HOME/flutter/bin:$PATH"
@@ -15,7 +30,25 @@ failed=()
 run() {
   local name="$1"; shift
   echo "--- $name"
-  if "$@"; then echo "    ok"; else failed+=("$name"); echo "    FAILED"; fi
+  if (( verbose )); then
+    if "$@"; then echo "    ok"; else failed+=("$name"); echo "    FAILED"; fi
+    return
+  fi
+  local log
+  log=$(mktemp)
+  if "$@" >"$log" 2>&1; then
+    # The last non-empty line is each gate's own summary: "157 file(s) checked",
+    # "No issues found!", "All tests passed!".
+    local summary
+    summary=$(grep -v '^[[:space:]]*$' "$log" | tail -1)
+    [[ -n "$summary" ]] && echo "    ${summary:0:110}"
+    echo "    ok"
+  else
+    sed 's/^/    /' "$log"
+    failed+=("$name")
+    echo "    FAILED"
+  fi
+  rm -f "$log"
 }
 
 run "links"    python3 scripts/gates/links.py

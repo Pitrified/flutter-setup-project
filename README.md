@@ -45,7 +45,7 @@ python3 scripts/plans.py list --index 15      # what that folder contains
 ## Gates
 
 ```bash
-scripts/check.sh          # markdown links, plan folders, codegen, analyze, test
+scripts/check.sh          # markdown links, plan folders, codegen, analyze, test (-v for full output)
 scripts/install-hooks.sh  # once per clone, so a commit runs them too
 scripts/e2e.sh            # the slow one: headless emulator plus a mocked OpenAI endpoint
 ```

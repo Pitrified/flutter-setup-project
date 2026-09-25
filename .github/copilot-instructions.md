@@ -67,9 +67,12 @@ freezed + json_serializable - Android, min API 26, target 36
 
 ## Gates
 
-`scripts/check.sh` runs every gate: markdown links resolve, codegen, `flutter analyze`,
-`flutter test`. CI runs the same script. `scripts/install-hooks.sh` points git at `.githooks` so a
-commit runs them too.
+`scripts/check.sh` runs every gate: markdown links resolve, the plan folders agree with their
+convention (`scripts/plans.py check`), codegen, `flutter analyze`, `flutter test`. CI runs the same
+script. `scripts/install-hooks.sh` points git at `.githooks` so a commit runs them too.
+
+It prints one line per gate and the full output of whichever one fails, so its output needs no
+filtering; `scripts/check.sh -v` prints everything.
 
 A gate has to name the file and the line when it fails, and be fast enough that nobody skips it.
 Something that has never been seen failing is an assumption, not a gate.
