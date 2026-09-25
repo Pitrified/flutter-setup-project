@@ -1,5 +1,5 @@
 ---
-status: draft
+status: in progress
 priority: 0
 description: |
   Jira-lite for the plan folders: a skill that parses the frontmatter and answers
