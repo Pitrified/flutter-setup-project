@@ -192,18 +192,27 @@ The objection to answer before this becomes a gate (Q13): a check that cries wol
   `plans/`. A bare `plans/` is a location and passes.
 - **Placeholder paths are skipped.** `plans/<phase>/10_audit.md` in the playbook is a template, and the
   prototype flagged it. Any path containing `<` is a shape, not a reference.
-- **Tracking files are named, not cited.** `plans/00_tracking.md` in `docs/README.md` and
-  `.github/copilot-instructions.md` says where work is tracked, which is the one file reference that is
-  process rather than a decision. `tracking.md` and `00_tracking.md` are allowed by name, and that is
-  the whole allowance: no skip list, no per-file exceptions, because a list of exceptions is the thing
-  that rots.
+- **One allowed filename, not two.** The first draft allowed `tracking.md` and `00_tracking.md`;
+  normalisation removes the second shape, so there is one name to allow. And the allowance is thinner
+  than it looks: a meta file may describe the shape (`plans/<folder>/tracking.md`), which the
+  placeholder rule already skips, or name `tracking.md` as a bare filename, which is not a path. What
+  survives in practice is that outside `plans/` only the bare tree `plans/` passes. No skip list, no
+  per-file exceptions, because a list of exceptions is the thing that rots.
+- **Meta files describe the shape, not an instance.** `.github/copilot-instructions.md`,
+  `docs/README.md` and `docs/ai-development-playbook.md` have to talk about the plans convention; that
+  is their job. They may write `plans/<folder>/tracking.md` and `NN_feat_*.md`, and may not write
+  `plans/15_target_language/00_start.md`. The `NN_` is what turns a convention into a citation, which
+  is also why the pattern keys on it.
 - **`plans/` is skipped entirely.** The diary cites itself constantly and should.
 
 What makes it more than a hope: the prototype has already run, and it already earned its keep by
 falsifying the count twice and finding one false positive of exactly the kind the objection predicted.
-The pass mark for shipping is the corrected set: fourteen citations in eleven named files, plus
-whatever Q16 decides about the README's eleven rows, and nothing else. If it cannot hit that with no
-false positive, it does not ship as a gate and the rule stays prose in the skill.
+The pass mark for shipping is the measured set. Under the widened pattern, run after the rule went into
+`.github/copilot-instructions.md`: **28 references in 13 files**, which is fourteen decision citations,
+twelve rows of the README phase table, and the two remaining `plans/00_tracking.md` pointers that Q18
+decides. Writing the rule into the instructions took that file off the list, from two to zero, which is
+the first evidence that the set is reducible rather than a property of the repo. The check ships when it
+reports that set and nothing else, and the sub-phase is done when the set is empty.
 
 ## Numbering across branches
 
@@ -461,11 +470,28 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   by the code. It is also the largest single source of plan references, so leaving it as an exception
   means the check's output is mostly exception. b is a README edit, which is cheap, and it happens to be
   the change that makes the front page about the project.
-  NEW_ANS:
+  ANS: b. The README points at `docs/` as the current state and at `plans/` as the diary.
 - Q17: does anything keep a plan reference on purpose after all this, and if so how is it marked?
   a. No. Outside `plans/`, only the tracking pointers in the instruction files survive, and they are
      matched by name.
   b. Yes, with an inline marker the checker honours, the way a linter suppression works.
   Recommended: a. b invents a suppression syntax whose first use would be the case the rule was written
   for, and every suppression is a citation with a note saying so.
+  ANS: a. Remove all of them, then see whether any turns out to be really needed. An exception argued
+  for after the fact is a different thing from a syntax that invites one.
+
+### Sixth batch (2026-09-25)
+
+- Q18: `plans/00_tracking.md` sits at the top of the tree, covers phases 00-09, and is referenced by
+  `docs/README.md` and `docs/ai-development-playbook.md`. Under the one-filename rule its name is a
+  `plans/NN_` path, so the checker flags those two references.
+  a. Rename it `plans/tracking.md`. One filename everywhere, but the name then claims to index the
+     whole tree while covering nine of twenty-two folders.
+  b. Leave it as pre-convention history and change the two references to the general shape, so no path
+     into `plans/` survives outside the tree at all.
+  c. Fold it into `01_plan_polishing/` as the history of that era.
+  Recommended: b. It is the answer that matches "meta files refer to the shape, not an instance", and
+  it makes the checker rule one sentence: outside `plans/`, only the bare tree. a buys uniformity by
+  putting a wrong claim in a filename, and the roadmap view (Q4) is the top-level index now, generated
+  rather than maintained.
   NEW_ANS:
