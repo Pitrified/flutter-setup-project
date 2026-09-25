@@ -34,7 +34,37 @@ Checked from inside a session on 2026-09-25.
   The `tracked-development` skill that file names lives only in dotfiles, so this session did not have it.
 - Network, through the session's proxy: `storage.googleapis.com`, `pub.dev`, `maven.google.com`, `services.gradle.org` and `repo.maven.apache.org` answer.
   `dl.google.com` is refused with a 403, and that is where the Android command-line tools download from.
-  Which access level the environment is set to cannot be read from inside; the environment's settings dialog shows it.
+  The level is Trusted: see "Cloud environments" below.
+
+## GitHub access: what a session can reach
+
+Checked 2026-09-25, by the user on github.com and claude.ai, after an assistant claimed push access to 50 repos from the wrong signal.
+
+- **The Claude GitHub App installation is the write list.** Settings, Installed GitHub Apps, Claude, Configure shows "Only select repositories": `Pitrified/dotfiles`, `Pitrified/flutter-setup-project`, `Pitrified/plans`.
+  Pushes, pull requests and GitHub API calls from a session work on those three only.
+- **The check is enforced.** Attaching `Pitrified/laife`, which is public and owned by the same account, is refused by claude.ai with "The Claude GitHub App on Pitrified doesn't include laife."
+- **No other route.** `gh` has never been installed on the workstation, so `/web-setup` has never sent a token, and there is no token that bypasses the installation.
+- **Reading is wider.** Any public repo can be cloned over plain git without credentials, since anyone can.
+  Private repos are not in the installation, so no session reaches them.
+- **The misleading signal.** `list_repos` marks every repo the account owns with `can_push: true`.
+  That flag is the account's own permission, not the app's. Only the installation page, or an attach being refused or accepted, answers what a session can do.
+
+For this folder that means: the personal layer clones dotfiles (public, and installed if a session ever needs to push to it), and a new repo needs adding to the installation before a session can push to it.
+
+## Cloud environments
+
+From `list_environments`, 2026-09-25: one environment, `Default`, kind `anthropic_cloud`, created 2026-07-14, described as "Default - trusted network access".
+Onboarding created it. Its network level is Trusted, which matches `dl.google.com` being refused.
+Its level, variables and setup script are in its settings: the environment menu in a session's title bar, then the gear on the environment, or Edit.
+
+How long each piece lasts, per the docs:
+
+- **An environment** lasts until it is archived. It holds the network level, the variables and the setup script, and every session started in it uses them.
+  More can be added from the same menu (Add cloud environment). The docs give no limit on how many.
+- **The setup-script snapshot** is rebuilt when the script or the allowed hosts change, and after about seven days.
+- **A session's container** is reclaimed after a period of inactivity. Reopening the session provisions a fresh one from the snapshot, with the conversation restored.
+  Anything installed by hand mid-session, and background processes, are gone. The Flutter install in the session this folder came from is that kind.
+- **Git** is the only thing that outlives all of the above. Work not pushed is lost with the container.
 
 ## What the documentation says
 
@@ -74,14 +104,15 @@ Community examples of setup scripts, not yet read in detail:
 ## Personal layer: what to watch
 
 - `install.py` runs under `uv` with Python pinned to 3.14. `uv` is in the base image; whether it can fetch 3.14 through the proxy is unverified.
-- The dotfiles `settings.json` is the risky file.
+- The dotfiles `settings.json` is the risky file, and is not linked in the cloud (Q3).
   Its PreToolUse hooks call `rtk`, which is not installed here, on every Bash call.
   It also sets `model` and `effortLevel`, which may override what the session picker chose.
-  Linking it unchanged means installing `rtk` or accepting a failing hook on every command.
+  So the installer needs a way to link `CLAUDE.md`, rules and skills without `settings.json`; `install.py` links every `*.symlink` today.
 - Unverified, and the first thing to check: whether Claude Code in a cloud session reads a `~/.claude/CLAUDE.md` that a setup script wrote.
   The docs say the file does not carry over because it is on the workstation, which suggests a copy in the VM would be read, but nothing has shown it yet.
-- The alternative for skills is to enable them on claude.ai, which works today.
-  It is a second copy of each skill to keep in step with dotfiles.
+- Skills come from dotfiles (Q4), not from claude.ai, so there is one copy.
+  That makes this layer the carrier for `managing-plan-folders` once it moves to dotfiles.
+  The move is its own folder, `25_skill_to_dotfiles`, on branch `feat/25_skill_to_dotfiles`; not linked here because that folder is not on this branch.
 
 ## Toolchain layer: Flutter
 
@@ -156,7 +187,7 @@ Not derived yet; a sketch for when this is picked up.
   b. all of it in dotfiles.
   c. the personal layer in dotfiles, the Flutter layer here, and the environment's setup script calls both.
   Recommended: c, because the Flutter pin belongs with the repo that CI builds, and the dotfiles layer is the same for every repo.
-  NEW_ANS:
+  ANS: c.
 - Q2: one cloud environment for every repo, or one per stack?
   The setup script and network level belong to the environment, not the repo, so a Flutter environment carries 3 GB that a Python repo does not need.
   a. one environment with dotfiles and every toolchain.
@@ -168,13 +199,23 @@ Not derived yet; a sketch for when this is picked up.
   b. leave it out of the cloud and link only `CLAUDE.md`, rules and skills.
   c. a cloud variant of it in dotfiles.
   Recommended: b for the first phase, since its hooks and model settings are what could break a session, then revisit.
-  NEW_ANS:
+  ANS: b, not linked.
 - Q4: skills from dotfiles through the setup script, or enabled on claude.ai?
   Recommended: dotfiles, so there is one copy. Keep claude.ai for skills that are not in dotfiles.
-  NEW_ANS:
+  ANS: dotfiles.
 - Q5: which network access level is the environment set to now, and is moving to Custom acceptable when the release phase starts?
   Only the environment settings show the level; `dl.google.com` being refused suggests Trusted.
-  NEW_ANS:
+  ANS: asked where to check. Answered under "Cloud environments": the one environment, `Default`, is Trusted, and the level is shown in its settings.
+  The second half is still open, as Q7.
 - Q6: a Dockerfile as a local test harness for the script?
   Recommended: not yet. Write the script first, and add the harness only if testing it through new sessions is slow.
+  ANS: deferred.
+
+### Second batch (2026-09-25)
+
+- Q7: when the release phase starts, move `Default` to Custom access, or add a second environment for Android builds?
+  a. `Default` to Custom: the Trusted defaults plus `dl.google.com`.
+  b. a second environment, Custom with `dl.google.com`, used only for release work.
+  c. Full access.
+  Recommended: follows Q2. With one environment per stack it is a, applied to the Flutter environment; c opens every host to fetch one.
   NEW_ANS:
