@@ -138,12 +138,46 @@ Two consequences:
 
 ## The frontmatter is growing
 
-Four keys now, five with this one, and the parser hands back a dict of strings that every caller pokes
-at by key. That was right for two keys and is close to the point where it is not: a typed object with the
+Four keys now, six with `depends_on` and `comment`, and the parser hands back a dict of strings that
+every caller pokes at by key. That was right for two keys and is close to the point where it is not: a typed object with the
 keys as fields, built once from the block, would put the "`priority` is a non-negative integer" and
 "`depends_on` is a list" rules in one place instead of at each use. Pure standard library, a dataclass
 with a classmethod that validates, no dependency. Worth doing as part of this folder rather than after
 it, since this is the change that adds the first non-scalar field.
+
+## What the 27 legacy keys actually say
+
+Folding each phase-level `depends_on` up to the folder it names, dropping doc paths and self-references,
+leaves this:
+
+```
+04_core_systems      depends_on: [03_scaffold]
+05_controllers       depends_on: [04_core_systems]
+```
+
+Two edges, out of 27 keys in 27 files. Everything else was one of three things: a phase in folder 02
+depending on an earlier phase in folder 02, which the phase numbering already says; a dependency on a doc
+(`03_scaffold/00_create_project.md` on `docs/getting-started.md`), which is backwards since the doc was
+produced by a phase; or `[]`.
+
+That is the strongest argument for Q1 that the folder has: dependency information at sub-phase level was
+recorded twenty-seven times and carried almost nothing, because inside a feature the ordering is the
+numbering, and between features there were two facts worth writing down.
+
+## A freeform `comment:` key
+
+Some of what the legacy keys held is worth keeping and has no field: `05_integration.md` recorded that it
+came after the other five phases in its folder, and that is real history even though nothing should check
+it.
+
+So the frontmatter gains `comment:`, freeform, optional, separate from `description`:
+
+- `description` is what a listing shows: what this is and why, one line per feature.
+- `comment` is a note for whoever opens the file. Nothing parses it, nothing validates it, and it never
+  appears in `list` output.
+
+It exists so that the answer to "this does not fit the schema but I do not want to lose it" is a place to
+put it rather than a new key with rules attached. The typed object holds it as a plain string.
 
 ## How many cases this script gets to have
 
@@ -230,4 +264,8 @@ is a judgement the reader makes with the output in front of them.
   rewrites 27 finished files to remove information (`produces` and `depends_on` between phases are a
   record of how those phases were sequenced) for no query anyone has asked for. The silent-ignore cost is
   real but small, because the field is optional: a missed `depends_on` leaves the status quo.
-  NEW_ANS:
+  ANS: c, with the conversion rules given rather than guessed: fold a sub-phase dependency up to the
+  feature it lives in, drop a dependency on a doc entirely (you would depend on the phase that wrote it,
+  and that is strange enough not to make a rule out of), and drop the empty ones. Anything worth keeping
+  that the new convention has no field for goes in a new freeform `comment:` key that nothing checks.
+  Measured before deciding: the 27 keys carry two feature-level edges. See below.

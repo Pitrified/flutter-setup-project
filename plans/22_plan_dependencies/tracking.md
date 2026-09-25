@@ -17,6 +17,9 @@ still depends on. Analysis, the five answered questions and the complexity budge
   checked once the numbers stop ruling them out.
 - **The script's case budget** is how many branches a reader must hold to predict it. Rare cases go to
   whoever reads the output (Q5).
+- **One meaning per key** (Q6). The 27 legacy phase-level `depends_on` values are converted rather than
+  tolerated: they fold up to two feature-level edges, doc dependencies and empty lists are dropped, and
+  what is worth keeping moves to a new freeform `comment:` that nothing checks.
 
 ## Phases
 
@@ -45,3 +48,8 @@ Append-only. Newest at the bottom.
   file role, so it wants a decision rather than a rename. Two claims checked and held: `difflib` is
   stdlib, and the reverse lookup for the cascade is free once the forward edges are parsed.
 - 2026-09-26 : phases derived, five sub-plans written. Nothing implemented.
+- 2026-09-26 : Q6 answered by converting the legacy keys, with the conversion measured first: folding all
+  27 up to feature level yields two edges, 04 needing 03 and 05 needing 04. The other 25 were intra-folder
+  ordering the phase numbers already give, dependencies pointing at docs a phase had produced, or empty.
+  That measurement is also the best evidence for Q1. Phase 02 absorbed the conversion, and the frontmatter
+  gains a freeform `comment:` for what is worth keeping and should not be checked.
