@@ -18,6 +18,7 @@ comes from `git rev-parse --show-toplevel`, never from this file's own location.
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 import subprocess
 import sys
@@ -461,11 +462,104 @@ def check_citations(repo: Path) -> list[str]:
     return out
 
 
+def check_dependencies(folders: list[Folder]) -> list[str]:
+    """Every fault in the dependency graph, as findings.
+
+    Prerequisites are folders, so an edge means "that whole feature has to be
+    finished". Nothing here reads a git ref: a name that is not in this tree is
+    handled by `check_across_refs`, which knows whether someone else has it.
+    """
+    out = []
+    by_name = {f"{f.number}_{f.name}": f for f in folders}
+    where = {name: f.start.relative_to(f.path.parent.parent) for name, f in by_name.items()}
+    dependents: dict[str, list[str]] = {}
+    for name, folder in by_name.items():
+        for target in folder.depends_on:
+            dependents.setdefault(target, []).append(name)
+
+    for name, folder in sorted(by_name.items()):
+        for target in folder.depends_on:
+            prerequisite = by_name.get(target)
+            if prerequisite is None:
+                continue  # unresolved names are reported by the caller
+            if folder.status in ("in progress", "done") and prerequisite.status != "done":
+                out.append(
+                    f"{where[name]}: status is {folder.status}, but it needs {target}, "
+                    f"which is {prerequisite.status}"
+                )
+            if (folder.priority or 0) > (prerequisite.priority or 0):
+                out.append(
+                    f"{where[name]}: priority {folder.priority} is above {target}'s "
+                    f"{prerequisite.priority or 0}, so the list offers work that cannot be started"
+                )
+
+    # Read the other way: discarding a feature is the moment to see what it breaks.
+    for target, names in sorted(dependents.items()):
+        prerequisite = by_name.get(target)
+        if prerequisite is not None and prerequisite.status in ("discarded", "superseded"):
+            out.append(
+                f"{where[target]}: {prerequisite.status}, and {', '.join(sorted(names))} "
+                "depends on it"
+            )
+
+    out += check_cycles(by_name, where)
+    return out
+
+
+def check_cycles(by_name: dict[str, Folder], where: dict[str, Path]) -> list[str]:
+    """Cycles, reported as the path found.
+
+    Needed because a number says nothing about order: `20` may depend on `21`, so
+    only walking the edges rules a cycle out.
+    """
+    out, done = [], set()
+
+    def walk(name: str, seen: list[str]) -> None:
+        if name in seen:
+            cycle = seen[seen.index(name):] + [name]
+            key = frozenset(cycle)
+            if key not in done:
+                done.add(key)
+                out.append(
+                    f"{where[name]}: depends on itself through {' -> '.join(cycle)}"
+                )
+            return
+        folder = by_name.get(name)
+        if folder is None:
+            return
+        for target in folder.depends_on:
+            walk(target, seen + [name])
+
+    for name in sorted(by_name):
+        walk(name, [])
+    return out
+
+
+def unresolved(folders: list[Folder]) -> list[tuple[Folder, str]]:
+    """Every (folder, name) whose prerequisite is not a folder in this tree."""
+    names = {f"{f.number}_{f.name}" for f in folders}
+    return [
+        (folder, target)
+        for folder in folders
+        for target in folder.depends_on
+        if target not in names
+    ]
+
+
+def suggestion(name: str, folders: list[Folder]) -> str:
+    close = difflib.get_close_matches(name, [f"{f.number}_{f.name}" for f in folders], n=1)
+    return f"; did you mean {close[0]}" if close else ""
+
+
 def cmd_check(args: argparse.Namespace) -> int:
     folders = load(args.root)
     findings = []
     for folder in folders:
         findings += check_folder(folder)
+    findings += check_dependencies(folders)
+    for folder, name in unresolved(folders):
+        where = folder.start.relative_to(args.root.parent)
+        findings.append(f"{where}: depends on {name}, which is not a plan folder{suggestion(name, folders)}")
     if args.citations:
         findings += check_citations(args.root.parent)
     for finding in findings:

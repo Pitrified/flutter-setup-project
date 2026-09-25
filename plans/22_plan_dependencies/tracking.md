@@ -27,7 +27,7 @@ still depends on. Analysis, the five answered questions and the complexity budge
 | -- | -------------------------------- | -------------------------------------------------------- | ------- |
 | 01 | Frontmatter as a typed object    | [`01_typed_frontmatter.md`](01_typed_frontmatter.md)     | done    |
 | 02 | The field, the legacy keys, list  | [`02_depends_on_field.md`](02_depends_on_field.md)       | done    |
-| 03 | The hard rules, and the cascade  | [`03_hard_rules.md`](03_hard_rules.md)                   | planned |
+| 03 | The hard rules, and the cascade  | [`03_hard_rules.md`](03_hard_rules.md)                   | done    |
 | 04 | The soft rule, across branches   | [`04_soft_rule_cross_ref.md`](04_soft_rule_cross_ref.md) | planned |
 | 05 | Document the field               | [`05_document_the_field.md`](05_document_the_field.md)   | planned |
 
@@ -62,3 +62,7 @@ Append-only. Newest at the bottom.
   legacy keys converted: they folded to the two predicted edges (04 needs 03, 05 needs 04), 18 phase files
   gained a `comment: after ...` holding the intra-folder ordering, and the doc dependencies and empty lists
   went. No phase file carries `depends_on` now, so the validator needs no special case for it.
+- 2026-09-26 : phase 03 - five findings and a cycle check, each demonstrated failing on its own copy of
+  `plans/`. The three-folder cycle needed its own case, since the two-folder one passes with almost any
+  implementation. The cycle message named a folder rather than a file and was fixed before closing: this
+  repo's gates name the file.
