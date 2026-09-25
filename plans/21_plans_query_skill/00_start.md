@@ -336,21 +336,24 @@ prints. Then the file goes, and the two references to it in `docs/README.md` and
 
 ## The work this implies
 
-Not phases yet, and no `tracking.md` until they are agreed. What the answers add up to, in the order
-that keeps each step verifiable:
+Five phases, in the order that keeps each step verifiable. `tracking.md` and the sub-plans come next.
 
-- **The parser plus the query command**, written against the folders as they are now, which is the only
-  way to know what the parser has to recognise. Its own output is the to-do list for the next step.
-- **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): frontmatter on the eleven
-  start files without it, `00_intro.md` renamed, `00_start.md` and `tracking.md` where they are missing,
-  descriptions backfilled from the `Produces` column, and `plans/00_tracking.md` emptied into the
-  folders it describes and then deleted (Q18).
-- **The checker**, measured against the normalised tree, then wired into `scripts/check.sh`.
-- **Rehoming the thirteen citations** into the topical docs that own them (Q12, Q15), which arms the
-  no-citation check.
-- **The cross-branch scan and the rename script**, which are the folder-creation workflow rather than
-  the gate.
-- **The skill itself**, last, because a `SKILL.md` written before the scripts exist documents a guess.
+1. **The parser and the query command**, written against the folders as they are now, which is the only
+   way to know what the parser has to recognise. Its own output is the to-do list for phase 2.
+2. **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): frontmatter on the start
+   files without it, `00_intro.md` renamed, `tracking.md` where it is missing, descriptions backfilled
+   from the `Produces` column, and `plans/00_tracking.md` emptied into the folders it describes and then
+   deleted (Q18). The teardown lives here rather than in its own phase because that file is the input to
+   this one: it holds the statuses and the `Produces` text the frontmatter is written from, so deleting
+   it is the last step of the pass that consumed it.
+3. **The checker**, measured against the normalised tree, then wired into `scripts/check.sh` (Q6).
+4. **The repo stops citing the diary**: the fourteen citations rehomed into the topical docs that own
+   them (Q12, Q15) and the README rewritten to point at `docs/` as the current state and `plans/` as the
+   diary (Q16). One phase, because it is one measurement going to zero, and its last commit arms the
+   no-citation check.
+5. **The folder-creation workflow and the skill**: the cross-branch scan, the rename script, and the
+   `SKILL.md` that drives them. Together because the scan and the rename are only ever used through the
+   skill, and last because a `SKILL.md` written before the scripts exist documents a guess.
 
 Two items are deliberately outside: writing the diary rule into `tracked-development` (Q14, deferred),
 and moving this skill to dotfiles (Q3, after it has been used here).
@@ -533,3 +536,30 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   ANS: delete it. Once the generated view produces the same information, the hand-maintained copy is
   the stale one. Anything in it that is not the phase list gets moved first, which turns out to be most
   of the file: see below.
+
+### Seventh batch, raised while sizing the phases (2026-09-25)
+
+- Q19: what is the start file in the eight folders that have none? Q9 says a folder with no
+  `00_start.md` is not a feature, and taken literally that excludes folders 02-09, which are the first
+  eight features this project shipped. They use a `README.md`; folder 08 uses `00_coalesced_plan.md`,
+  folder 10 has `00.1_initial_research.md` and `00.2_...` and no start file, folder 11 has `00_intro.md`.
+  a. Rename the existing file: `README.md` to `00_start.md` in 02-09, `00_intro.md` in 11,
+     `00_coalesced_plan.md` in 08. Folder 10 gets a short written one.
+  b. Keep Q9 as written and treat "no `00_start.md`" as "not a feature", which quietly drops eight
+     shipped features out of every query.
+  c. Let the parser accept `README.md` as a start file where no `00_start.md` exists.
+  Recommended: a. Q5 already chose to normalise every folder, and this is what that costs; b makes the
+  roadmap view lie about the project's own history, and c is the tolerant parser Q1 ruled out, one file
+  name later. The rename is cheap and `links.py` catches anything that pointed at the old name.
+  NEW_ANS:
+- Q20: does the checker require the `feat` segment in `NN_feat_name.md`, which `tracked-development`
+  specifies and only folders 10, 15 and 17 follow? Folders 02-09 and 12 use `NN_name.md`, which is
+  roughly fifty files.
+  a. Accept `NN_<name>.md`. The number is what orders the phases and the name is prose; `feat` carries
+     no information a parser uses.
+  b. Require it, and rename about fifty files.
+  Recommended: a, and amend the convention in the skill rather than the fifty files. The segment is a
+  habit, not a rule anything depends on, and b spends a large rename plus every inbound link on making
+  the files agree with a word. Worth deciding before normalisation, since it is the difference between
+  renaming three files and renaming fifty.
+  NEW_ANS:
