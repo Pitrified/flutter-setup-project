@@ -10,8 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Setup, not a second check: the run step is still the one script.
+      # Pinned, not `channel: stable`. The first run of this workflow installed
+      # 3.47.5 while the dev box had 3.44.5, and a floating SDK means CI can fail
+      # on a lint the developer's analyzer has never heard of. Bump this
+      # deliberately, together with the box.
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version: 3.44.5
       - name: Run every gate
         run: scripts/check.sh

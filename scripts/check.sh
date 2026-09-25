@@ -19,6 +19,10 @@ run() {
 }
 
 run "links"    python3 scripts/gates/links.py
+# Codegen first, and not only in CI: *.freezed.dart and *.g.dart are gitignored,
+# so a fresh checkout has none and everything after this step fails with
+# undefined getters. Warm it is ~2s; cold (a clean clone) about a minute.
+run "codegen"  dart run build_runner build --delete-conflicting-outputs
 run "analyze"  flutter analyze
 run "test"     flutter test --reporter=failures-only
 
