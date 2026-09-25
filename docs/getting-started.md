@@ -136,7 +136,19 @@ After cloning this repo:
 ```bash
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
+scripts/install-hooks.sh   # runs the gates on every commit
 flutter run
+```
+
+## Gates
+
+`scripts/check.sh` is the one command that runs every check: markdown links resolve,
+`flutter analyze`, `flutter test`. CI runs the same script, and `scripts/install-hooks.sh`
+points git at `.githooks` so a commit runs it too (bypass with `git commit --no-verify`).
+
+```bash
+scripts/check.sh                   # everything
+python3 scripts/gates/links.py     # one gate on its own
 ```
 
 ## Target versions

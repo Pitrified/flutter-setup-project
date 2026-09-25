@@ -1,6 +1,7 @@
 # Project Tracking
 
-Single source of truth for progress across all phases.
+Progress for phases 00 to 09. Phases 10 and later each own a tracking file inside their own
+folder, so this file is not the index for them.
 
 ## Phase overview
 
@@ -14,7 +15,7 @@ Single source of truth for progress across all phases.
 | [05 Controllers](05_controllers/README.md) | complete | 6/6 plans executed |
 | [06 Stabilization](06_stabilization/README.md) | complete | 4/4 plans executed |
 | [07 Release](07_release/README.md) | in-progress | 3/3 plans written, 2/3 executed |
-| [08 LLM Integration](08_udpates/00_coalesced_plan.md) | complete | Qwen3 0.6B on-device, end-to-end working |
+| [08 LLM Integration](08_llm_integration/00_coalesced_plan.md) | complete | Qwen3 0.6B on-device, end-to-end working |
 | [09 UI Tweaks](09_ui_tweaks/README.md) | complete | 3/3 plans executed |
 
 ---

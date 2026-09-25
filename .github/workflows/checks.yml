@@ -1,0 +1,17 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Setup, not a second check: the run step is still the one script.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Run every gate
+        run: scripts/check.sh
