@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Phase 03 Audit: Implementation vs Specifications
 
 ## Summary

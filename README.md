@@ -1,50 +1,54 @@
 # flutter-setup-project
 
-A mobile language-tutoring app that runs a small LLM entirely on-device (Android).
-The user types messages in their target language and receives structured corrections,
-explanations, and conversational replies - all without network access after initial model download.
+**fala** is an Android language-tutoring app. The learner types in the language they are
+learning and gets back a structured correction, a translation and a conversational reply,
+streamed token by token.
 
-The repo is called `flutter-setup-project` because the initial focus is on setting up a clean, well-structured Flutter codebase and development environment, along with comprehensive documentation and AI development guidelines. The actual tutoring features and LLM integration will be built on top of this foundation in subsequent phases, and possibly in a different repo.
+The repo is named for its first goal, a clean Flutter codebase and development environment.
+The app grew on top of that, and splitting the two apart is planned rather than done.
 
-## Current state
+## What it does today
 
-The project is in the planning phase. No code exists yet.
-All work so far lives in the `plans/` folder as structured blueprints.
+- **Two inference engines behind one interface**, chosen in Settings: OpenAI through
+  `openai_dart` with the key in `flutter_secure_storage`, and Qwen3-0.6B on device through
+  `flutter_gemma`, downloaded on first launch and offline afterwards. Cloud is the quality
+  bar the prompts are tuned against.
+- **The target language is a setting.** Portuguese (Brazilian) by default, with Spanish,
+  French, Italian and German offered; explanations stay in English.
+- **CEFR level, topic and translation-on-tap**, with the tutor's structured reply rendered
+  as it arrives rather than after it completes.
+- Android only, min API 26, target API 36. Flutter 3.44.5.
 
-## Navigation
+## Where to look
 
-| Location | Purpose |
-|----------|---------|
-| [plans/01_plan_polishing/00_start.md](plans/01_plan_polishing/00_start.md) | Master plan: gap analysis, phase breakdown, execution order |
-| [plans/00_drafts/](plans/00_drafts/) | Raw research notes (architecture draft, LLM SDK options) |
-| [docs/](docs/) | Polished documentation (empty until Phase 02 executes) |
-| [.github/copilot-instructions.md](.github/copilot-instructions.md) | AI assistant configuration (skeleton, updated each phase) |
+| Location | What is in it |
+|----------|---------------|
+| [docs/](docs/) | What the project is now: specs, standards, build and release, prompt design |
+| [docs/getting-started.md](docs/getting-started.md) | Set up the toolchain, run the app, run the emulator end-to-end check |
+| [docs/functional-specs.md](docs/functional-specs.md) | Scope, locked decisions, screens, error handling |
+| [docs/library/](docs/library/) | Per-system reference: the engines, controllers, parser, repository |
+| [.github/copilot-instructions.md](.github/copilot-instructions.md) | The rules an AI assistant works under here |
+| [plans/](plans/) | The development diary: how the project got to where it is |
 
-## Phases
+**Docs are the as-is; plans are the diary.** A decision worth citing lives in the docs file
+whose topic it is. The plan folders record how each phase was reasoned about, in the shape the
+`tracked-development` skill describes, and they are not maintained as documentation.
 
-| # | Phase | Goal |
-|---|-------|------|
-| 00 | [Drafts](plans/00_drafts/README.md) | Raw research material (architecture, LLM SDK options) |
-| 01 | [Plan Polishing](plans/01_plan_polishing/README.md) | Meta-plan, gap analysis, execution order |
-| 02 | [Foundation](plans/02_foundation/README.md) | All documentation before any code (spec, standards, AI playbook) |
-| 03 | [Scaffold](plans/03_scaffold/README.md) | Create Flutter project, configure deps, validate it runs |
-| 04 | [Core Systems](plans/04_core_systems/README.md) | Inference interface, fake provider, structured output, persistence |
-| 05 | [Controllers and Screens](plans/05_controllers/README.md) | End-to-end tutoring interaction wired together |
-| 06 | [Stabilization](plans/06_stabilization/README.md) | Error handling, tests, performance validation |
-| 07 | [Release](plans/07_release/README.md) | Signed APK, Google Play private alpha |
+To read the diary as a list rather than by opening folders:
 
-See [plans/01_plan_polishing/00_start.md](plans/01_plan_polishing/00_start.md) for the full breakdown.
+```bash
+python3 scripts/plans.py list                 # every feature, by priority
+python3 scripts/plans.py list --status "in progress"
+python3 scripts/plans.py list --index 15      # what that folder contains
+```
 
-## Tech stack (planned)
+## Gates
 
-- Flutter (Dart), Android only
-- Riverpod (state management)
-- GoRouter (navigation)
-- Hive (local persistence)
-- flutter_gemma (on-device LLM inference, swappable)
-- freezed + json_serializable (typed models, codegen)
+```bash
+scripts/check.sh          # markdown links, plan folders, codegen, analyze, test
+scripts/install-hooks.sh  # once per clone, so a commit runs them too
+scripts/e2e.sh            # the slow one: headless emulator plus a mocked OpenAI endpoint
+```
 
-## Development environment
-
-Linux. Flutter SDK not yet installed.
-Setup instructions will be written in Phase 02 ([plans/02_foundation/00_dev_environment.md](plans/02_foundation/00_dev_environment.md)).
+CI runs `scripts/check.sh` and nothing else. Generated files (`*.freezed.dart`, `*.g.dart`)
+are gitignored, so a fresh clone needs the codegen gate before anything else will compile.

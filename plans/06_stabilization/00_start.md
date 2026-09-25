@@ -1,3 +1,11 @@
+---
+status: done
+priority: 0
+description: |
+  Error handling as a failure taxonomy with recovery UI, loading states, the test suite, and
+  performance budgets per device tier.
+---
+
 # Phase 06 - Stabilization
 
 Harden the app: handle all failure modes gracefully, add tests,

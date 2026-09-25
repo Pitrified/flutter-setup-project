@@ -160,7 +160,7 @@ void main() {
     // A complete buffer that is not valid TutorResponse JSON: the strict final
     // parse fails. Until 2026-09-25 the raw text became the reply, which read as
     // the tutor answering in English; see
-    // plans/09_ui_tweaks/10_malformed_reply_display.md.
+    // docs/library/structured-output-system.md, "What a parse failure shows the learner".
     engine.buffers = const ['some garbled output'];
 
     final tutorMsg = await controller.sendMessage('Oi');

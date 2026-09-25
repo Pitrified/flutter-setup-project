@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 03 - Topic suggestions and picker
 
 Part of phase 09 (UI tweaks and small functionality). Adds a "Pick a topic"

@@ -34,9 +34,10 @@ they arrive*. Analysis, options, and the rejected alternatives are in
 | 2  | Engine streaming API + Fake impl        | [`02_feat_engine_stream_api.md`](02_feat_engine_stream_api.md)           | done    |
 | 3  | StructuredStreamEngine + StructuredDelta| [`03_feat_structured_stream_engine.md`](03_feat_structured_stream_engine.md) | done    |
 | 4  | Real engines streaming (OpenAI + gemma) | [`04_feat_real_engine_streaming.md`](04_feat_real_engine_streaming.md)   | done    |
-| 4.1| Golden OpenAI SSE capture (optional)    | [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md) | planned (deferred) |
+| 4.1| Golden OpenAI SSE capture (deferred)    | [`04.1_feat_openai_stream_capture.md`](04.1_feat_openai_stream_capture.md) | planned |
 | 5  | Controller + provider wiring            | [`05_feat_controller_wiring.md`](05_feat_controller_wiring.md)           | done    |
 | 6  | Live partial-tolerant widgets           | [`06_feat_live_widgets.md`](06_feat_live_widgets.md)                     | done    |
+| 7  | Code audit of the streaming work        | [`07_audit.md`](07_audit.md)                                             | done    |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 

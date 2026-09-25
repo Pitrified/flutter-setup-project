@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # OpenAI integration
 
 ## Context
@@ -13,7 +17,7 @@ The architectural feasibility was already established in earlier reports:
 
 - [`00.2_llm_integration_report.md` (Section 3)](00.2_llm_integration_report.md) -
   estimated 2-4 hours of Dart work, identifies key distribution as the real problem.
-- [`00_coalesced_plan.md` (Deferred decision B)](00_coalesced_plan.md) - summary
+- [`00_start.md` (Deferred decision B)](00_start.md) - summary
   table of key-distribution options.
 
 This file picks one concrete Dart integration approach and one key-distribution
@@ -190,7 +194,7 @@ This is the plan; no code changes yet. Files listed are reference only.
 3. **Engine registry / factory** in
    `lib/services/inference/engine_registry.dart`. Map
    `EngineKind -> InferenceEngine Function()`. The existing engine-factory
-   pattern from [`00_coalesced_plan.md` Step 6](00_coalesced_plan.md) is
+   pattern from [`00_start.md` Step 6](00_start.md) is
    extended from "single factory" to "keyed registry" so additional engines
    slot in without modifying selection code.
 4. **`OpenAiInferenceEngine`** in
@@ -253,7 +257,7 @@ Approach: **user-supplied key, stored in Android Keystore via
 `flutter_secure_storage`**. This matches "Option A" from
 [`00.2_llm_integration_report.md` Section 3](00.2_llm_integration_report.md)
 and the "User-supplied API key" row in
-[`00_coalesced_plan.md` Deferred B](00_coalesced_plan.md).
+[`00_start.md` Deferred B](00_start.md).
 
 Why this is acceptable for internal-only APK:
 

@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: done
 depends_on: [03_scaffold/00_create_project.md, docs/project-structure.md]
 produces: [lib/ folder tree, analysis_options.yaml, test/ folder tree]
 ---

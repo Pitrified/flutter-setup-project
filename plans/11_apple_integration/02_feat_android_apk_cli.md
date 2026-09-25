@@ -11,7 +11,7 @@ APK from the command line only - no Android Studio. This validates the Flutter
 toolchain end-to-end before tackling Apple platforms, and confirms the release
 signing chain works on the new machine.
 
-Context: [`00_intro.md`](00_intro.md), depends on
+Context: [`00_start.md`](00_start.md), depends on
 [`01_feat_toolchain_setup.md`](01_feat_toolchain_setup.md).
 
 ## Goals

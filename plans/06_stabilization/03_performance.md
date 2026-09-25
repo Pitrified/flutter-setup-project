@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 06/03 - Performance
 
 ## Status: complete

@@ -38,7 +38,7 @@ class ConversationController {
   /// Language the corrections, explanations and translations are written in.
   ///
   /// Fixed at English for now: the user's own language is not a setting yet, so
-  /// there is nothing to read it from (see `plans/15_target_language` Q3). The
+  /// there is nothing to read it from (`docs/functional-specs.md`). The
   /// prompt takes it as a variable, so exposing it later is a call-site change
   /// and not a template edit.
   static const String explanationLanguage = 'English';
@@ -237,7 +237,7 @@ class ConversationController {
   ///
   /// A parse failure used to be shown as the model's raw text, on the grounds
   /// that something beats nothing. Watching it happen on a device changed that
-  /// (`plans/09_ui_tweaks/10_malformed_reply_display.md`): the learner saw model
+  /// (`docs/library/structured-output-system.md`): the learner saw model
   /// prose in English presented as the tutor's reply, with no correction card and
   /// no sign of failure, which reads as the tutor answering rather than as a
   /// broken turn. The raw text still goes to the log, where it is useful.

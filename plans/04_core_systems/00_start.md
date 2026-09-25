@@ -1,3 +1,12 @@
+---
+status: done
+priority: 0
+description: |
+  The engine-agnostic core: the InferenceEngine interface, the fake engine every test uses, the
+  flutter_gemma engine, the structured-output parser, Hive persistence, the model manager and
+  the versioned prompt loader.
+---
+
 # Phase 04 - Core Systems
 
 Build the critical backend systems in isolation. A fake inference engine

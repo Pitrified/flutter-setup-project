@@ -1,3 +1,7 @@
+---
+status: in progress
+---
+
 # Plan 07/01 - Play Store Alpha
 
 ## Status: in-progress

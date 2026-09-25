@@ -4,7 +4,7 @@ Take `fala` (currently Android-only, on-device `flutter_gemma`/MediaPipe tutor)
 from a clean Mac to live on Apple platforms: set up the toolchain, rebuild the
 Android APK to validate it, port to macOS, demo on iPhone over cable, and
 publish via TestFlight + App Store. Orientation and analysis in
-[`00_intro.md`](00_intro.md).
+[`00_start.md`](00_start.md).
 
 ## Key decisions
 
@@ -36,7 +36,7 @@ Status values: draft / planned / in progress / done / superseded / discarded.
 
 Append-only. Newest at the bottom.
 
-- 2026-06-20 : bootstrapped phase 11 folder from `00_intro.md`; drafted phases
+- 2026-06-20 : bootstrapped phase 11 folder from `00_start.md`; drafted phases
   1-5 as `NN_feat_*` sub-plans and this tracking file. Phases 1-2 set to
   `planned` (well-understood), phases 3-5 left `draft` pending the macOS engine
   decision and Apple Developer enrollment.

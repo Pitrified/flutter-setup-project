@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 06/00 - Error Handling
 
 ## Status: complete

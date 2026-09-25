@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 04 - Scroll to bottom
 
 Part of phase 09 (UI tweaks and small functionality). Makes the conversation

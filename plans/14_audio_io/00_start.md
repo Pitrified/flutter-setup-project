@@ -1,5 +1,9 @@
 ---
 status: draft
+priority: 0
+description: |
+  Speak and be heard: speech-to-text for the learner's turn and text-to-speech for the tutor's,
+  so a conversation lesson can be spoken rather than typed.
 ---
 
 # Audio input and output - options brainstorm

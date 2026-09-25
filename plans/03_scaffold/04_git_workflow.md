@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: done
 depends_on: [03_scaffold/03_routing_and_providers.md]
 produces: [.gitignore, docs/git-workflow.md]
 ---

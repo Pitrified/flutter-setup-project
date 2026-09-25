@@ -91,7 +91,7 @@ void main() {
 
     // ---- 1. store a key through the app's own Settings field ----------------
     // Deliberately not a debug-only bypass: this exercises secure storage and
-    // the real field (plans/17_emulator_e2e/00_start.md Q2).
+    // the real field (docs/getting-started.md, "How the app is pointed at the mock").
     await waitFor(tester, find.text('fala'));
     await tapAndSettle(tester, find.byTooltip('Settings'));
     await waitFor(tester, find.text('OpenAI'));
@@ -157,7 +157,7 @@ void main() {
     );
 
     // A 200 whose content is not JSON reads as a failed turn, not as the tutor
-    // writing English prose (plans/09_ui_tweaks/10_malformed_reply_display.md).
+    // writing English prose (docs/library/structured-output-system.md).
     await mockScenario('malformed');
     await send(tester, 'E ancora');
     await waitFor(

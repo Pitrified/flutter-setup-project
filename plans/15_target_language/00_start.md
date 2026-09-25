@@ -1,3 +1,11 @@
+---
+status: done
+priority: 0
+description: |
+  Make the tutor's language a setting rather than Portuguese everywhere: a TargetLanguage model,
+  parametrized prompts, the picker and dynamic copy, and the outward-facing text.
+---
+
 # Target language as a setting
 
 Status: bootstrap. Nothing implemented yet.

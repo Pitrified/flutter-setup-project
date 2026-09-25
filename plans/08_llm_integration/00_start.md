@@ -1,3 +1,12 @@
+---
+status: done
+priority: 0
+description: |
+  Real inference, in two waves: Qwen3-0.6B on device through flutter_gemma, then the OpenAI
+  cloud engine through openai_dart with a selector in Settings. Production key distribution was
+  deferred to folder 13.
+---
+
 # Phase 08 - LLM Integration (Coalesced Plan)
 
 _Consolidated from reports 01, 02, and 03. Single source of truth._

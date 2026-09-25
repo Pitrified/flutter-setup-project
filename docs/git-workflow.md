@@ -5,7 +5,7 @@
 | Branch | Purpose | Lifetime |
 |--------|---------|----------|
 | main | The trunk: everything lands here | Permanent |
-| feature/\<name\> | Planning and implementation of one feature folder | Until merged |
+| feat/\<NN_feat_name\> | Planning and implementation of one feature folder | Until merged |
 | fix/\<name\> | Bug fix | Until merged |
 
 There is no `dev`. One repo, one person, one box: an integration branch between
@@ -20,12 +20,19 @@ the work and `main` is ceremony with nothing on the other side of it.
 **Its own branch**: the planning *and* implementation of a feature folder, from
 `00_start.md` through the last sub-phase.
 
+The branch takes the folder's own name, `feat/<NN_feat_name>`, so a folder
+numbered 21 is worked on in a branch whose name starts with 21. The number is the
+useful half: it sorts the branch list the way the plans sort, and
+it answers "what is this branch for" with a folder to read rather than a name to
+interpret. A branch with no folder behind it is a small change that should have
+gone straight to main.
+
 Feature branches merge with `--no-ff`, always, even when `main` could fast
 forward:
 
 ```bash
 git checkout main
-git merge --no-ff feature/<name>
+git merge --no-ff feat/<NN_feat_name>
 ```
 
 The merge commit is the point. It keeps the feature's commits grouped and shows

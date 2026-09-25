@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 depends_on: []
 produces: [docs/functional-specs.md]
 ---

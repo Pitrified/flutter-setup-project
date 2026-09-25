@@ -1,3 +1,12 @@
+---
+status: done
+priority: 0
+description: |
+  Controllers and screens: ConversationController and AppController with their providers, the
+  welcome, model-download and conversation screens, and the end-to-end wiring that made the app
+  demo-ready.
+---
+
 # Phase 05 - Controllers and Screens
 
 Wire all core systems into an end-to-end tutoring interaction.

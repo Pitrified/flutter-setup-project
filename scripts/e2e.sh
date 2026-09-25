@@ -6,7 +6,7 @@
 #
 # Deliberately NOT part of scripts/check.sh: this takes minutes and needs an
 # emulator, and a gate nobody will wait for is not a gate
-# (plans/17_emulator_e2e/00_start.md Q3).
+# (docs/getting-started.md, "What the mock does not prove").
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 

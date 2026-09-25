@@ -10,7 +10,7 @@ Get a fresh Mac from zero to a working Flutter dev environment that can build
 this repo. This is the foundation phase: nothing else in this initiative can
 start until `flutter doctor` is clean and the repo's codegen runs.
 
-Context: [`00_intro.md`](00_intro.md).
+Context: [`00_start.md`](00_start.md).
 
 ## Goals
 

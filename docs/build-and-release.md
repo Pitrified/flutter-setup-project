@@ -25,7 +25,8 @@ flutter run --release
 
 The default `flutter build apk` produces one fat APK carrying native libraries for every
 CPU architecture. We only ship arm64-v8a (phones) and x86_64 (emulators); 32-bit
-armeabi-v7a is dropped as unrealistic for an on-device LLM (`plans/12_abi_split/`).
+armeabi-v7a is dropped as unrealistic for an on-device LLM: a 32-bit device has
+neither the memory nor the speed to run the model.
 Restrict the ABI set with `--target-platform` and split per architecture so a device
 gets only the code it runs:
 
@@ -55,8 +56,9 @@ server-side and each user downloads only their architecture.
 
 The release build also excludes the flutter_gemma native libs this app never loads (MediaPipe,
 image-generator and RAG `.so` files) via `packaging { jniLibs.excludes }` in
-`android/app/build.gradle.kts`; the app runs only the LiteRT-LM / qwen3 path. See
-`plans/12_abi_split/` and re-verify that exclude list on flutter_gemma upgrades.
+`android/app/build.gradle.kts`; the app runs only the LiteRT-LM / qwen3 path.
+Re-verify that exclude list on every flutter_gemma upgrade: it is a list of paths
+inside someone else's package, and nothing fails loudly if one is renamed.
 
 ### Debugging a live app on device
 
@@ -135,8 +137,7 @@ flutter build appbundle --release
 
 `flutter_gemma` bundles native libs for engine paths this app never uses, so the old "<30MB APK"
 target is not reachable, but the release build now drops armeabi-v7a and excludes the unused
-MediaPipe / image-generator / RAG `.so` files (see `plans/12_abi_split/` and the split-per-ABI
-section above). The LLM model downloads separately at runtime and is not counted below.
+MediaPipe / image-generator / RAG `.so` files (see the split-per-ABI section above). The LLM model downloads separately at runtime and is not counted below.
 Measured on 2026-07-11 (Flutter 3.44.0, debug-signed release, on-device inference verified):
 
 | Artifact | Size | Notes |

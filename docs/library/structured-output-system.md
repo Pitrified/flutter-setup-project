@@ -50,6 +50,19 @@ InferenceEngine (raw text) -> StructuredInferenceEngine<T> -> StructuredResult<T
 | `StructuredInferenceFailure<T>` | `error: String` | Engine failed or timed out |
 | `StructuredParseFailure<T>` | `rawText: String`, `error: String` | Text generated but parse failed |
 
+### What a parse failure shows the learner
+
+A `StructuredParseFailure` reads as a failed turn, not as the tutor speaking. The
+conversation shows "Error generating response: the reply was not in the expected
+format." and no correction card, and `rawText` goes to the log at warn level for
+whoever is debugging it.
+
+The reason is that the raw text is indistinguishable from an answer. A model that
+breaks its schema usually writes fluent prose, so showing it puts English chatter
+in the tutor's voice and the learner cannot tell that the correction they did not
+get was lost rather than not needed. There is no retry: nothing in the app retries
+a failed turn today, and one failure mode is not the place to invent one.
+
 ## StructuredOutputParser\<T\>
 
 Generic parser that extracts JSON from LLM text and deserializes to T.

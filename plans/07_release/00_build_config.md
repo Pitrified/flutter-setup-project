@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 07/00 - Build Configuration
 
 ## Status: complete

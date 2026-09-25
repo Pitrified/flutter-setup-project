@@ -10,7 +10,7 @@ Move from cable side-loading to real distribution: TestFlight for scaled
 testing, then App Store review for public release. This phase is gated on a paid
 Apple Developer Program membership and on passing Apple's human review.
 
-Context: [`00_intro.md`](00_intro.md), depends on
+Context: [`00_start.md`](00_start.md), depends on
 [`04_feat_ios_cable_demo.md`](04_feat_ios_cable_demo.md).
 
 ## Goals

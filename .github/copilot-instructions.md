@@ -28,9 +28,25 @@ than coding to the stale line. Where a doc and a *request* disagree, stop and as
 
 ## Progress
 
-Each phase folder under [plans/](../plans/) owns its own tracking file, written in the shape the
-`tracked-development` skill describes. [plans/00_tracking.md](../plans/00_tracking.md) covers
-phases 00 to 09 only and is not the index for anything newer; read the phase folder itself.
+Each phase folder under [plans/](../plans/) owns its own `tracking.md`, written in the shape the
+`tracked-development` skill describes. Read the phase folder itself: the folders up to 09 predate the
+convention and keep their own index, and none of them is the index for anything newer.
+
+## Plans are a diary, docs are the as-is
+
+`plans/` records how the project got here. `docs/` records what it is now. A reader who needs to know
+why something is the way it is reads the docs, not a diary entry from four phases ago.
+
+So nothing outside `plans/` points at a specific plan: no path to a plan folder or file, no `Qn`/`Dn`
+id. When a comment, script or doc needs to lean on a decision, that decision goes in the docs file
+whose topic it is, and the citation points there. Docs are grouped by topic, so a decision with no
+obvious home means a missing doc rather than an exception.
+
+These instructions and the other meta files (`docs/README.md`,
+[ai-development-playbook.md](../docs/ai-development-playbook.md)) are the exception that proves the
+rule: they may describe the *shape* of the plans tree, such as `plans/<folder>/tracking.md` or
+`NN_feat_*.md`, because that is the convention rather than a decision. They still may not point at an
+instance of it.
 
 ## Stack
 

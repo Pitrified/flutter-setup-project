@@ -1,3 +1,12 @@
+---
+status: done
+priority: 0
+description: |
+  Every document needed before any code was written: getting-started, functional-specs,
+  project-structure, coding-standards, the AI development playbook, the system-spec template,
+  the Copilot instructions and docs/README.
+---
+
 # Phase 02 - Foundation
 
 Write all documentation and configuration needed to unblock AI-assisted development.

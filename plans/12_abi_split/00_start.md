@@ -1,3 +1,11 @@
+---
+status: done
+priority: 0
+description: |
+  Cut the APK by building per ABI, dropping armeabi-v7a as unrealistic for an on-device LLM, and
+  excluding the MediaPipe libraries the app never calls.
+---
+
 # ABI split for release APKs - brainstorm
 
 ## The idea

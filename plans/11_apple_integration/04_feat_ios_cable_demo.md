@@ -11,7 +11,7 @@ iPhone over cable for a private demo. iOS is the well-supported Apple path:
 `flutter_gemma`/MediaPipe GenAI runs on iOS, so the main work is signing and
 on-device provisioning rather than engine viability.
 
-Context: [`00_intro.md`](00_intro.md), depends on
+Context: [`00_start.md`](00_start.md), depends on
 [`01_feat_toolchain_setup.md`](01_feat_toolchain_setup.md).
 
 ## Goals

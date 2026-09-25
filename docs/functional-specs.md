@@ -30,6 +30,27 @@
 | Min Android version | API 26 (Android 8.0) |
 | Target Android version | API 36 (Android 16) |
 | Difficulty system | A1-C2 CEFR levels via prompt templates |
+| Target language | A setting, `TargetLanguage`, defaulting to `pt-BR` |
+
+### Target language
+
+The language being learned is a setting, not a constant. `TargetLanguage`
+(`lib/models/target_language.dart`) is the closed set the app offers, and every
+language-dependent string, prompt variable and piece of UI copy reads from it.
+
+- **Default `pt-BR`.** Brazilian Portuguese is what the app was built around and
+  what its store copy says; the default is the app's, not the device locale's.
+- **Explanations stay in English.** Corrections and translations are written in
+  English whatever the target language is, so the learner reads the explanation in
+  a language they already have.
+- **`en-US` is deliberately absent.** An English tutor explaining English in
+  English has nothing to translate, so the enum does not offer it, and a test
+  asserts that it does not.
+- **A conversation's language is fixed once it has messages.** Changing the
+  setting changes the default for the next conversation; changing it from inside a
+  conversation that already has history offers a restart or keeping the current
+  one, and `setLanguage` raises `LanguageLockedException` rather than rewriting
+  history in a language it was not spoken in.
 
 ## 3. Platform Constraints
 

@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 09 - Split CEFR text into guidance + description
 
 Part of phase 09 (UI tweaks and small functionality). Restores the detailed

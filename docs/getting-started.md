@@ -182,6 +182,40 @@ scripts/e2e.sh --stop-emulator     # and shut it down afterwards
 To drive the app by hand instead, `source tool/adb_ui.sh` gives `ui_tap`, `ui_text`, `ui_shot` and
 friends, which find widgets in the view tree rather than guessing coordinates.
 
+### How the app is pointed at the mock
+
+`OPENAI_BASE_URL` is a compile-time define, read once in
+`lib/services/inference/openai_inference_engine.dart` and empty by default, which
+means the real API:
+
+```bash
+flutter run --dart-define=OPENAI_BASE_URL=http://10.0.2.2:8080/v1
+```
+
+- **It is a build-time define, not a Settings field.** A visible "API endpoint" box
+  in a shipped app is a way to have someone's key sent elsewhere, and the value is a
+  test fixture rather than a preference.
+- **From an emulator the host is `10.0.2.2`**; `127.0.0.1` there is the emulator
+  itself. `adb reverse tcp:8080 tcp:8080` makes `127.0.0.1` work too, on an emulator
+  or a cabled phone.
+- **Cleartext HTTP is debug-only**, granted by
+  `android/app/src/debug/AndroidManifest.xml` and a network security config that
+  permits `10.0.2.2`, `127.0.0.1` and `localhost`. Release builds stay strict.
+- **The key goes in through the app's own Settings field.** The integration test
+  types a dummy key and saves it, which exercises secure storage rather than adding
+  a debug bypass to the one part of the app that handles a secret.
+
+### What the mock does not prove
+
+`tool/mock_openai.py` answers with scripted text whatever it is asked: it does not
+validate the request against our JSON schema. So these runs prove the app handles a
+well-formed OpenAI response, not that our `response_format` is one OpenAI accepts.
+Only a real call with a real key proves that, and it stays a manual check.
+
+The same reasoning keeps `scripts/e2e.sh` out of CI: a KVM-accelerated emulator in
+GitHub Actions is slow and flaky, and `check.sh` has to stay fast enough that nobody
+skips it.
+
 ## Target versions
 
 | Concern | Value |
