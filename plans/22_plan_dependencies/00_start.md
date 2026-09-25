@@ -145,6 +145,25 @@ keys as fields, built once from the block, would put the "`priority` is a non-ne
 with a classmethod that validates, no dependency. Worth doing as part of this folder rather than after
 it, since this is the change that adds the first non-scalar field.
 
+## How many cases this script gets to have
+
+Settled while answering Q5, and it applies to the rest of this folder as much as to that question.
+
+`scripts/plans.py` is one file that already holds thirteen rules, four subcommands and two output
+formats, and this folder adds a graph to it. The budget is not tokens, it is how many branches a reader
+has to hold to predict what the script does. So the default answer to "could the script also handle X" is
+no, twice over:
+
+- **If the case is rare, leave it to a person or an assistant reading the output.** `superseded` happens
+  once a year; the cost of handling it is permanent and the benefit is one saved file read. The output
+  saying what is broken is enough for someone to act on.
+- **If handling it needs a new field, the bar is higher again**, because a field is a thing every future
+  plan file can carry and every reader has to know about, not just a branch in one script.
+
+What stays in scope here: the forward edges, the reverse lookup for the cascade, the two severities, and
+the cycle check. Those are load-bearing for the two faults this folder exists to catch. Everything else
+is a judgement the reader makes with the output in front of them.
+
 ## Open questions
 
 - Q1: does `depends_on` name folders only, or may it name a phase file in another folder?
@@ -189,4 +208,6 @@ it, since this is the change that adds the first non-scalar field.
   the reader has to open the superseded folder to find out what replaced it. It is one optional key on a
   status that is rare, and the information already exists in prose, which is the argument that it is
   cheap rather than the argument that it is needed.
-  NEW_ANS:
+  ANS: b. No new key. This script will already grow enough cases to handle, and `superseded` is small and
+  rare: the cascade message says what is broken, and an assistant works out what to repoint at by reading
+  the folder, case by case. See "How many cases this script gets to have" below.
