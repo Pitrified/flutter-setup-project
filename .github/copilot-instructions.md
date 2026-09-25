@@ -51,12 +51,19 @@ freezed + json_serializable - Android, min API 26, target 36
 
 ## Gates
 
-`scripts/check.sh` runs every gate: markdown links resolve, `flutter analyze`, `flutter test`.
-One command, and CI runs the same script, so green here means green there.
-`scripts/install-hooks.sh` points git at `.githooks` so a commit runs them too.
+`scripts/check.sh` runs every gate: markdown links resolve, codegen, `flutter analyze`,
+`flutter test`. CI runs the same script. `scripts/install-hooks.sh` points git at `.githooks` so a
+commit runs them too.
 
 A gate has to name the file and the line when it fails, and be fast enough that nobody skips it.
 Something that has never been seen failing is an assumption, not a gate.
+
+So is something that has never been seen passing where it is claimed to pass. A green run here
+proves the gates pass on a tree that already has generated files and a warm `.dart_tool`; a fresh
+checkout has neither, which is exactly how the first CI run failed while local was green. Reproduce
+the CI condition with a clean clone (`docs/getting-started.md`, "Reproducing CI locally") before
+saying anything about it. Do not write that CI will pass, or that two environments agree, until
+something has run in both: say what was checked, and say what was not.
 
 Adding a check to `check.sh` beats writing the rule down a second time: when a correction has to
 be given twice, the fix is a mechanism, not more prose.

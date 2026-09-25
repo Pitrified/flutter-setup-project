@@ -151,6 +151,22 @@ scripts/check.sh                   # everything
 python3 scripts/gates/links.py     # one gate on its own
 ```
 
+Gates run in this order: links, codegen, analyze, test. Codegen is in the list
+because `*.freezed.dart` and `*.g.dart` are gitignored, so a fresh checkout has
+none and analyze fails on every freezed type. Warm it costs about 2s.
+
+**Reproducing CI locally.** A pass on a working tree proves less than it looks:
+your tree has generated files and a warm `.dart_tool` that a CI runner does not.
+Clone the repo and run the gates in the clone, which is what CI checks out:
+
+```bash
+git clone --no-hardlinks . /tmp/fala-clean && cd /tmp/fala-clean
+scripts/check.sh                   # ~2 min cold, mostly pub get and codegen
+```
+
+The workflow pins the same Flutter version this box runs, so the two are
+comparable. Until that clone is green, CI is a guess.
+
 ## End-to-end on an emulator
 
 `scripts/e2e.sh` is the slow check, kept out of `check.sh` because it takes minutes and needs an
