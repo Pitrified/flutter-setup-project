@@ -80,6 +80,32 @@ Practical consequence for `list`: a row whose prerequisite is not in the tree is
 here, distinctly from one whose prerequisite is present but unfinished. The first needs a merge, the
 second needs work, and they are not the same message.
 
+### Discarding cascades
+
+A dependency on a `discarded` or `superseded` folder fails, and unlike the missing-prerequisite warning
+this one is hard. The reason is timing: the cost of a discarded feature is not the folder, it is the plans
+downstream that quietly assumed it, and the only moment anyone will think about them is the moment the
+status changes.
+
+So the message is written from the discarded folder's side rather than the dependent's, because that is
+where the person is standing:
+
+```
+plans: 20_repo_split/00_start.md: discarded, and 23_dependency_upgrades depends on it
+```
+
+That needs a reverse lookup over `depends_on`, which the parser gets for free once it holds the forward
+edges.
+
+It cascades, and that is the point rather than a side effect. Repointing `23` may mean discarding it too,
+which fails the same rule for whatever depended on `23`, until the tree is consistent again. Run, fix,
+run: the loop ends when the checker is quiet, and every step of it was a decision someone had to make
+anyway.
+
+"For now" is doing real work in this answer. If it turns out that most discards are leaves and the rule
+only ever fires on the same two folders, it should soften. That is a judgement to make after it has fired
+a few times, not before.
+
 ### What a name resolves against
 
 The set of legal names is the set of folders the tooling already finds: a numbered directory holding a
@@ -125,11 +151,16 @@ it, since this is the change that adds the first non-scalar field.
   a. Folders only. A dependency between features is the thing that gets forgotten.
   b. Either, so a phase can depend on one phase elsewhere.
   Recommended: a. b is a graph that needs maintaining, and the finer it gets the more often it is wrong.
-  NEW_ANS:
+  ANS: a. Folders only. The working unit is a whole feature: the intent is to work on one folder at a
+  time where possible, so a prerequisite is a folder being finished, not a phase inside one being
+  reached.
 - Q2: is a prerequisite that is `discarded` or `superseded` satisfied?
   Recommended: report it rather than decide it. Either the dependent plan should be reworded or the
   prerequisite's replacement should be named, and both are edits a person makes.
-  NEW_ANS:
+  ANS: no. Depending on a `discarded` or `superseded` folder is a hard failure, for now. Discarding a
+  feature is exactly the moment to see what it breaks downstream, and the downstream plan then depends on
+  something else, on nothing, or is discarded too. Whoever discards a feature has to think about the
+  consequences; the checker's job is to make sure they cannot avoid it. See "Discarding cascades" below.
 - Q3: does the checker fail or warn on a priority that outranks its prerequisite?
   Recommended: fail. It is a gate, and the whole reason for the field is that this is invisible
   otherwise. A warning in a gate that passes is prose.
@@ -149,3 +180,13 @@ it, since this is the change that adds the first non-scalar field.
   case the recommendation worried about is handled by who reads the warning: when the dependent folder is
   actually being worked, the missing prerequisite is the thing an assistant should notice and raise the
   now-critical merge over. See "Two severities" below.
+- Q5: `superseded` means some other folder replaced this one, and today that replacement is named in
+  prose in the body (as `08_llm_integration/04_api_key_distribution_production.md` names folder 13). Does
+  it become a frontmatter key, `superseded_by: 13_key_distribution`?
+  a. Yes. Then the cascade message can say what to repoint to, not just that something is broken.
+  b. No. The body says it, and a reader can follow it.
+  Recommended: a, for one reason only: with it, the checker's output is "repoint 23 at 13" and without it
+  the reader has to open the superseded folder to find out what replaced it. It is one optional key on a
+  status that is rare, and the information already exists in prose, which is the argument that it is
+  cheap rather than the argument that it is needed.
+  NEW_ANS:
