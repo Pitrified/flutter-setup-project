@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 01 - Uplift tracked-development in dotfiles
@@ -33,3 +33,11 @@ The dotfiles side of the move, on a dotfiles branch: the managing skill, its ref
 - The dotfiles branch is pushed, and `cmp` of its `plans.py` against this repo's reports no difference.
 - `python3 <skill>/scripts/plans.py --root plans check --citations` passes against this repo's tree, and `--version` prints the version.
 - This repo's `scripts/check.sh` passes.
+
+## What the implementation found
+
+- **The script was already repo-neutral.** No path, file name or rule in it names this repo, so it moved unchanged apart from `VERSION` and `--version`. Same for `reference/frontmatter.md`.
+- **The managing skill became a reference, not a section.** Its workflows went into `reference/plans-script.md`; `SKILL.md` got a short "The script" section pointing there, and its description gained the query triggers. `SKILL.md` is 427 lines, under the 500 the skill guidance sets.
+- **The `00_start.md` frontmatter example first carried inline YAML comments.** The script's frontmatter parser does not strip `#` comments, so a copied example would have put the comment into the value. The example now has none and the prose explains the two optional keys.
+- **Adoption is offered, not automatic.** A repo without the script gets an offer, since adopting adds a gate; a repo whose `plans/` predates the convention needs its folders normalised first, which the reference calls a feature folder of its own.
+- Verified: the dotfiles copy and this repo's copy compare equal with `cmp`, `--version` prints `plans.py 1.0.0` from both, and the dotfiles copy run from this repo passes `check --citations` on this tree. Dotfiles branch `feat/tracked_development_uplift`, not merged into `master`.
