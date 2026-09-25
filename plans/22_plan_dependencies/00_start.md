@@ -55,6 +55,35 @@ What the checker would then report: a name that is not a folder, a cycle, a fold
 `done` whose prerequisite is not `done`, and a folder whose priority exceeds a prerequisite's. What
 `list` would show: the prerequisite in a column, and a marker on the rows that are not startable.
 
+### What a name resolves against
+
+The set of legal names is the set of folders the tooling already finds: a numbered directory holding a
+`00_start.md`, in the working tree, the same set `list` prints. Not a registry file listing the legal
+names, because that is a second copy of something the directory already is, and it would be wrong within
+a month. So a name resolves if and only if the plan it names can actually be read, which is the property
+worth having.
+
+A name that does not resolve is a finding, naming the file and the unknown name, with the closest
+existing folder suggested: `difflib.get_close_matches` is in the standard library and a typo in
+`20_repo_splt` should not cost anyone a search.
+
+### Numbers are identity, not order
+
+The checker must **not** require a prerequisite to have a lower number, and this is the part worth being
+explicit about because it looks like an obvious rule and is wrong.
+
+A folder's number is its creation order. Execution order is what `depends_on` records, and the two
+routinely disagree: `20_logging` gets picked up, and in the course of it a real prerequisite is
+discovered and spun off as `21_backend_setup`. The order is now 21 then 20, and that is the normal way
+work is found rather than a mistake to correct. Renumbering to keep the numbers sorted would mean
+rewriting every inbound link, the branch name and the commit history's references, for an aesthetic.
+
+Two consequences:
+
+- No rule about the relative size of numbers. A prerequisite may be numbered anywhere.
+- Cycles have to be detected, since the numbers no longer rule them out. `20` depending on `21` is fine;
+  `20` depending on `21` which depends on `20` is not, and nothing but a cycle check will say so.
+
 ## The frontmatter is growing
 
 Four keys now, five with this one, and the parser hands back a dict of strings that every caller pokes
@@ -78,4 +107,14 @@ it, since this is the change that adds the first non-scalar field.
 - Q3: does the checker fail or warn on a priority that outranks its prerequisite?
   Recommended: fail. It is a gate, and the whole reason for the field is that this is invisible
   otherwise. A warning in a gate that passes is prose.
+  ANS: fail. Left to see how annoying it gets in practice before relaxing it: if it fires on something
+  that turns out to be legitimate, that is evidence about the rule rather than a reason to soften it in
+  advance.
+- Q4: may `depends_on` name a folder that exists only on another branch, not in the working tree?
+  a. No. A name resolves against the folders in the tree, and a prerequisite you cannot read is not one
+     you can check anything about. `branches` is the tool for what exists elsewhere.
+  b. Yes, with the checker treating an unresolvable name as unknown rather than wrong.
+  Recommended: a, on the grounds that b's "unknown rather than wrong" is a status that never gets
+  revisited. A prerequisite living on an unmerged branch is a real situation, and the honest handling is
+  that the dependent plan waits for that branch to land before it can say so.
   NEW_ANS:
