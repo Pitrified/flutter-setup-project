@@ -58,10 +58,11 @@ Package name is fixed by the build: `com.fala.app` (set as `applicationId` in
 
 Even an internal release needs a main store listing filled in:
 
-- Title: `fala - Portuguese Tutor`
-- Short description: `Practice Portuguese with an on-device AI tutor`
+- Title: `fala - Language Tutor`
+- Short description: `Practise a language by chatting with an AI tutor that corrects you`
 - Full description: 2-3 paragraphs about AI-assisted language practice (cloud
-  via OpenAI by default, or a fully on-device model - see privacy policy)
+  via OpenAI by default, or a fully on-device model - see privacy policy). Name the
+  languages: Portuguese (Brazilian), Spanish, French, Italian, German
 - App icon: 512x512 PNG
 - Feature graphic: 1024x500 banner
 - Phone screenshots: at least 2 (e.g. welcome + conversation)

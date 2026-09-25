@@ -1,4 +1,6 @@
 import 'package:flutter/services.dart';
+
+import '../../models/app_exception.dart';
 /// Manages versioned prompt templates from app assets.
 ///
 /// Prompts are stored as plain text files in `assets/prompts/{name}/vN.txt`.
@@ -28,10 +30,18 @@ class PromptManager {
     return content;
   }
 
+  /// Matches any `{{placeholder}}` left after substitution.
+  static final _unresolved = RegExp(r'\{\{([a-z_]+)\}\}');
+
   /// Build a prompt by loading template and substituting variables.
   ///
   /// Variables in the template like {{user_message}} are replaced with
   /// the corresponding values from [variables].
+  ///
+  /// Throws [PromptTemplateException] if the template still contains a
+  /// placeholder afterwards. Leaving one in would send the literal
+  /// `{{target_language}}` to the model, which produces a plausible-looking
+  /// reply in the wrong language rather than an error.
   Future<String> buildPrompt({
     required String name,
     required Map<String, String> variables,
@@ -41,6 +51,18 @@ class PromptManager {
 
     for (final entry in variables.entries) {
       template = template.replaceAll('{{${entry.key}}}', entry.value);
+    }
+
+    final leftover = _unresolved
+        .allMatches(template)
+        .map((m) => m.group(1)!)
+        .toSet();
+    if (leftover.isNotEmpty) {
+      throw PromptTemplateException(
+        message:
+            'Prompt "$name" has unsubstituted variable(s): '
+            '${leftover.join(', ')}.',
+      );
     }
 
     return template;

@@ -34,3 +34,17 @@ class StorageException extends AppException {
 class NetworkException extends AppException {
   const NetworkException({required super.message, super.cause});
 }
+
+/// A conversation's target language was changed after it already had messages.
+///
+/// The language is fixed when a conversation starts: its history is in the old
+/// language, and switching in place would hand the model a bilingual transcript
+/// to correct. Callers start a new conversation instead.
+class LanguageLockedException extends AppException {
+  const LanguageLockedException({required super.message, super.cause});
+}
+
+/// A prompt template was built with a placeholder left unsubstituted.
+class PromptTemplateException extends AppException {
+  const PromptTemplateException({required super.message, super.cause});
+}

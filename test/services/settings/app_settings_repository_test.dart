@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fala/models/cefr_level.dart';
+import 'package:fala/models/target_language.dart';
 import 'package:fala/services/inference/engine_kind.dart';
 import 'package:fala/services/settings/app_settings_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,5 +65,18 @@ void main() {
     expect(repo.defaultTopicValue(), '');
     await repo.setDefaultTopic('Daily routine');
     expect(repo.defaultTopicValue(), 'Daily routine');
+  });
+
+  test('defaultLanguage defaults to pt-BR and round-trips', () async {
+    expect(repo.defaultLanguage(), TargetLanguage.ptBr);
+    await repo.setDefaultLanguage(TargetLanguage.esEs);
+    expect(repo.defaultLanguage(), TargetLanguage.esEs);
+  });
+
+  test('defaultLanguage falls back to default for an unsupported stored code',
+      () async {
+    final box = await Hive.openBox<String>('test_app_settings');
+    await box.put(AppSettingsRepository.keyDefaultLanguage, 'ja-JP');
+    expect(repo.defaultLanguage(), AppSettingsRepository.defaultTargetLanguage);
   });
 }

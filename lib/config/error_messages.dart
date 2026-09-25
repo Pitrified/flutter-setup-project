@@ -17,6 +17,10 @@ class ErrorMessages {
           'Please check available storage.',
       NetworkException() => 'Network error. '
           'Please check your connection and try again.',
+      LanguageLockedException() => 'This conversation already started in '
+          'another language. Start a new conversation to switch.',
+      PromptTemplateException() => 'The tutor prompt is misconfigured. '
+          'Please report this and try again after an update.',
     };
   }
 }

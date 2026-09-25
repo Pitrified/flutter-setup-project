@@ -8,7 +8,9 @@
 - **Package ID:** `com.fala.app`
 - **Purpose:** on-device language tutoring via conversational AI
 - **Core value:** structured corrections + natural conversation, fully offline after model download
-- **Target language:** Portuguese (Brazilian), expandable to others
+- **Target language:** a setting (`default_language`), one of Portuguese (Brazilian),
+  Spanish, French, Italian or German. Portuguese is the default; English is not offered
+  while corrections and translations are written in English
 - **Primary interaction:** text chat with a tutor that corrects grammar/vocabulary and continues the conversation
 
 ## 2. Core Technical Decisions (locked)
@@ -72,7 +74,7 @@ App Launch
 
 ## 7. Interaction Model
 
-1. User types a message in target language (Portuguese)
+1. User types a message in the conversation's target language
 2. App builds prompt: system instructions + schema + history subset + user message
 3. InferenceEngine produces structured JSON output
 4. Output parsed into: correction block + conversation block

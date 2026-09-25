@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app.dart';
 import '../../config/model_config.dart';
+import '../../models/target_language.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../services/app/app_controller.dart';
@@ -78,7 +79,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Learn Portuguese by speaking',
+                      'Learn ${ref.watch(defaultTargetLanguageProvider).displayName} '
+                      'by speaking',
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 48),

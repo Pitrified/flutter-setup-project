@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/cefr_level.dart';
+import '../models/target_language.dart';
 import '../services/inference/engine_kind.dart';
 import '../services/settings/api_key_store.dart';
 import '../services/settings/app_settings_repository.dart';
@@ -142,3 +143,33 @@ class DefaultTopicNotifier extends Notifier<String> {
 /// Provider for the default topic seed (or empty string).
 final defaultTopicProvider =
     NotifierProvider<DefaultTopicNotifier, String>(DefaultTopicNotifier.new);
+
+/// Reactive holder for the default [TargetLanguage] used to seed new
+/// conversations.
+///
+/// Same discipline as [DefaultCefrLevelNotifier]: write through to the
+/// repository, no engine-provider invalidation, because the language is a
+/// prompt input rather than an engine input. The active conversation's language
+/// is owned by the conversation itself (via
+/// `ConversationController.setLanguage`), and unlike the CEFR level it cannot
+/// change once the conversation has messages.
+class DefaultTargetLanguageNotifier extends Notifier<TargetLanguage> {
+  @override
+  TargetLanguage build() {
+    return ref.read(appSettingsRepositoryProvider).defaultLanguage();
+  }
+
+  /// Persist [language] as the default for future conversations.
+  Future<void> select(TargetLanguage language) async {
+    if (language == state) return;
+    await ref.read(appSettingsRepositoryProvider).setDefaultLanguage(language);
+    state = language;
+  }
+}
+
+/// Provider for the default [TargetLanguage] used when starting new
+/// conversations.
+final defaultTargetLanguageProvider =
+    NotifierProvider<DefaultTargetLanguageNotifier, TargetLanguage>(
+      DefaultTargetLanguageNotifier.new,
+    );

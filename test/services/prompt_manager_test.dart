@@ -1,3 +1,4 @@
+import 'package:fala/models/app_exception.dart';
 import 'package:fala/services/prompt/prompt_manager.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,13 +53,25 @@ User says: {{user_message}}''';
     expect(prompt, isNot(contains('{{cefr_level}}')));
   });
 
-  test('unknown variables are left as-is', () async {
-    final prompt = await manager.buildPrompt(
-      name: 'tutor_response',
-      version: 1,
-      variables: {'cefr_level': 'B1'},
+  test('a missing variable throws instead of shipping the placeholder', () async {
+    // Was "unknown variables are left as-is" until 2026-09-24. Leaving
+    // {{target_language}} in the prompt makes the model answer in whatever
+    // language it guesses, which reads as a bad reply rather than as a bug, so
+    // the manager now refuses to build an incomplete prompt.
+    expect(
+      () => manager.buildPrompt(
+        name: 'tutor_response',
+        version: 1,
+        variables: {'cefr_level': 'B1'},
+      ),
+      throwsA(
+        isA<PromptTemplateException>().having(
+          (e) => e.message,
+          'message',
+          contains('user_message'),
+        ),
+      ),
     );
-    expect(prompt, contains('{{user_message}}'));
   });
 
   test('caches templates on second load', () async {
