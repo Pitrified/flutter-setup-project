@@ -33,7 +33,7 @@ What exists in this repo today, and where each piece goes.
 | ----- | ----------- | -------- | --- |
 | The skill: `SKILL.md`, 95 lines | `.claude/skills/managing-plan-folders/` | moves | The workflows are the same in every repo that uses the convention |
 | `reference/frontmatter.md`, 133 lines | same folder | moves | The schema, the status enum and the checker's rules belong to the convention, not to Flutter |
-| `scripts/plans.py`, 797 lines | `scripts/` | stays | 21 Q8: gates live in the repo they guard, because CI has no dotfiles checkout. The skill calls whatever script the repo has |
+| `scripts/plans.py`, 797 lines | `scripts/` | copied, and stays | Q2: the canonical copy goes into the skill so another repo can adopt it, and this repo keeps a vendored copy so CI runs it with no dotfiles checkout |
 | The `plans` gate | `scripts/check.sh` line 57 | stays | Same reason |
 | The diary rule | `.github/copilot-instructions.md`, "Plans are a diary, docs are the as-is" | copied, and stays | Copilot reads only that file, not skills. The general rule goes into `tracked-development`; this repo keeps its paragraph |
 | `feat/<NN_name>` branches, and merge is not the closing act | `docs/git-workflow.md` | copied, and stays | The skill gets the convention; the repo doc keeps its own git workflow |
@@ -47,23 +47,24 @@ What exists in this repo today, and where each piece goes.
   One of the two is changed by the move. The frontmatter reference is the newer and the one a gate enforces.
 - **Inside or beside.** 21 Q14 says the skill "belongs inside `tracked-development` rather than beside it, since it is the tooling for that skill's own convention".
   Inside means `tracked-development` gains a reference file and a section on the script; beside means two skills whose descriptions have to say which one triggers when.
-- **A repo without `scripts/plans.py`.** The skill already says to report that rather than write a one-off script.
+- **A repo without `scripts/plans.py`.** Today the skill says to report that rather than write a one-off script, which is a dead end: nothing tells that repo where the script is.
+  With the script in the skill (Q2), the skill gains an adoption workflow instead: copy the script into `scripts/`, add the gate to the repo's check, run `check` and fix what it reports.
   Dotfiles itself is such a repo: its `plans/` uses `NN-name` folders and flat `NN-feat-name.md` files, which the checker would reject.
   So does `Pitrified/plans`, unchecked.
+- **Two copies of the script.** The skill's copy is canonical and a repo's copy is vendored. 21 Q8 rejected this layout as "version skew nobody will look for", so the move needs the looking done by a mechanism (Q6).
 - **The repo copy after the move.** Two copies drift. Deleting this repo's copy is safe on the workstation, which has dotfiles.
   In a cloud session it is safe only once the setup script installs dotfiles skills, which is why the delete waits (frontmatter `comment`).
 
 ## Out of scope
 
 - Converting dotfiles' own `plans/` to this convention. A separate decision for that repo.
-- Moving `scripts/plans.py` into dotfiles. 21 Q8 answered it; Q2 below reopens it only if a second repo wants the gate.
 - Any change to what the script does.
 
 ## Candidate phases
 
 Not derived yet.
 
-1. In dotfiles: fold the skill and its reference into `tracked-development`, or add it beside, per Q1. Resolve the `00_start.md` frontmatter disagreement. Add the diary rule and the branch convention.
+1. In dotfiles: fold the skill, its reference and `plans.py` into `tracked-development`, or add them beside, per Q1. Resolve the `00_start.md` frontmatter disagreement. Add the diary rule, the branch convention, and the adoption workflow for a repo without the script.
 2. On the workstation: run the dotfiles installer, check that the skill triggers from `~/.claude/skills/` in this repo with the repo copy renamed out of the way.
 3. In this repo, after `24_cloud_sessions` installs dotfiles skills in the cloud: delete `.claude/skills/managing-plan-folders/`, and check `.github/copilot-instructions.md` still names the skill correctly.
 
@@ -79,7 +80,9 @@ Not derived yet.
   a. stays here only; another repo that wants the gate copies it deliberately.
   b. a canonical copy in dotfiles as well, run from the skill against any repo's `plans/`, with the gate still vendored per repo.
   Recommended: a, until a second repo actually adopts the convention. b is the version skew 21 Q8 rejected.
-  NEW_ANS:
+  ANS: b, reopening 21 Q8 on new evidence. A separate repo that wants the skill has no way to find the script if it lives only here.
+  So the script goes in the skill for other repos to copy, and a copy stays here so CI passes without fetching dotfiles.
+  The duplication is accepted; the skew it causes is Q6.
 - Q3: which `00_start.md` rule wins, `tracked-development`'s "not status-tracked" or this repo's frontmatter?
   Recommended: this repo's. It is what the checker enforces, and `list` needs `status`, `priority` and `description` on the start file to show a folder at all.
   NEW_ANS:
@@ -91,4 +94,15 @@ Not derived yet.
   NEW_ANS:
 - Q5: 21 Q14 said the queued items wait for "a broader uplift of `tracked-development`". Is this folder that uplift, or only the move?
   Recommended: only the move and the three queued items. Anything else found while in that file gets its own note.
+  NEW_ANS:
+
+### Second batch (2026-09-25)
+
+- Q6: how is skew between the skill's `plans.py` and a repo's copy caught?
+  CI cannot compare them, since it has no dotfiles checkout.
+  a. a `VERSION` constant in the script, printed by `plans.py --version`; the skill's workflow compares the repo's version with its own and says when they differ.
+  b. the same, plus a byte comparison: the skill runs `cmp` on the two files, so an edit made in the repo copy without a version bump is caught too.
+  c. a non-failing line in `scripts/check.sh` that compares against `~/.claude/skills/.../plans.py` when that file exists, and prints a warning. Silent in CI.
+  Recommended: b and c together. b is what an assistant using the skill sees, and c is what a person running the gates sees, with no network and no failure in CI.
+  Edits go to the skill's copy first and are copied into the repo in the same change.
   NEW_ANS:
