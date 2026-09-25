@@ -8,7 +8,7 @@ jobs:
   gates:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Setup, not a second check: the run step is still the one script.
       # Pinned, not `channel: stable`. The first run of this workflow installed
       # 3.47.5 while the dev box had 3.44.5, and a floating SDK means CI can fail
