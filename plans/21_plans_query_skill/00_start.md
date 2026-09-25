@@ -306,6 +306,34 @@ this repo already borrowed. `tracked-development` itself is the convention being
 whose relevant points here are progressive disclosure, matching freedom to fragility, and preferring a
 script to generated code for anything deterministic.
 
+## What `plans/00_tracking.md` holds, and where it goes
+
+Deleting it (Q18) is the last act of normalisation rather than a cleanup afterwards, because the file is
+the *input* to normalising folders 02-09: it is the only place their statuses are written down. Read
+through, three things in it are not the phase list, and each has a destination that the normalisation
+pass was going to visit anyway.
+
+- **The `Produces` column**, on about forty rows: `02_project_structure.md` produced
+  `docs/project-structure.md`, `00_inference_interface.md` produced the `InferenceEngine` interface,
+  and so on. This is the only content in the file that no parser could regenerate. It goes into each
+  phase file's `description`, which Q7 says is being backfilled regardless, so the column supplies the
+  text instead of it being invented. A description that says what the phase produced is also the most
+  useful one a listing could show.
+- **The statuses**, in this file's own vocabulary: complete, in-progress, deferred, planned. These map
+  onto the enum (`complete` to `done`, `in-progress` to `in progress`) and become the `status:`
+  frontmatter that folders 02-09 are getting. Two are not mechanical and are the reason to read rather
+  than sed: `07_release` is in-progress because the Play Store steps are manual and outstanding, which
+  is live information; and `08_llm_integration/04_api_key_distribution_production.md` is marked
+  deferred, which is `superseded` by [`../13_key_distribution/00_start.md`](../13_key_distribution/00_start.md)
+  (checked: 13 is the same two-step rollout, written later and in more detail).
+- **The phase-08 step rows**: six rows describing steps that have no file ("Step 4 (plugin download)",
+  "Step 8 (smoke test) - on-device: download, init, inference all working"). That is a log, not an
+  index, and it goes into the Log of the `tracking.md` that folder 08 gets.
+
+What is left after those three moves is the phase overview table, which is what the query command
+prints. Then the file goes, and the two references to it in `docs/README.md` and
+`docs/ai-development-playbook.md` become the general shape.
+
 ## The work this implies
 
 Not phases yet, and no `tracking.md` until they are agreed. What the answers add up to, in the order
@@ -314,8 +342,9 @@ that keeps each step verifiable:
 - **The parser plus the query command**, written against the folders as they are now, which is the only
   way to know what the parser has to recognise. Its own output is the to-do list for the next step.
 - **Normalisation**, one pass, content and names, every folder (Q1, Q5, Q7): frontmatter on the eleven
-  start files without it, `00_intro.md` and `00_tracking.md` renamed, `00_start.md` and `tracking.md`
-  where they are missing, descriptions backfilled.
+  start files without it, `00_intro.md` renamed, `00_start.md` and `tracking.md` where they are missing,
+  descriptions backfilled from the `Produces` column, and `plans/00_tracking.md` emptied into the
+  folders it describes and then deleted (Q18).
 - **The checker**, measured against the normalised tree, then wired into `scripts/check.sh`.
 - **Rehoming the thirteen citations** into the topical docs that own them (Q12, Q15), which arms the
   no-citation check.
@@ -494,4 +523,6 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   it makes the checker rule one sentence: outside `plans/`, only the bare tree. a buys uniformity by
   putting a wrong claim in a filename, and the roadmap view (Q4) is the top-level index now, generated
   rather than maintained.
-  NEW_ANS:
+  ANS: delete it. Once the generated view produces the same information, the hand-maintained copy is
+  the stale one. Anything in it that is not the phase list gets moved first, which turns out to be most
+  of the file: see below.
