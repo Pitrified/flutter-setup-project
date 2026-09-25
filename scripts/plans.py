@@ -413,6 +413,101 @@ def cmd_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def folders_on_refs(repo: Path) -> dict[str, dict[str, list[str]]]:
+    """Which plan folders exist on every branch, as {number: {name: [refs]}}.
+
+    Read-only and with no checkout: a folder number is claimed by whoever spins the
+    folder off, and a branch that has not merged is invisible to anyone counting
+    folders in the working tree.
+    """
+    refs = subprocess.run(
+        ["git", "-C", str(repo), "for-each-ref", "--format=%(refname:short)",
+         "refs/heads", "refs/remotes"],
+        capture_output=True, text=True, check=True,
+    ).stdout.split()
+    seen: dict[str, dict[str, list[str]]] = {}
+    for ref in refs:
+        listing = subprocess.run(
+            ["git", "-C", str(repo), "ls-tree", "-d", "--name-only", ref, "plans/"],
+            capture_output=True, text=True,
+        )
+        for line in listing.stdout.split():
+            name = line.split("/", 1)[-1]
+            match = FOLDER.match(name)
+            if match:
+                seen.setdefault(match.group(1), {}).setdefault(name, []).append(ref)
+    return seen
+
+
+def cmd_branches(args: argparse.Namespace) -> int:
+    repo = args.root.parent
+    seen = folders_on_refs(repo)
+    collisions = {n: names for n, names in seen.items() if len(names) > 1}
+    for number in sorted(seen):
+        names = seen[number]
+        collides = number in collisions
+        for name, refs in sorted(names.items()):
+            # The full ref list is what a collision needs and what everything else
+            # does not: the same folder on nine refs is a branch that has not merged.
+            where = ", ".join(sorted(refs)) if collides or len(refs) <= 3 else f"{len(refs)} refs"
+            print(f"{'COLLISION' if collides else '         '} {number}  {name:<26} {where}")
+    print()
+    if collisions:
+        print(f"{len(collisions)} number(s) used by more than one folder.")
+        print("Pick a free number with a person, then: plans.py rename <folder> <NN>")
+        return 1
+    print(f"{len(seen)} number(s) across the refs, each used by one folder")
+    return 0
+
+
+def cmd_rename(args: argparse.Namespace) -> int:
+    """Renumber a folder, and fix the sibling links that point at it.
+
+    The new number is an argument rather than `max + 1`: two people renaming into
+    the same free slot on their own branches reproduce the collision one number
+    along, so a person picks it, knowing what `branches` reported.
+    """
+    repo = args.root.parent
+    old = args.folder.rstrip("/").split("/")[-1]
+    source = args.root / old
+    match = FOLDER.match(old)
+    if not match:
+        raise PlansError(f"{old}: not a plan folder name (NN_name)")
+    if not source.is_dir():
+        raise PlansError(f"{source}: no such folder")
+    if not re.fullmatch(r"\d\d", args.number):
+        raise PlansError(f"{args.number}: a folder number is two digits")
+    new = f"{args.number}_{match.group(2)}"
+    if (args.root / new).exists():
+        raise PlansError(f"{new} already exists; run `branches` and pick a free number")
+
+    stale = check_citations(repo)
+    if stale:
+        for finding in stale:
+            print(f"plans: {finding}")
+        raise PlansError(
+            "something outside plans/ cites a plan folder. Fix that first: renaming "
+            "would mean editing code to keep a diary reference alive"
+        )
+
+    subprocess.run(["git", "-C", str(repo), "mv", f"plans/{old}", f"plans/{new}"], check=True)
+    touched = []
+    for md in sorted(args.root.glob("*/*.md")):
+        text = md.read_text(encoding="utf-8")
+        if old not in text:
+            continue
+        md.write_text(text.replace(old, new), encoding="utf-8")
+        touched.append(f"{md.relative_to(args.root)}: {text.count(old)} reference(s)")
+    print(f"renamed {old} -> {new}")
+    for line in touched:
+        print(f"  {line}")
+    if not touched:
+        print("  no sibling folder pointed at it")
+    print("\nRun scripts/check.sh: the links gate is what proves nothing dangles.")
+    print("Then commit: `branches` reads refs, so it keeps reporting the collision until you do.")
+    return 0
+
+
 def cmd_list(args: argparse.Namespace) -> int:
     skipped: list[str] = []
     folders = load(args.root, skipped)
@@ -469,6 +564,16 @@ def main(argv: list[str] | None = None) -> int:
         help="also check that nothing outside plans/ cites a specific plan folder",
     )
     checking.set_defaults(func=cmd_check)
+
+    branches = sub.add_parser(
+        "branches", help="folder numbers across every branch, and any collision"
+    )
+    branches.set_defaults(func=cmd_branches)
+
+    renaming = sub.add_parser("rename", help="renumber a folder and fix sibling links")
+    renaming.add_argument("folder", help="the folder to renumber, e.g. 21_plans_query_skill")
+    renaming.add_argument("number", help="its new two-digit number, chosen by a person")
+    renaming.set_defaults(func=cmd_rename)
 
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

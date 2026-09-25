@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 5 - Folder-creation workflow, and the skill
@@ -51,5 +51,20 @@ Depends on [`01_parser_and_queries.md`](01_parser_and_queries.md) for the parser
 - The rename is demonstrated both ways on a scratch clone: a real collision renamed with its inbound
   links fixed, and a refusal while a citation still exists.
 - The skill is invoked once end to end on a question nobody has scripted an answer to, such as "what is
-  next by priority and what does it depend on", and answers it without the transcript needing a
-  correction.
+  next by priority", and answers it without the transcript needing a correction.
+
+## What the implementation found
+
+- **The scan output needed compressing before it was readable.** Nine refs per folder is the normal
+  case, and printing them all buried the one line that matters. It now prints the full ref list for a
+  collision and a count otherwise.
+- **`branches` keeps reporting a collision after the rename**, because it reads refs and the rename is
+  in the working tree until it is committed. Correct, and confusing, so the rename says so.
+- **Both paths of the rename are demonstrated** on a clone with a real collision staged on a second
+  branch: it refused while a citation existed, naming the file, and then renamed `22_mine` to `23_mine`
+  and fixed two sibling references, with the links gate confirming nothing dangled.
+- **The skill cannot answer "what does it depend on".** Nothing records dependencies between folders:
+  `depends_on` exists on some phase files in folders 02-05 and has no folder-level equivalent, and this
+  phase's goals never included one. The Done-when above asked for it in an example sentence, which was
+  an over-promise on my part; narrowed to what was actually built, and the question of whether folder
+  dependencies are worth recording is left for a person rather than answered by adding a field.

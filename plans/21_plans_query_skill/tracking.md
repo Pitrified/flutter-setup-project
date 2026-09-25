@@ -31,7 +31,7 @@ Full reasoning in `00_start.md`; these are the ones that cut across phases.
 | 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | done    |
 | 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | done    |
 | 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | done    |
-| 5  | Folder-creation workflow and skill | [`05_workflow_and_skill.md`](05_workflow_and_skill.md)         | planned |
+| 5  | Folder-creation workflow and skill | [`05_workflow_and_skill.md`](05_workflow_and_skill.md)         | done    |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -74,3 +74,9 @@ Append-only. Newest at the bottom.
   phase table, which still described a repo with no code in it; it was rewritten to point at `docs/` for
   the as-is and `plans/` for the diary. Four decisions got the doc section they never had, which is why
   the citations existed at all.
+- 2026-09-25 : phase 5 - `branches` and `rename` subcommands, and the skill at
+  `.claude/skills/managing-plan-folders/` with its frontmatter reference one level deep. The rename was
+  demonstrated both ways on a clone with a real collision staged on a second branch: refused while a
+  citation existed, then renamed and fixed the sibling links. Using the skill for real showed it cannot
+  say what a folder depends on, because nothing records that; noted rather than papered over.
+- 2026-09-25 : all five phases done. Folder closed, priority back to 0.
