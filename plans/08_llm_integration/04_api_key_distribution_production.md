@@ -1,3 +1,7 @@
+---
+status: superseded
+---
+
 # API key distribution - production hardening (deferred)
 
 Status: **plan only, not in scope for the current phase**. The current internal-alpha

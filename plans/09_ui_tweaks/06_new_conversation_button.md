@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 06 - New conversation button
 
 Part of phase 09 (UI tweaks and small functionality). Adds a way to start a

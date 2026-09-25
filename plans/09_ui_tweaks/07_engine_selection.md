@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 07 - Engine selection: correct model name, OpenAI default, scoped settings
 
 Part of phase 09 (UI tweaks and small functionality). Three related engine /

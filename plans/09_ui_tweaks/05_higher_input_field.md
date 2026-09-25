@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 05 - Higher, wrapping input field
 
 Part of phase 09 (UI tweaks and small functionality). Lets a long user

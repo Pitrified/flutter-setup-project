@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 02 - CEFR level indicator and picker
 
 Part of phase 09 (UI tweaks and small functionality). Surfaces the active

@@ -1,5 +1,5 @@
 ---
-status: not-started
+status: done
 depends_on: [03_scaffold/01_folder_structure.md, docs/functional-specs.md]
 produces: [lib/models/*.dart, lib/models/*.freezed.dart, lib/models/*.g.dart]
 ---

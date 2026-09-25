@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 07/02 - Final Tracking
 
 ## Status: complete

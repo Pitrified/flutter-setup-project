@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Constrained decoding
 
 _Research updated: 2026-05-30. Plugin version researched: 0.16.2 (project currently on 0.13.6)._

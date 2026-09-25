@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 06/01 - Loading States
 
 ## Status: complete

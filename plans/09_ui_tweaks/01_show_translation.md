@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # 01 - Show translation on tap
 
 Part of phase 09 (UI tweaks and small functionality). Adds a tap-to-reveal

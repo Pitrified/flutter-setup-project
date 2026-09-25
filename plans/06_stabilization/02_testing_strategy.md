@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan 06/02 - Testing Strategy
 
 ## Status: in-progress
