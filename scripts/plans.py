@@ -28,10 +28,11 @@ from pathlib import Path
 STATUSES = ("draft", "planned", "in progress", "done", "superseded", "discarded")
 
 # A phase file is NN_name.md; NN.M_name.md is a side-document of phase NN, which
-# carries no status of its own.
-PHASE = re.compile(r"^(\d\d)_([a-z0-9_.]+)\.md$")
-SIDE = re.compile(r"^(\d\d)\.(\d+)_([a-z0-9_.]+)\.md$")
-FOLDER = re.compile(r"^(\d\d)_([a-z0-9_]+)$")
+# carries no status of its own. Three digits are allowed too: a big project can
+# pass a hundred features, and the number is what orders everything here.
+PHASE = re.compile(r"^(\d{2,3})_([a-z0-9_.]+)\.md$")
+SIDE = re.compile(r"^(\d{2,3})\.(\d+)_([a-z0-9_.]+)\.md$")
+FOLDER = re.compile(r"^(\d{2,3})_([a-z0-9_]+)$")
 
 
 class PlansError(Exception):
@@ -191,7 +192,7 @@ def default_root() -> Path:
 
 
 def in_range(number: str, spec: str) -> bool:
-    """`15` matches 15; `09-12` matches 9 through 12 inclusive."""
+    """`15` matches 15; `09-12` matches 9 through 12 inclusive; `100` matches 100."""
     low, _, high = spec.partition("-")
     try:
         first = int(low)
@@ -272,7 +273,7 @@ ROW = re.compile(
 # A reference to a specific plan folder from outside `plans/`. The `NN_` is what
 # turns a description of the convention into a citation of an instance, so that is
 # what this keys on; a bare `plans/` is a location and passes.
-CITATION = re.compile(r"plans/\d\d_[A-Za-z0-9_]+")
+CITATION = re.compile(r"plans/\d{2,3}_[A-Za-z0-9_]+")
 REQUIRED_START = ("status", "priority", "description")
 
 
@@ -475,8 +476,8 @@ def cmd_rename(args: argparse.Namespace) -> int:
         raise PlansError(f"{old}: not a plan folder name (NN_name)")
     if not source.is_dir():
         raise PlansError(f"{source}: no such folder")
-    if not re.fullmatch(r"\d\d", args.number):
-        raise PlansError(f"{args.number}: a folder number is two digits")
+    if not re.fullmatch(r"\d{2,3}", args.number):
+        raise PlansError(f"{args.number}: a folder number is two or three digits")
     new = f"{args.number}_{match.group(2)}"
     if (args.root / new).exists():
         raise PlansError(f"{new} already exists; run `branches` and pick a free number")
@@ -572,7 +573,7 @@ def main(argv: list[str] | None = None) -> int:
 
     renaming = sub.add_parser("rename", help="renumber a folder and fix sibling links")
     renaming.add_argument("folder", help="the folder to renumber, e.g. 21_plans_query_skill")
-    renaming.add_argument("number", help="its new two-digit number, chosen by a person")
+    renaming.add_argument("number", help="its new number, two or three digits, chosen by a person")
     renaming.set_defaults(func=cmd_rename)
 
     args = parser.parse_args(argv)
