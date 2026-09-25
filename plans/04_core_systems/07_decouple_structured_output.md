@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [04_core_systems/00_inference_interface.md, 04_core_systems/03_structured_output.md, 04_core_systems/01_fake_inference_engine.md]
 produces: [lib/services/inference/inference_engine.dart, lib/services/inference/json_extractor.dart, lib/services/inference/structured_output_parser.dart, lib/services/inference/structured_inference_engine.dart, lib/services/inference/fake_inference_engine.dart]
+comment: after 00_inference_interface.md, 03_structured_output.md, 01_fake_inference_engine.md
 ---
 
 # Plan: Decouple Structured Output from InferenceEngine

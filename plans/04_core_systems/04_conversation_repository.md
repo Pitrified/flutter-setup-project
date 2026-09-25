@@ -1,6 +1,5 @@
 ---
 status: done
-depends_on: [03_scaffold/02_generated_models.md]
 produces: [lib/services/persistence/conversation_repository.dart]
 ---
 

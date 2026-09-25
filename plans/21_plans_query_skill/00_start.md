@@ -507,7 +507,8 @@ and moving this skill to dotfiles (Q3, after it has been used here).
      decision rather than the closing act of a feature
      ([`../../docs/git-workflow.md`](../../docs/git-workflow.md)),
   3. the `managing-plan-folders` skill itself, which belongs inside `tracked-development` rather than
-     beside it, since it is the tooling for that skill's own convention.
+     beside it, since it is the tooling for that skill's own convention. That now includes `depends_on`
+     and `comment` ([`../22_plan_dependencies/00_start.md`](../22_plan_dependencies/00_start.md)).
 
   All three are about how plan folders are worked on rather than about Flutter, and they wait for a
   broader uplift of `tracked-development` rather than being pushed one at a time. The branch this was

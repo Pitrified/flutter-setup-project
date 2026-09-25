@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [05_controllers/01_app_controller.md]
 produces: [lib/screens/welcome/welcome_screen.dart]
+comment: after 01_app_controller.md
 ---
 
 # Plan: Welcome Screen

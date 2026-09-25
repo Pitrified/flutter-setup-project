@@ -18,6 +18,7 @@ comes from `git rev-parse --show-toplevel`, never from this file's own location.
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 import subprocess
 import sys
@@ -44,13 +45,84 @@ class FrontmatterError(PlansError):
 
 
 @dataclass
+class Frontmatter:
+    """A plan file's `---` block, typed, with its own problems collected.
+
+    Built once per file so that a rule such as "priority is a non-negative
+    integer" lives here rather than at each place a caller looks at the value.
+    Problems are collected rather than raised: a file with two faults should
+    report two.
+    """
+
+    status: str | None = None
+    priority: int | None = None
+    priority_raw: str | None = None
+    description: str | None = None
+    # Prerequisites, as folder names, on a 00_start.md. Folders rather than phases:
+    # the working unit is a whole feature, so a prerequisite is a folder being
+    # finished rather than a phase inside one being reached.
+    depends_on: list[str] = field(default_factory=list)
+    # Freeform, never parsed and never checked: the place for something worth
+    # keeping that the schema has no field for.
+    comment: str | None = None
+    extra: dict[str, str] = field(default_factory=dict)
+    problems: list[str] = field(default_factory=list)
+
+    KNOWN = ("status", "priority", "description", "depends_on", "comment")
+
+    def missing(self, key: str) -> bool:
+        """Whether `key` is absent. `priority: 0` is present and falsy, which is
+        why this is not a truth test on the value."""
+        if key == "priority":
+            return self.priority_raw is None
+        return not getattr(self, key)
+
+    @classmethod
+    def read(cls, md: Path) -> "Frontmatter":
+        """Parse `md`'s frontmatter. A block that does not parse is one problem."""
+        try:
+            raw = parse_frontmatter(md.read_text(encoding="utf-8"), md)
+        except FrontmatterError as exc:
+            return cls(problems=[str(exc).split(": ", 1)[-1]])
+        front = cls(
+            status=raw.get("status"),
+            description=raw.get("description"),
+            comment=raw.get("comment"),
+            extra={k: v for k, v in raw.items() if k not in cls.KNOWN},
+        )
+        listed = raw.get("depends_on")
+        if listed is not None:
+            inner = listed.strip()
+            if not (inner.startswith("[") and inner.endswith("]")):
+                front.problems.append(
+                    f"depends_on {listed!r} is not an inline list, as [20_repo_split]"
+                )
+            else:
+                front.depends_on = [
+                    name.strip() for name in inner[1:-1].split(",") if name.strip()
+                ]
+        front.priority_raw = raw.get("priority")
+        if front.priority_raw is not None:
+            if front.priority_raw.isdigit():
+                front.priority = int(front.priority_raw)
+            else:
+                front.problems.append(
+                    f"priority {front.priority_raw!r} is not a non-negative integer"
+                )
+        return front
+
+
+@dataclass
 class Phase:
     """One `NN_name.md` sub-plan."""
 
     path: Path
     number: str
-    status: str | None
-    error: str | None = None
+    front: Frontmatter
+
+    @property
+    def status(self) -> str | None:
+        return self.front.status
 
 
 @dataclass
@@ -61,24 +133,27 @@ class Folder:
     number: str
     name: str
     start: Path | None
-    front: dict[str, str] = field(default_factory=dict)
+    front: Frontmatter = field(default_factory=lambda: Frontmatter())
     phases: list[Phase] = field(default_factory=list)
     sides: list[Path] = field(default_factory=list)
     tracking: Path | None = None
-    error: str | None = None
 
     @property
     def status(self) -> str | None:
-        return self.front.get("status")
+        return self.front.status
 
     @property
-    def priority(self) -> str | None:
-        return self.front.get("priority")
+    def priority(self) -> int | None:
+        return self.front.priority
+
+    @property
+    def depends_on(self) -> list[str]:
+        return self.front.depends_on
 
     @property
     def summary(self) -> str:
         """First line of `description`, which is what a listing has room for."""
-        text = self.front.get("description", "")
+        text = self.front.description or ""
         return text.strip().splitlines()[0] if text.strip() else ""
 
 
@@ -119,18 +194,6 @@ def parse_frontmatter(text: str, where: Path) -> dict[str, str]:
     return front
 
 
-def read_status(md: Path) -> tuple[str | None, str | None]:
-    """The file's status, or the reason its frontmatter could not be read.
-
-    A file whose frontmatter does not parse is one finding, not a crash: a broken
-    file must not hide every other fault in the tree.
-    """
-    try:
-        return parse_frontmatter(md.read_text(encoding="utf-8"), md).get("status"), None
-    except FrontmatterError as exc:
-        return None, str(exc)
-
-
 def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
     """Every numbered folder under `root`, in number order.
 
@@ -150,18 +213,13 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if skipped is not None:
                 skipped.append(path.name)
             continue
-        try:
-            front, error = parse_frontmatter(start.read_text(encoding="utf-8"), start), None
-        except FrontmatterError as exc:
-            front, error = {}, str(exc)
         folder = Folder(
             path=path,
             number=match.group(1),
             name=match.group(2),
             start=start,
-            front=front,
+            front=Frontmatter.read(start),
             tracking=(path / "tracking.md") if (path / "tracking.md").exists() else None,
-            error=error,
         )
         for md in sorted(path.glob("*.md")):
             if md.name in ("00_start.md", "tracking.md"):
@@ -169,8 +227,7 @@ def load(root: Path, skipped: list[str] | None = None) -> list[Folder]:
             if SIDE.match(md.name):
                 folder.sides.append(md)
             elif phase := PHASE.match(md.name):
-                status, error = read_status(md)
-                folder.phases.append(Phase(md, phase.group(1), status, error))
+                folder.phases.append(Phase(md, phase.group(1), Frontmatter.read(md)))
         folders.append(folder)
     return folders
 
@@ -206,30 +263,39 @@ def rows(folders: list[Folder]) -> list[tuple[str, ...]]:
     """One row per folder, sorted by priority descending then number."""
 
     def sort_key(folder: Folder) -> tuple[int, int]:
-        try:
-            priority = int(folder.priority or 0)
-        except ValueError:
-            priority = 0
-        return (-priority, int(folder.number))
+        return (-(folder.priority or 0), int(folder.number))
 
+    by_name = {f"{f.number}_{f.name}": f for f in folders}
     out = []
     for folder in sorted(folders, key=sort_key):
         done = sum(1 for p in folder.phases if p.status == "done")
         phases = f"{done}/{len(folder.phases)}" if folder.phases else "-"
+        needs = []
+        for name in folder.depends_on:
+            prerequisite = by_name.get(name)
+            if prerequisite is None:
+                # Not in this tree: it may be on a branch that has not merged, which
+                # needs a merge rather than work. A different marker for that reason.
+                needs.append(f"{name[:2]}?")
+            elif prerequisite.status != "done":
+                needs.append(f"{name[:2]}*")
+            else:
+                needs.append(name[:2])
         out.append(
             (
                 folder.number,
                 folder.name,
                 folder.status or "-",
-                folder.priority or "-",
+                "-" if folder.priority is None else str(folder.priority),
                 phases,
+                ",".join(needs) if needs else "-",
                 folder.summary or "-",
             )
         )
     return out
 
 
-HEADERS = ("NN", "folder", "status", "pri", "phases", "description")
+HEADERS = ("NN", "folder", "status", "pri", "phases", "needs", "description")
 
 
 def print_table(table: list[tuple[str, ...]], width: int = 66) -> None:
@@ -281,26 +347,24 @@ def check_folder(folder: Folder) -> list[str]:
     """Every mechanical fault in one folder, each naming its file."""
     out = []
     start = folder.start.relative_to(folder.path.parent.parent)
-    if folder.error:
-        out.append(f"{start}: {folder.error.split(': ', 1)[-1]}")
+    out += [f"{start}: {problem}" for problem in folder.front.problems]
+    unreadable = any("never closes" in p for p in folder.front.problems)
     for key in REQUIRED_START:
-        if not folder.error and not folder.front.get(key):
+        if not unreadable and folder.front.missing(key):
             out.append(f"{start}: no {key} in frontmatter")
     if folder.status and folder.status not in STATUSES:
         out.append(f"{start}: status {folder.status!r} is not one of {list(STATUSES)}")
-    if folder.priority is not None:
-        if not folder.priority.isdigit():
-            out.append(f"{start}: priority {folder.priority!r} is not a non-negative integer")
-        elif folder.status == "done" and folder.priority != "0":
-            out.append(
-                f"{start}: status is done, so priority should be back at 0, not {folder.priority}"
-            )
+    if folder.status == "done" and folder.priority not in (None, 0):
+        out.append(
+            f"{start}: status is done, so priority should be back at 0, not {folder.priority}"
+        )
 
     numbers: dict[str, str] = {}
     for phase in folder.phases:
         name = phase.path.relative_to(folder.path.parent.parent)
-        if phase.error:
-            out.append(f"{name}: {phase.error.split(': ', 1)[-1]}")
+        out += [f"{name}: {problem}" for problem in phase.front.problems]
+        if phase.front.problems:
+            pass
         elif phase.status is None:
             out.append(f"{name}: no status in frontmatter")
         elif phase.status not in STATUSES:
@@ -398,19 +462,159 @@ def check_citations(repo: Path) -> list[str]:
     return out
 
 
+def check_dependencies(folders: list[Folder]) -> list[str]:
+    """Every fault in the dependency graph, as findings.
+
+    Prerequisites are folders, so an edge means "that whole feature has to be
+    finished". Nothing here reads a git ref: a name that is not in this tree is
+    handled by `check_across_refs`, which knows whether someone else has it.
+    """
+    out = []
+    by_name = {f"{f.number}_{f.name}": f for f in folders}
+    where = {name: f.start.relative_to(f.path.parent.parent) for name, f in by_name.items()}
+    dependents: dict[str, list[str]] = {}
+    for name, folder in by_name.items():
+        for target in folder.depends_on:
+            dependents.setdefault(target, []).append(name)
+
+    for name, folder in sorted(by_name.items()):
+        for target in folder.depends_on:
+            prerequisite = by_name.get(target)
+            if prerequisite is None:
+                continue  # unresolved names are reported by the caller
+            if folder.status in ("in progress", "done") and prerequisite.status != "done":
+                out.append(
+                    f"{where[name]}: status is {folder.status}, but it needs {target}, "
+                    f"which is {prerequisite.status}"
+                )
+            if (folder.priority or 0) > (prerequisite.priority or 0):
+                out.append(
+                    f"{where[name]}: priority {folder.priority} is above {target}'s "
+                    f"{prerequisite.priority or 0}, so the list offers work that cannot be started"
+                )
+
+    # Read the other way: discarding a feature is the moment to see what it breaks.
+    for target, names in sorted(dependents.items()):
+        prerequisite = by_name.get(target)
+        if prerequisite is not None and prerequisite.status in ("discarded", "superseded"):
+            out.append(
+                f"{where[target]}: {prerequisite.status}, and {', '.join(sorted(names))} "
+                "depends on it"
+            )
+
+    out += check_cycles(by_name, where)
+    return out
+
+
+def check_cycles(by_name: dict[str, Folder], where: dict[str, Path]) -> list[str]:
+    """Cycles, reported as the path found.
+
+    Needed because a number says nothing about order: `20` may depend on `21`, so
+    only walking the edges rules a cycle out.
+    """
+    out, done = [], set()
+
+    def walk(name: str, seen: list[str]) -> None:
+        if name in seen:
+            cycle = seen[seen.index(name):] + [name]
+            key = frozenset(cycle)
+            if key not in done:
+                done.add(key)
+                out.append(
+                    f"{where[name]}: depends on itself through {' -> '.join(cycle)}"
+                )
+            return
+        folder = by_name.get(name)
+        if folder is None:
+            return
+        for target in folder.depends_on:
+            walk(target, seen + [name])
+
+    for name in sorted(by_name):
+        walk(name, [])
+    return out
+
+
+def unresolved(folders: list[Folder]) -> list[tuple[Folder, str]]:
+    """Every (folder, name) whose prerequisite is not a folder in this tree."""
+    names = {f"{f.number}_{f.name}" for f in folders}
+    return [
+        (folder, target)
+        for folder in folders
+        for target in folder.depends_on
+        if target not in names
+    ]
+
+
+def suggestion(name: str, folders: list[Folder]) -> str:
+    close = difflib.get_close_matches(name, [f"{f.number}_{f.name}" for f in folders], n=1)
+    return f"; did you mean {close[0]}" if close else ""
+
+
+def resolve_elsewhere(
+    repo: Path, folders: list[Folder], missing: list[tuple[Folder, str]]
+) -> tuple[list[str], list[str]]:
+    """Split unresolved prerequisites into warnings and findings.
+
+    A prerequisite may be on a branch that has not merged: someone else may be
+    implementing it, and merging their plans in so that a name resolves is
+    overkill. That is a warning. A name that exists nowhere is a typo, and stays a
+    finding.
+
+    The refs are read only when something is missing, which is why this does not
+    undo folder 21's decision to keep ref-reading out of every run.
+    """
+    if not missing:
+        return [], []
+    on_refs = folders_on_refs(repo)
+    elsewhere = {
+        name: refs
+        for names in on_refs.values()
+        for name, refs in names.items()
+    }
+    warnings, findings = [], []
+    for folder, name in missing:
+        where = folder.start.relative_to(repo)
+        refs = elsewhere.get(name)
+        if refs is None:
+            findings.append(
+                f"{where}: depends on {name}, which is not a plan folder"
+                f"{suggestion(name, folders)}"
+            )
+        elif folder.status == "in progress":
+            warnings.append(
+                f"{where}: in progress, and needs {name}, which is only on "
+                f"{', '.join(sorted(refs))}. That merge is what this work is waiting for."
+            )
+        else:
+            warnings.append(
+                f"{where}: needs {name}, which is not in this tree yet; it is on "
+                f"{', '.join(sorted(refs))}"
+            )
+    return warnings, findings
+
+
 def cmd_check(args: argparse.Namespace) -> int:
     folders = load(args.root)
     findings = []
     for folder in folders:
         findings += check_folder(folder)
+    findings += check_dependencies(folders)
+    warnings, unresolved_findings = resolve_elsewhere(
+        args.root.parent, folders, unresolved(folders)
+    )
+    findings += unresolved_findings
     if args.citations:
         findings += check_citations(args.root.parent)
+    for warning in warnings:
+        print(f"plans: warning: {warning}")
     for finding in findings:
         print(f"plans: {finding}")
     if findings:
         print(f"\n{len(findings)} finding(s). The files have to agree with the convention.")
         return 1
-    print(f"plans: {len(folders)} folder(s) agree with the convention")
+    tail = f", {len(warnings)} warning(s)" if warnings else ""
+    print(f"plans: {len(folders)} folder(s) agree with the convention{tail}")
     return 0
 
 
@@ -530,6 +734,8 @@ def cmd_list(args: argparse.Namespace) -> int:
         print_table(table)
     if args.index:
         skipped = [s for s in skipped if in_range(s[:2], args.index)]
+    if any("*" in row[5] or "?" in row[5] for row in table):
+        print("\nneeds: * a prerequisite that is not done, ? one not in this tree (needs a merge)")
     if skipped and not args.out:
         print(f"\nno 00_start.md, so not listed: {', '.join(skipped)}")
     if args.index or args.status:

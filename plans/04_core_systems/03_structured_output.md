@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [04_core_systems/00_inference_interface.md, 03_scaffold/02_generated_models.md]
 produces: [lib/services/inference/structured_output_parser.dart]
+comment: after 00_inference_interface.md
 ---
 
 # Plan: Structured Output Pipeline

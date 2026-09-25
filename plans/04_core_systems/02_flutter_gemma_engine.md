@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [04_core_systems/00_inference_interface.md, 04_core_systems/05_model_manager.md]
 produces: [lib/services/inference/flutter_gemma_engine.dart]
+comment: after 00_inference_interface.md, 05_model_manager.md
 ---
 
 # Plan: FlutterGemmaEngine

@@ -1,6 +1,7 @@
 ---
 status: done
 priority: 0
+depends_on: [04_core_systems]
 description: |
   Controllers and screens: ConversationController and AppController with their providers, the
   welcome, model-download and conversation screens, and the end-to-end wiring that made the app

@@ -1,7 +1,7 @@
 ---
 status: done
-depends_on: [03_scaffold/02_generated_models.md]
 produces: [lib/app.dart, lib/main.dart, lib/providers/, lib/screens/welcome/, lib/screens/conversation/]
+comment: after 02_generated_models.md
 ---
 
 # Plan: Routing and Providers
