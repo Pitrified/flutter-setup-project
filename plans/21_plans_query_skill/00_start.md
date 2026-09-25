@@ -5,7 +5,9 @@ description: |
   Jira-lite for the plan folders: a skill that parses the frontmatter and answers
   queries by status, priority and phase index, plus a plans-checker script the
   assistant runs for mechanical correctness. Includes a one-pass normalisation of
-  the older folders, so there is nothing to be tolerant of.
+  the older folders, so there is nothing to be tolerant of, and cross-branch folder
+  numbering with a scripted rename for the collision. Written here, built to move
+  to dotfiles: every path is an argument.
 ---
 
 # Jira-lite: querying and checking the plan folders
@@ -59,23 +61,35 @@ Required on a folder's `00_start.md`. Optional on phase files, where the `## Ove
 it. It exists so a listing can show one line per feature without opening anything, which is what makes
 the query output readable at all.
 
-## What the data actually looks like (checked 2026-09-25)
+## What the data actually looks like (re-checked 2026-09-25)
 
-The folders are not uniform. They get normalised rather than tolerated (Q1):
+A folder-by-folder pass over `plans/`, which found more variation than the first look reported.
+Corrected here rather than left standing, because the normalisation pass is sized from this list.
 
-- `status:` frontmatter exists on phase files in the newer folders (10 onward) and on some
-  `00_start.md` files, but not all. `13_key_distribution/00_start.md` has none;
-  `14_audio_io/00_start.md` has `status: draft` and no priority.
-- `tracking.md` exists in 10, 12, 15, 17; phase 11 calls it `00_tracking.md`; the older folders
-  (02-09) use a `README.md` and numbered files with no frontmatter at all.
-- Statuses in use: draft, planned, in progress, done, superseded, discarded (the
-  `tracked-development` list), plus the folder-level ones written in prose.
+- **Frontmatter on `00_start.md` exists in five folders only**: 14, 16, 18, 19, 20, 21. It is absent
+  from 01, 12, 13, 15 and 17, including the two most recently completed features. So the convention
+  the newer folders were written to is the `status:` line on *phase* files, not on the start file.
+- **`00_start.md` itself is not universal.** Folders 02-09 and 99 have no start file; they use a
+  `README.md` plus numbered files. Folder 10 has `00.1_initial_research.md` and
+  `00.2_structured_streaming_asis.md` and no start file. Folder 11 calls it `00_intro.md`.
+- **`tracking.md` exists in 10, 12, 15, 17.** Folder 11 calls it `00_tracking.md`. Everything else
+  has none, which is correct for a draft and wrong for 09, which is live work.
+- **Phase file naming is `NN_feat_*.md` in 10, 15 and 17 only.** Folder 12 uses bare
+  `NN_name.md` plus a `99_fix_merge.md`; 09 uses `NN_name.md` with a gap at 08; 02-08 use
+  `NN_name.md` throughout.
+- **Decimal numbering is in use**: `00.1_`, `00.2_`, `01.1_`, `04.1_` in folder 10, `00.1_` in 01
+  and 02, `03.1_`/`03.2_` in 08. These are side-documents deliberately sorted next to their parent,
+  and a checker that only knows `NN_` will report every one of them.
+- **Three folders are not features at all**: `00_drafts`, `01_plan_polishing` and `99_notes`. Whatever
+  the checker does about pre-convention folders, these are a separate case: they have no status
+  because they are not work with a status.
+- `plans/00_tracking.md` sits at the top level and covers phases 00-09, which is a fourth shape.
 
-Normalisation is part of this feature, in one pass, and it touches names as well as content:
-`11_apple_integration/00_tracking.md` becomes `tracking.md`, folders without frontmatter get it, and
-the older README-driven folders (02-09) either gain the convention or are explicitly marked as
-pre-convention history so the checker stops reporting them. Doing it in one pass is what lets the
-parser be strict: after it, a file without frontmatter is a bug rather than a variation.
+So the normalisation is bigger than "add a priority field": it is a rename of `00_intro.md` and
+`00_tracking.md`, a `00_start.md` and `tracking.md` for folders that have neither, frontmatter on
+eleven start files, and a decision on the decimal files and the three non-feature folders. Doing it in
+one pass is what lets the parser be strict: after it, a file without frontmatter is a bug rather than
+a variation.
 
 ## Queries worth having
 
@@ -103,20 +117,94 @@ the existing gates use.
 - No `NEW_ANS:` left in a folder whose phases are all done, since an unanswered question in finished
   work is either forgotten or finished.
 
+- Folder numbers are unique **across branches**, not just in the working tree. See below.
+
 Relative links are already covered by `scripts/gates/links.py` and are not re-checked here.
+
+## Numbering across branches
+
+Folder numbers are allocated by whoever spins a folder off, and a branch that has not merged yet is
+invisible to anyone counting folders in the working tree. Two people each taking "22" is not a
+hypothetical; it is what the counting rule produces the first time two branches are open at once.
+
+So the checker scans refs, not only the checked-out tree. Read-only and cheap, with no checkout:
+
+```bash
+git for-each-ref --format='%(refname)' refs/heads refs/remotes
+git ls-tree -d --name-only <ref> plans/
+```
+
+Each number maps to a set of (ref, folder name). A number with more than one distinct folder name
+behind it is a collision; the same folder name on five refs is just a branch that has not merged.
+
+Run by hand over this repo's five local refs (2026-09-25): no collision. Every number maps to exactly
+one name, and the three stale branches (`feat/abi-split`, `backup/g4-abi-split`,
+`feat/language-setting-and-e2e`) hold strict prefixes of main's list rather than folders of their own.
+That is the expected shape most of the time, and it is why this check belongs at folder-creation time
+rather than in every run: it will say "nothing" for months and then save a merge.
+
+When a collision is found, the fix is mechanical and gets a script, because doing it by hand is where
+the dangling reference comes from. A rename is not `git mv`: references to a plan folder live outside
+`plans/` too, and this repo has fifteen of them today, in Dart doc comments
+(`lib/models/target_language.dart:12`), Python (`tool/mock_openai.py:15`), shell (`scripts/e2e.sh:9`),
+docs and `.github/copilot-instructions.md`. Only the markdown half of those is protected by
+`links.py`; a stale path inside a Dart comment breaks silently. The rename script therefore sweeps the
+whole repo for the old folder name, and reports every file it touched.
+
+What it does **not** do is choose the new number. In a single-developer repo picking `max + 1` is
+obvious enough to automate, but two developers renaming into the same free slot on their own branches
+reproduces the collision one number along. So the script takes the target number as an argument and
+the skill prompts a person for it, saying which numbers are taken and on which refs. A tool that
+silently renumbers someone else's branch is worse than the collision it fixes.
+
+## Portability: born here, lives in dotfiles
+
+This is written against real folders in this repo and is expected to move to
+`~/dotfiles/claude/claude__skills__*` next to `tracked-development`, which is the convention it reads.
+That destination constrains the design now, not later:
+
+- **No relative path from the skill to a repo.** klide's `scripts/gates/plan_status.py` computes its
+  root as `Path(__file__).resolve().parents[2]`, which is correct for a script that lives in the repo
+  it checks and wrong for one that lives in dotfiles. The script takes the plans directory as an
+  argument instead, and defaults to `$(git rev-parse --show-toplevel)/plans` when the argument is
+  absent, so it is usable in either position.
+- **The skill knows its own directory.** Claude Code injects a `Base directory for this skill:` line
+  ahead of the body, so `<skill dir>/scripts/plans_check.py` is a resolvable absolute path at call
+  time, with no `$HOME` guess and no symlink chasing. That is what makes "given a script and some
+  args, run it" work.
+- **Arguments over conventions.** Every path the script needs is an argument with a documented
+  default. No environment variables, no config file, nothing read from the repo it is pointed at.
+- **The caller is a competent assistant, not a menu.** The skill documents the script's arguments and
+  its output shape, and lets the assistant compose the call. Per the skill-authoring guidance, that is
+  the low-freedom part (a specific script, exact flags) while deciding *which* query answers the
+  question at hand is the high-freedom part, and the two get written differently.
+
+Structure, following the published layout: a `SKILL.md` under 500 lines carrying the query and check
+workflows, and `scripts/` beside it holding the executable. Reference material (the frontmatter
+schema, the status enum) goes in one file one level deep rather than inline, so the body stays short.
+The `description` field is what decides whether the skill is ever loaded, so it names the triggers:
+plan folders, phase status, what to work on next, priority.
 
 ## Shape
 
-A small script plus a skill that knows how to call it. Python and stdlib only, the way the gates here
-are, so it runs on this box with nothing installed. Read-only: it reports, it does not edit
-frontmatter, because a priority bump should stay a hand-written one-line diff.
+A skill plus two scripts. Python and stdlib only, the way the gates here are, so it runs on this box
+with nothing installed.
+
+- **Query and check are read-only.** They report; they do not edit frontmatter, because a priority
+  bump should stay a hand-written one-line diff that someone can revert.
+- **The rename is the one thing that writes**, and it writes only when a person has given it a target
+  number. It is a separate script for that reason, not a `--fix` flag on the checker: a gate that can
+  edit the files it is judging is the anti-pattern this convention is supposed to avoid.
 
 Once normalisation has run, the checker is cheap enough to join `scripts/check.sh` as a gate. It
 cannot join before, because it would fail on day one for reasons that are not anybody's mistake.
 
-Where it lives is the open part: it is written here against real data, and belongs in dotfiles once it
-works, next to `tracked-development` whose convention it reads. The sibling repo (klide) has the
-closest prior art.
+Prior art: klide has `scripts/gates/plan_status.py` (the tracking-table check) and `links.py`, which
+this repo already borrowed. `tracked-development` itself is the convention being parsed, and
+`skillify` in dotfiles is the local pattern for writing a skill. The published guidance used above is
+[skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices),
+whose relevant points here are progressive disclosure, matching freedom to fragility, and preferring a
+script to generated code for anything deterministic.
 
 ## Open questions
 
@@ -156,4 +244,45 @@ closest prior art.
   new ones?
   Recommended: backfill all of them. The whole point is a listing with one line per feature, and a
   listing with holes in it is not one.
+  NEW_ANS:
+
+### Third batch, raised while brainstorming the branch work (2026-09-25)
+
+- Q8: where does the script live once the skill moves to dotfiles, given the checker is meant to be a
+  gate (Q6) and CI has no dotfiles checkout?
+  a. Canonical copy in the skill; the repo gate is dropped, and the check runs only where a person or
+     an assistant runs it.
+  b. Canonical copy in the repo at `scripts/gates/plans_check.py`; the skill calls whatever it finds
+     in the repo it is pointed at, and carries no script of its own.
+  c. Canonical copy in the skill, vendored into each repo that wants it as a gate, with the version
+     recorded.
+  Recommended: b. The queries are the part that has to work anywhere; the check is a gate, and gates
+  live in the repo they guard because CI has to run them. The skill then holds prose plus a documented
+  contract for the script's arguments and output, and a repo without the script gets told so rather
+  than silently skipped. c trades one duplicated file for a version-skew bug nobody will look for.
+  NEW_ANS:
+- Q9: what happens to the decimal side-documents (`00.1_`, `04.1_`) and the three non-feature folders
+  (`00_drafts`, `01_plan_polishing`, `99_notes`)?
+  a. Recognise both in the parser: a decimal file is a side-document of its parent phase and carries
+     no status, and a folder with no `00_start.md` is not a feature and is skipped.
+  b. Normalise them away: fold the side-documents into their parents, rename the non-feature folders
+     out of the numbered range.
+  Recommended: a. The decimal files are a convention that works, sorting a research note next to the
+  phase it belongs to, and the three folders are genuinely not features. Recognising a real pattern is
+  not the same as tolerating a mess, which is what Q1 ruled out. b is a large rewrite of finished
+  history for no query anyone wants.
+  NEW_ANS:
+- Q10: does the cross-branch scan run in the checker by default, or only on request?
+  a. Always, as part of the check.
+  b. Only under a flag, and always in the rename workflow.
+  Recommended: b. Reading every ref is fine on this box but it inspects branches whose content is
+  nobody's business during a `check.sh` run, and a gate that fails because of a folder on someone
+  else's unmerged branch is a gate that gets skipped. The collision matters when a folder is being
+  created, which is exactly when the skill is in use.
+  NEW_ANS:
+- Q11: does the rename script also fix the relative links inside the renamed folder, or only
+  references to it?
+  Recommended: both, in one pass, and print a diff summary. A folder renamed from `21_` to `22_` keeps
+  its own internal links working, but siblings pointing at it break, and so does anything it points at
+  by `../NN_`. Half a rename is the failure mode worth scripting away.
   NEW_ANS:
