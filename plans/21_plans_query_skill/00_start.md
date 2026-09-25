@@ -6,8 +6,9 @@ description: |
   queries by status, priority and phase index, plus a plans-checker script the
   assistant runs for mechanical correctness. Includes a one-pass normalisation of
   the older folders, so there is nothing to be tolerant of, and cross-branch folder
-  numbering with a scripted rename for the collision. Written here, built to move
-  to dotfiles: every path is an argument.
+  numbering with a scripted rename for the collision, and a check that no code or
+  doc cites a plan file, because plans are a diary and docs are the as-is. Written
+  here, built to move to dotfiles: every path is an argument.
 ---
 
 # Jira-lite: querying and checking the plan folders
@@ -121,6 +122,49 @@ the existing gates use.
 
 Relative links are already covered by `scripts/gates/links.py` and are not re-checked here.
 
+## Plans are a diary, not documentation
+
+Given as a rule while this was being written, and it is the rule the repo is furthest from:
+
+> Plans are a diary of development, not docs. If a script, doc or comment needs to point to a
+> decision, that decision should live in a docs file. Docs are the latest snapshot of the as-is of the
+> project.
+
+`flutter-setup-project` predates the rule and breaks it twenty times. The distinction that makes the
+count meaningful, because the two cases want opposite treatment:
+
+- **Citations of a specific decision, which have to go.** Thirteen of them, and they read the same way
+  everywhere: a `Qn`/`Dn` id from a plan file, quoted from code that the reader cannot then check
+  without opening a diary entry. `lib/models/target_language.dart:12`,
+  `lib/services/inference/openai_inference_engine.dart:24`,
+  `lib/services/conversation/conversation_controller.dart:41` and `:240`, `tool/mock_openai.py:15`,
+  `scripts/e2e.sh:9`, `integration_test/app_test.dart:94` and `:160`,
+  `test/services/conversation_controller_test.dart`, `docs/prompt-engineering.md:161`, and
+  `docs/build-and-release.md` three times.
+- **Pointers to the plans tree as a place work is tracked, which are fine.** Seven, all in the
+  "how we work" files: `.github/copilot-instructions.md` twice, `docs/ai-development-playbook.md` four
+  times (naming `plans/<phase>/` as a template location), `docs/README.md` once. These cite no
+  decision; they say where the diary is kept, which is exactly what an instruction file is for.
+
+The rule the checker can enforce is therefore narrower than "no `plans/` outside `plans/`": a path to
+the tree or a folder is allowed, a reference to a *file* inside it, or to a `Qn`/`Dn`/`TLn` id, is not.
+A rule stated as the broad version would fail `copilot-instructions.md` for documenting the
+convention, and a gate that fires on its own instructions gets deleted rather than obeyed.
+
+This lands on the feature in four places:
+
+1. **A new check.** A grep, not a parse: it needs the repo root as well as the plans directory, so the
+   script takes both, the root defaulting to the plans directory's parent.
+2. **The rename script shrinks.** The repo-wide sweep described below was justified by those thirteen
+   citations. Once they are gone, a rename only has to fix links inside `plans/`, and the outside world
+   has nothing to fix because it was never allowed to point there. The sweep survives as an assertion,
+   not a rewrite.
+3. **Migration work that is not this feature's.** Removing the thirteen means finding each decision a
+   home in the topical doc that owns the subject, which is a docs change with product judgement in it,
+   not a mechanical pass. Scope question below.
+4. **The convention belongs in the skill.** `tracked-development` in dotfiles does not say this today;
+   it is where the rule should live, next to where this skill will.
+
 ## Numbering across branches
 
 Folder numbers are allocated by whoever spins a folder off, and a branch that has not merged yet is
@@ -144,12 +188,11 @@ That is the expected shape most of the time, and it is why this check belongs at
 rather than in every run: it will say "nothing" for months and then save a merge.
 
 When a collision is found, the fix is mechanical and gets a script, because doing it by hand is where
-the dangling reference comes from. A rename is not `git mv`: references to a plan folder live outside
-`plans/` too, and this repo has fifteen of them today, in Dart doc comments
-(`lib/models/target_language.dart:12`), Python (`tool/mock_openai.py:15`), shell (`scripts/e2e.sh:9`),
-docs and `.github/copilot-instructions.md`. Only the markdown half of those is protected by
-`links.py`; a stale path inside a Dart comment breaks silently. The rename script therefore sweeps the
-whole repo for the old folder name, and reports every file it touched.
+the dangling reference comes from. A rename is more than `git mv`: sibling folders point at each other
+by `../NN_name/`, and those break. Outside `plans/` nothing should point at a plan file at all (see
+above), so the script asserts that instead of rewriting it: if the grep finds a citation, the rename
+stops and says which file to fix first, rather than quietly editing code to keep a diary reference
+alive.
 
 What it does **not** do is choose the new number. In a single-developer repo picking `max + 1` is
 obvious enough to automate, but two developers renaming into the same free slot on their own branches
@@ -280,9 +323,43 @@ script to generated code for anything deterministic.
   else's unmerged branch is a gate that gets skipped. The collision matters when a folder is being
   created, which is exactly when the skill is in use.
   NEW_ANS:
-- Q11: does the rename script also fix the relative links inside the renamed folder, or only
-  references to it?
-  Recommended: both, in one pass, and print a diff summary. A folder renamed from `21_` to `22_` keeps
-  its own internal links working, but siblings pointing at it break, and so does anything it points at
-  by `../NN_`. Half a rename is the failure mode worth scripting away.
+- Q11: what does the rename script rewrite? Narrowed after the diary rule above: it cannot be
+  "everything that points at the folder", because outside `plans/` nothing may.
+  Recommended: rewrite `../NN_name/` links between plan folders and nothing else, print a diff
+  summary, and refuse to run while a citation from outside `plans/` still exists. Half a rename is the
+  failure mode worth scripting away; a rename that edits Dart comments is the rule being broken by the
+  tool meant to enforce it.
+  NEW_ANS:
+
+### Fourth batch, raised by the diary rule (2026-09-25)
+
+- Q12: who removes the thirteen citations?
+  a. This feature, as a phase of the normalisation pass.
+  b. A spin-off folder, since each one needs a decision rehomed in a docs file and that is editing the
+     as-is documentation, not the plan folders.
+  Recommended: b, with this feature shipping the check that finds them and leaving it failing-known
+  until the spin-off lands. The two jobs share nothing but a grep: one is renaming files nobody reads,
+  the other is deciding where "the base URL is a build-time define, not a Settings field" belongs in
+  `docs/`. Bundling them makes this folder the thing that rewrites nine source files.
+  NEW_ANS:
+- Q13: does the no-citation check go in `scripts/check.sh` as a gate, and if so, before or after the
+  thirteen are removed?
+  Recommended: same answer as Q6 and the same reason. It is a gate whose value is stopping the
+  fourteenth, so it wants to be in `check.sh`, and it cannot go in while it fails. If Q12 goes to a
+  spin-off, this check ships red-but-unwired and is armed by that spin-off's last commit.
+  NEW_ANS:
+- Q14: does the rule get written into `tracked-development` in dotfiles now, or when this skill moves
+  there?
+  Recommended: now, as a few lines in that skill, because it is a convention that applies to every
+  repo using the skill and the cost is a paragraph. It also stops the next feature folder in this repo
+  from adding a fourteenth citation while Q12 is still open. Separate repo, separate commit.
+  NEW_ANS:
+- Q15: what is the destination for a rehomed decision, once Q12 is settled?
+  a. The topical doc that owns the subject (`docs/build-and-release.md` for the ABI exclusions,
+     `docs/getting-started.md` for the base-URL override, `docs/prompt-engineering.md` for the prompt
+     rules).
+  b. One new `docs/decisions.md`, an ADR index.
+  Recommended: a. b is the plans diary copied into `docs/` under a different name, and it would go
+  stale the same way, whereas the topical docs are already the as-is snapshot and are what a reader
+  opens. Where no topical doc exists, that is a missing doc rather than an argument for an index.
   NEW_ANS:
