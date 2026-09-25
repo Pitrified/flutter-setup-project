@@ -13,9 +13,23 @@ import 'tutor_response_schema.dart';
 /// hitting the network. Production callers use [defaultOpenAIClientBuilder].
 typedef OpenAIClientBuilder = OpenAIClient Function(String apiKey);
 
-/// Default builder: real OpenAI HTTP client.
+/// Base URL override, for pointing a **debug** build at a local mock server.
+///
+/// Empty by default, which means the real API (`https://api.openai.com/v1`).
+/// Set at build time and never at runtime:
+/// `flutter run --dart-define=OPENAI_BASE_URL=http://10.0.2.2:8080/v1`.
+///
+/// It is a test seam, not a feature. There is deliberately no Settings field for
+/// it: an endpoint a user can change is a way to have their key sent elsewhere.
+/// See `plans/17_emulator_e2e/00_start.md` D1, D2.
+const String openAiBaseUrlOverride = String.fromEnvironment('OPENAI_BASE_URL');
+
+/// Default builder: real OpenAI HTTP client, or the override when one is set.
 OpenAIClient defaultOpenAIClientBuilder(String apiKey) =>
-    OpenAIClient.withApiKey(apiKey);
+    OpenAIClient.withApiKey(
+      apiKey,
+      baseUrl: openAiBaseUrlOverride.isEmpty ? null : openAiBaseUrlOverride,
+    );
 
 /// Cloud inference engine backed by the OpenAI Chat Completions API.
 ///
