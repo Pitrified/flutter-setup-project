@@ -66,7 +66,8 @@ Not derived yet.
 
 1. In dotfiles: fold the skill, its reference and `plans.py` into `tracked-development`, or add them beside, per Q1. Resolve the `00_start.md` frontmatter disagreement. Add the diary rule, the branch convention, and the adoption workflow for a repo without the script.
 2. On the workstation: run the dotfiles installer, check that the skill triggers from `~/.claude/skills/` in this repo with the repo copy renamed out of the way.
-3. In this repo, after `24_cloud_sessions` installs dotfiles skills in the cloud: delete `.claude/skills/managing-plan-folders/`, and check `.github/copilot-instructions.md` still names the skill correctly.
+3. In this repo: the non-failing comparison against the dotfiles copy in `scripts/check.sh` (Q6), silent when no dotfiles copy exists, as in CI.
+4. In this repo, after `24_cloud_sessions` installs dotfiles skills in the cloud: delete `.claude/skills/managing-plan-folders/`, and check `.github/copilot-instructions.md` still names the skill correctly.
 
 ## Open questions
 
@@ -105,4 +106,6 @@ Not derived yet.
   c. a non-failing line in `scripts/check.sh` that compares against `~/.claude/skills/.../plans.py` when that file exists, and prints a warning. Silent in CI.
   Recommended: b and c together. b is what an assistant using the skill sees, and c is what a person running the gates sees, with no network and no failure in CI.
   Edits go to the skill's copy first and are copied into the repo in the same change.
-  NEW_ANS:
+  ANS: a, b and c, without the last line. An edit cannot be assumed to reach every repo in the same change: changing the skill and this repo together still leaves every other user of the skill drifting, and nobody can track them all.
+  So each repo checks itself. Its local checker, not CI, prints the mismatch when a dotfiles copy is available, and the differences are reconciled from dotfiles into that repo.
+  Dotfiles is the direction of flow; a repo does not push its copy back.

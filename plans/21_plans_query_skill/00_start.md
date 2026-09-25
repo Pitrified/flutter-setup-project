@@ -438,6 +438,8 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   contract for the script's arguments and output, and a repo without the script gets told so rather
   than silently skipped. c trades one duplicated file for a version-skew bug nobody will look for.
   ANS: b. Canonical copy in the repo at `scripts/gates/`; the skill calls what it finds in the repo it is pointed at.
+  Reopened 2026-09-25 and flipped to c by [`../25_skill_to_dotfiles/00_start.md`](../25_skill_to_dotfiles/00_start.md) Q2: a repo that wants the skill has no way to find a script that lives only here.
+  The canonical copy moves into the skill, each repo vendors one, and skew is caught by each repo's local checker, reconciling from dotfiles (that file's Q6).
 - Q9: what happens to the decimal side-documents (`00.1_`, `04.1_`) and the three non-feature folders
   (`00_drafts`, `01_plan_polishing`, `99_notes`)?
   a. Recognise both in the parser: a decimal file is a side-document of its parent phase and carries
