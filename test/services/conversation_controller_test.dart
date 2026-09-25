@@ -155,16 +155,22 @@ void main() {
     expect(tutorMsg.tutorResponse, isNull);
   });
 
-  test('sendMessage handles parse failure with raw text', () async {
+  test('sendMessage shows a parse failure as a failed turn', () async {
     await controller.startConversation();
     // A complete buffer that is not valid TutorResponse JSON: the strict final
-    // parse fails and the raw text becomes the reply.
+    // parse fails. Until 2026-09-25 the raw text became the reply, which read as
+    // the tutor answering in English; see
+    // plans/09_ui_tweaks/10_malformed_reply_display.md.
     engine.buffers = const ['some garbled output'];
 
     final tutorMsg = await controller.sendMessage('Oi');
 
     expect(tutorMsg, isNotNull);
-    expect(tutorMsg!.content, 'some garbled output');
+    expect(
+      tutorMsg!.content,
+      'Error generating response: the reply was not in the expected format.',
+    );
+    expect(tutorMsg.content, isNot(contains('some garbled output')));
     expect(tutorMsg.tutorResponse, isNull);
   });
 

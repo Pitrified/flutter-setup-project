@@ -8,6 +8,7 @@ import '../../models/target_language.dart';
 import '../../models/tutor_response.dart';
 import '../inference/inference_engine.dart';
 import '../inference/structured_stream_engine.dart';
+import '../logging/app_logger.dart';
 import '../persistence/conversation_repository.dart';
 import '../prompt/prompt_manager.dart';
 
@@ -231,9 +232,15 @@ class ConversationController {
     }
   }
 
-  /// Map the terminal delta to the persisted reply, preserving the existing
-  /// three-state outcome: typed success -> reply text + value; parse failure ->
-  /// the raw text; inference failure -> the error fallback text.
+  /// Map the terminal delta to the persisted reply: typed success -> reply text
+  /// + value; either failure kind -> an error line.
+  ///
+  /// A parse failure used to be shown as the model's raw text, on the grounds
+  /// that something beats nothing. Watching it happen on a device changed that
+  /// (`plans/09_ui_tweaks/10_malformed_reply_display.md`): the learner saw model
+  /// prose in English presented as the tutor's reply, with no correction card and
+  /// no sign of failure, which reads as the tutor answering rather than as a
+  /// broken turn. The raw text still goes to the log, where it is useful.
   (String, TutorResponse?) _resolveReply(
     StructuredDelta<TutorResponse>? terminal,
   ) {
@@ -246,8 +253,18 @@ class ConversationController {
     }
     final failure = terminal.failure;
     if (failure != null) {
+      if (failure.kind == StructuredFailureKind.parse) {
+        AppLogger.instance.warn(
+          'Unparseable tutor reply, showing an error line instead: '
+          '${failure.rawText}',
+        );
+      }
       return switch (failure.kind) {
-        StructuredFailureKind.parse => (failure.rawText ?? '', null),
+        StructuredFailureKind.parse => (
+            'Error generating response: '
+                'the reply was not in the expected format.',
+            null,
+          ),
         StructuredFailureKind.inference => (
             'Error generating response: ${failure.error}',
             null,
