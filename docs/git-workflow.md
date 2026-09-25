@@ -27,6 +27,13 @@ it answers "what is this branch for" with a folder to read rather than a name to
 interpret. A branch with no folder behind it is a small change that should have
 gone straight to main.
 
+**The merge is not part of finishing the feature.** An effort ends with its last
+phase closed: the sub-plan and the table say `done`, the log has its dated line,
+and the folder's `priority` is back at 0. The branch then waits. Work discovered
+along the way often belongs on it, and a branch merged the moment the last box was
+ticked has to be reopened or replaced. Merging is a separate decision, taken by a
+person who knows whether anything else is still coming.
+
 Feature branches merge with `--no-ff`, always, even when `main` could fast
 forward:
 

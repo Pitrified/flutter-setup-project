@@ -77,6 +77,10 @@ Set the phase to `done` in both its frontmatter and the `tracking.md` row, appen
 log saying what was actually done, and when the last phase closes set the folder's `00_start.md` to
 `done` and its `priority` back to `0`. `check` catches all four if one is forgotten.
 
+Then stop. Do not merge the branch as the closing act: an effort ends with its last phase, and work
+discovered in the meantime often belongs on that same branch. Merging is a person's decision, made when
+they know nothing else is coming.
+
 ## Two conventions this carries
 
 - **Plans are a diary; docs are the as-is.** Nothing outside `plans/` may cite a specific plan folder or

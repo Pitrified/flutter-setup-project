@@ -499,11 +499,19 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   move; for now the rule lives in this repo's `.github/copilot-instructions.md`, under "Plans are a
   diary, docs are the as-is", which also cost that file its own reference to `plans/00_tracking.md`.
 
-  Two conventions are queued for that move, both written locally first because a rule nobody can read
-  is not a rule: the diary rule, and `feat/<NN_feat_name>` as the branch name for a feature folder
-  ([`../../docs/git-workflow.md`](../../docs/git-workflow.md)). Both belong to `tracked-development`
-  rather than to this repo, being about how plan folders are worked on rather than about Flutter. This
-  branch predates the naming rule and keeps its old name.
+  Three things are queued for that move, all written locally first because a rule nobody can read is not
+  a rule:
+
+  1. the diary rule (`.github/copilot-instructions.md`),
+  2. `feat/<NN_feat_name>` as the branch name for a feature folder, and that the merge is a separate
+     decision rather than the closing act of a feature
+     ([`../../docs/git-workflow.md`](../../docs/git-workflow.md)),
+  3. the `managing-plan-folders` skill itself, which belongs inside `tracked-development` rather than
+     beside it, since it is the tooling for that skill's own convention.
+
+  All three are about how plan folders are worked on rather than about Flutter, and they wait for a
+  broader uplift of `tracked-development` rather than being pushed one at a time. The branch this was
+  written on predates the naming rule and keeps its old name.
 - Q15: what is the destination for a rehomed decision, once Q12 is settled?
   a. The topical doc that owns the subject (`docs/build-and-release.md` for the ABI exclusions,
      `docs/getting-started.md` for the base-URL override, `docs/prompt-engineering.md` for the prompt
