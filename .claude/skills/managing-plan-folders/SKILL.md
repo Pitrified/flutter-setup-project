@@ -44,6 +44,10 @@ born at `priority: 0`, a more important one is bumped by one, and a folder going
 recommending anything: a folder at `in progress` with `3/5` is a better answer than a `draft` at the
 same priority.
 
+Read the `needs` column too, and do not recommend a row marked `*` or `?`: the first is waiting on another
+feature, the second on a merge. A `?` on a folder that is already `in progress` is the one to raise
+unprompted, because that merge is what the current work is waiting for.
+
 There is no roadmap document. This output is it.
 
 ### Spinning off a new folder

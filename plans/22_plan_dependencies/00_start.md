@@ -1,5 +1,5 @@
 ---
-status: in progress
+status: done
 priority: 0
 description: |
   An optional depends_on in a plan folder's frontmatter, so the tooling can catch a priority that

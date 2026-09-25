@@ -29,7 +29,7 @@ still depends on. Analysis, the five answered questions and the complexity budge
 | 02 | The field, the legacy keys, list  | [`02_depends_on_field.md`](02_depends_on_field.md)       | done    |
 | 03 | The hard rules, and the cascade  | [`03_hard_rules.md`](03_hard_rules.md)                   | done    |
 | 04 | The soft rule, across branches   | [`04_soft_rule_cross_ref.md`](04_soft_rule_cross_ref.md) | done    |
-| 05 | Document the field               | [`05_document_the_field.md`](05_document_the_field.md)   | planned |
+| 05 | Document the field               | [`05_document_the_field.md`](05_document_the_field.md)   | done    |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -71,3 +71,9 @@ Append-only. Newest at the bottom.
   clone with the prerequisite on a second branch, including the stronger wording when the dependent is
   itself in progress. The claim that the passing path reads no refs was measured with strace rather than
   asserted: zero `ls-tree` calls clean, 117 once a name is missing.
+- 2026-09-26 : phase 05 - the field documented in the skill's frontmatter reference, including a table for
+  the three `needs` markers because they call for three different next actions, and a line in the skill's
+  "what to work on next" workflow saying not to recommend a marked row. `depends_on` and `comment` added to
+  folder 21's queue for the `tracked-development` uplift.
+- 2026-09-26 : all five phases done. Folder closed, priority back to 0. Not merged: the branch waits, per
+  `docs/git-workflow.md`.
