@@ -8,6 +8,11 @@ description: |
 
 # Polish plans for flutter-setup-project
 
+Iterative feedback that was folded into this master plan is in
+[`00.1_notes.md`](00.1_notes.md). This folder's own `README.md` was a two-row index of those two files
+plus a "Status: Active" line that had been wrong since July; it was removed during the normalisation
+pass, its content being what the frontmatter above now says.
+
 ## Overview
 
 1. read `flutter-setup-project/plans/00_drafts/00_flutter_structure.md` to understand the project

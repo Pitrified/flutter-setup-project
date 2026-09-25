@@ -4,6 +4,10 @@ status: superseded
 
 # API key distribution - production hardening (deferred)
 
+Superseded by [`../13_key_distribution/00_start.md`](../13_key_distribution/00_start.md), which is the
+same two-step rollout (a shipped key, then a proxy) written later and in more detail. Kept because the
+record of a path is part of the history; read folder 13 for the plan of record.
+
 Status: **plan only, not in scope for the current phase**. The current internal-alpha
 build uses user-supplied keys held in Android Keystore - see
 [`03_openai_integration.md` - API key distribution / Internal alpha](03_openai_integration.md).

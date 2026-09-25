@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 2 - Normalise every folder
@@ -60,3 +60,20 @@ In this order, because the last step consumes the others' inputs:
 - `scripts/gates/links.py` green, and `scripts/check.sh` green.
 - A spot check by hand on three folders: 07 still says the Play Store work is outstanding, 08's log
   holds the six steps, 13 is named as what superseded 08's deferred plan.
+
+## What the implementation found
+
+- **The statuses in the pre-convention folders were stale in three vocabularies.** Folder 02 said
+  `draft` and folder 03 said `not-started` for work that shipped in July; folders 04 and 05 said
+  `complete`. 27 files, none of them in the enum. The only accurate record was `plans/00_tracking.md`,
+  the file this phase deletes, which is the argument for the checker in one sentence.
+- **Folders 02-05 already carried `depends_on` and `produces` keys.** The inventory in `00_start.md` had
+  said frontmatter on phase files started at folder 10; wrong, and in the useful direction, since
+  `produces` is the `Produces` column already structured. Both keys are left alone, and the checker
+  validates the keys it knows rather than rejecting the rest.
+- **101 files carry a status**: 21 start files and 79 phase files, plus one side-document. Per folder it
+  is four to ten; it is twenty-two folders that make the number.
+- **`01_plan_polishing/README.md` was a third shape**, a two-row index with a "Status: Active" line
+  wrong since July. Removed, with its one useful pointer moved into `00_start.md`.
+- The links gate earned its place twice: 23 broken links after the renames, one more after removing that
+  README. Every one was in a file nobody would have thought to check.

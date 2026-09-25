@@ -99,7 +99,7 @@ After each significant implementation:
 
 1. Verify docs still match reality
 2. Update copilot-instructions.md if new systems or patterns emerged
-3. Update tracking in [../plans/00_tracking.md](../plans/00_tracking.md)
+3. Update tracking in the phase folder's own `tracking.md` under [plans/](../plans/)
 4. If a doc and code disagree, the doc is wrong - fix the doc
 
 ## 11. Testing with Fake Engine

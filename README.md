@@ -25,7 +25,7 @@ All work so far lives in the `plans/` folder as structured blueprints.
 | # | Phase | Goal |
 |---|-------|------|
 | 00 | [Drafts](plans/00_drafts/README.md) | Raw research material (architecture, LLM SDK options) |
-| 01 | [Plan Polishing](plans/01_plan_polishing/README.md) | Meta-plan, gap analysis, execution order |
+| 01 | [Plan Polishing](plans/01_plan_polishing/00_start.md) | Meta-plan, gap analysis, execution order |
 | 02 | [Foundation](plans/02_foundation/00_start.md) | All documentation before any code (spec, standards, AI playbook) |
 | 03 | [Scaffold](plans/03_scaffold/00_start.md) | Create Flutter project, configure deps, validate it runs |
 | 04 | [Core Systems](plans/04_core_systems/00_start.md) | Inference interface, fake provider, structured output, persistence |

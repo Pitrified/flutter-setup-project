@@ -28,7 +28,7 @@ Full reasoning in `00_start.md`; these are the ones that cut across phases.
 | #  | Phase                              | Plan                                                          | Status  |
 | -- | ---------------------------------- | ------------------------------------------------------------- | ------- |
 | 1  | Parser and query command           | [`01_parser_and_queries.md`](01_parser_and_queries.md)         | done    |
-| 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | planned |
+| 2  | Normalise every folder             | [`02_normalisation.md`](02_normalisation.md)                   | done    |
 | 3  | The checker, and the gate          | [`03_checker_and_gate.md`](03_checker_and_gate.md)             | planned |
 | 4  | The repo stops citing the diary    | [`04_stop_citing_the_diary.md`](04_stop_citing_the_diary.md)   | planned |
 | 5  | Folder-creation workflow and skill | [`05_workflow_and_skill.md`](05_workflow_and_skill.md)         | planned |
@@ -60,3 +60,8 @@ Append-only. Newest at the bottom.
   against the hand-built inventory, with `--index`, `--status`, `--out` in both formats, `--root`
   pointing at a copy outside the repo, and a named error when run outside a git repo with no `--root`.
   The listing covers eleven folders and names the twelve it skips, which is phase 2's work list.
+- 2026-09-25 : phase 2 - normalised every folder in five commits: renames, start-file frontmatter with
+  descriptions, statuses onto the enum, a `tracking.md` for 02-09, then the teardown of
+  `plans/00_tracking.md`. `list` now shows 21 folders with no holes. The statuses in 02-05 turned out to
+  be stale in three different vocabularies, and those folders already carried `produces` keys the
+  inventory had not noticed.

@@ -62,7 +62,7 @@ All documentation needed to go from zero to a working private alpha.
 2. Write a focused prompt (see [ai-development-playbook.md](ai-development-playbook.md) section 5)
 3. Review the diff against the [review checklist](ai-development-playbook.md#6-review-checklist-per-ai-diff)
 4. Run tests; verify on emulator
-5. Update [plans/00_tracking.md](../plans/00_tracking.md)
+5. Update the phase folder's own `tracking.md` under [plans/](../plans/)
 6. Update the relevant guide with usage instructions and examples.
 7. HUMAN: Commit.
 
