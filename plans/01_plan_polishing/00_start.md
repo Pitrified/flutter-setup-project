@@ -1,3 +1,11 @@
+---
+status: done
+priority: 0
+description: |
+  Gap analysis over the raw drafts, and the master plan that phases 02 to 09 were derived from.
+  History: it explains why the early phases have the shape they do.
+---
+
 # Polish plans for flutter-setup-project
 
 ## Overview

@@ -1,3 +1,11 @@
+---
+status: in progress
+priority: 0
+description: |
+  Release build and signing, and the Google Play private alpha. The build config is done; the
+  Play Console steps are manual and still outstanding, which is why this folder is not closed.
+---
+
 # Phase 07 - Release
 
 Build, sign, and publish a private alpha to Google Play.

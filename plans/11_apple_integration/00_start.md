@@ -1,3 +1,11 @@
+---
+status: planned
+priority: 0
+description: |
+  Getting off Android only: macOS toolchain, an APK from the CLI, a macOS desktop port, an iOS
+  build demoed over a cable, then TestFlight and the App Store. Sequenced, not started.
+---
+
 # Plan 11/00 - Apple Integration: Zero to Live on macOS/iOS
 
 ## Status: draft

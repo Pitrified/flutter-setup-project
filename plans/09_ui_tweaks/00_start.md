@@ -1,3 +1,11 @@
+---
+status: in progress
+priority: 0
+description: |
+  Small UI and functionality fixes, one sub-plan each, from tap-to-reveal translation to the
+  CEFR picker to how an unparseable reply reads. Open: item 08 in the list has no sub-plan yet.
+---
+
 # UI tweaks and small functionality
 
 ## 01 Show translation

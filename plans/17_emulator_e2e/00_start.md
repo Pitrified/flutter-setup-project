@@ -1,3 +1,12 @@
+---
+status: done
+priority: 0
+description: |
+  A headless emulator on this box plus a mock OpenAI server, so the three paths that
+  flutter_test cannot reach are covered by an integration test that runs a whole journey against
+  scripted replies.
+---
+
 # End-to-end on a headless emulator, with a mocked OpenAI endpoint
 
 Status: bootstrap. The emulator is being installed as this is written; nothing in the app is changed

@@ -1,3 +1,12 @@
+---
+status: draft
+priority: 0
+description: |
+  Users should not need their own OpenAI key. Two steps, increasing effort and safety: ship a
+  key inside the app, then a proxy on the Linux box so the real key never leaves it. Supersedes
+  the deferred plan in folder 08.
+---
+
 # Key distribution - two-step rollout
 
 Status: brain dump / start note. Nothing implemented yet.

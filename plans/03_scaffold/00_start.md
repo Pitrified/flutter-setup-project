@@ -1,3 +1,11 @@
+---
+status: done
+priority: 0
+description: |
+  The Flutter project itself: folder tree and analysis options, freezed models with
+  build_runner, the GoRouter and Riverpod bootstrap, and the git workflow.
+---
+
 # Phase 03 - Scaffold
 
 Create the Flutter project, configure dependencies, and validate it builds
