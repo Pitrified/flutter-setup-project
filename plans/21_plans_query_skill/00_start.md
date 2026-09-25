@@ -471,8 +471,15 @@ and moving this skill to dotfiles (Q3, after it has been used here).
   repo using the skill and the cost is a paragraph. It also stops the next feature folder in this repo
   from adding a fourteenth citation while Q12 is still open. Separate repo, separate commit.
   ANS: correct, it is not in `tracked-development` today: that `SKILL.md` has no mention of diary,
-  as-is or snapshot, and nothing telling a reader not to cite a plan from code. Deferred to the skill move
-  rather than done now.
+  as-is or snapshot, and nothing telling a reader not to cite a plan from code. Deferred to the skill
+  move; for now the rule lives in this repo's `.github/copilot-instructions.md`, under "Plans are a
+  diary, docs are the as-is", which also cost that file its own reference to `plans/00_tracking.md`.
+
+  Two conventions are queued for that move, both written locally first because a rule nobody can read
+  is not a rule: the diary rule, and `feat/<NN_feat_name>` as the branch name for a feature folder
+  ([`../../docs/git-workflow.md`](../../docs/git-workflow.md)). Both belong to `tracked-development`
+  rather than to this repo, being about how plan folders are worked on rather than about Flutter. This
+  branch predates the naming rule and keeps its old name.
 - Q15: what is the destination for a rehomed decision, once Q12 is settled?
   a. The topical doc that owns the subject (`docs/build-and-release.md` for the ABI exclusions,
      `docs/getting-started.md` for the base-URL override, `docs/prompt-engineering.md` for the prompt
