@@ -57,6 +57,14 @@ From `list_environments`, 2026-09-25: one environment, `Default`, kind `anthropi
 Onboarding created it. Its network level is Trusted, which matches `dl.google.com` being refused.
 Its level, variables and setup script are in its settings: the environment menu in a session's title bar, then the gear on the environment, or Edit.
 
+The Edit dialog, as the user read it on 2026-09-25: Name `Default`, Network access Trusted (`trusted_only`), and four fields.
+Environment variables in `.env` format, with the warning that they are visible to anyone using the environment.
+API credentials, empty, whose values cannot be read back after saving.
+Setup script, a bash field. Changes apply to new sessions only.
+The variables box showed `NODE_ENV=production` and `GIT_AUTHOR_NAME=Your Name`, and the script box `npm install`. These are most likely the dialog's grey placeholder text rather than saved values: this repo has no `package.json`, and the session started with no `node_modules` or lock file in the checkout. To confirm in the dialog.
+
+`Default` stays as it is, as a temporary environment (Q2). The Flutter stack gets a new environment, which is where the setup script is verified.
+
 How long each piece lasts, per the docs:
 
 - **An environment** lasts until it is archived. It holds the network level, the variables and the setup script, and every session started in it uses them.
@@ -139,6 +147,7 @@ Out of scope now. What it needs, so the phase does not start cold:
 
 - **Network.** The Android command-line tools come from `dl.google.com`, which is refused today.
   It needs Custom access with `dl.google.com` added to the defaults. `maven.google.com`, which Gradle uses, already answers.
+  Settled by Q7: the Flutter environment is created with that access from the start, so this phase needs no network change.
 - **SDK packages.** `platform-tools`, `platforms;android-36`, a matching `build-tools`, and the NDK version Flutter selects (`ndkVersion = flutter.ndkVersion` in `android/app/build.gradle.kts`).
   Their sizes and download times are unknown until measured. The NDK is the one that may not fit in the five-minute budget.
   The docs' answers are parallel downloads with `&` and `wait`, or a download started in the background from a SessionStart hook.
@@ -175,7 +184,7 @@ A Dockerfile is optional, and only earns its place if changing the script by tri
 
 Not derived yet; a sketch for when this is picked up.
 
-1. Personal layer: the setup script clones dotfiles and runs the installer. Check that `CLAUDE.md` and the skills load in a new session.
+1. Personal layer: create the Flutter environment (Q2, Q7), with a setup script that clones dotfiles and runs the installer. Check that `CLAUDE.md` and the skills load in a new session there.
 2. Toolchain: the Flutter script, `PATH`, and the SessionStart hook for `pub get`. Done when a new session runs `scripts/check.sh` green with no manual step.
 3. Docs: the "Which machine" entry and the getting-started section.
 4. Release build: the Android SDK and network access, gated on folder 19.
@@ -193,7 +202,7 @@ Not derived yet; a sketch for when this is picked up.
   a. one environment with dotfiles and every toolchain.
   b. one environment per stack, each running the dotfiles layer first.
   Recommended: b, because the snapshot is per environment, and a per-stack script stays inside the five-minute budget.
-  NEW_ANS:
+  ANS: b. `Default` stays as a temporary environment; a new one is created for the Flutter stack, and the setup script is verified there.
 - Q3: the dotfiles `settings.json` in the cloud?
   a. link it unchanged and install `rtk` in the setup script.
   b. leave it out of the cloud and link only `CLAUDE.md`, rules and skills.
@@ -218,4 +227,4 @@ Not derived yet; a sketch for when this is picked up.
   b. a second environment, Custom with `dl.google.com`, used only for release work.
   c. Full access.
   Recommended: follows Q2. With one environment per stack it is a, applied to the Flutter environment; c opens every host to fetch one.
-  NEW_ANS:
+  ANS: a, on the new Flutter environment rather than `Default`, and from its creation rather than when the release phase starts.
