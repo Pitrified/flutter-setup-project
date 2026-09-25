@@ -55,6 +55,31 @@ What the checker would then report: a name that is not a folder, a cycle, a fold
 `done` whose prerequisite is not `done`, and a folder whose priority exceeds a prerequisite's. What
 `list` would show: the prerequisite in a column, and a marker on the rows that are not startable.
 
+### Two severities
+
+This introduces the first soft rule in the checker: the thirteen rules it has today all fail, and this
+one only reports.
+
+- **Finding, exit 1.** A name that resolves nowhere: not in the tree and not on any ref. That is a typo
+  or a folder that was never created, and the close-match suggestion belongs here.
+- **Warning, exit 0.** A name that is not in this tree but exists on another ref. Someone is working on
+  it, and the plan is correct about depending on it; what is missing is a merge, on their schedule.
+
+The warning's text carries the refs the folder was found on, so the reader's next action is obvious
+(`git log <ref>` or ask whoever owns it). When the dependent folder's own status is `in progress`, the
+warning says so in stronger terms: at that point the merge is not housekeeping, it is what the current
+work is waiting for, and an assistant reading the output should raise it rather than note it.
+
+This also settles a tension with
+[`../21_plans_query_skill/00_start.md`](../21_plans_query_skill/00_start.md) Q10, which kept the
+cross-branch scan behind a flag so that `check` does not read every ref on every run. It still does not:
+refs are consulted **only** when a name fails to resolve in the tree, which is the rare path. A tree
+where every prerequisite resolves makes no git calls beyond the one it already makes.
+
+Practical consequence for `list`: a row whose prerequisite is not in the tree is marked as not startable
+here, distinctly from one whose prerequisite is present but unfinished. The first needs a merge, the
+second needs work, and they are not the same message.
+
 ### What a name resolves against
 
 The set of legal names is the set of folders the tooling already finds: a numbered directory holding a
@@ -63,9 +88,10 @@ names, because that is a second copy of something the directory already is, and 
 a month. So a name resolves if and only if the plan it names can actually be read, which is the property
 worth having.
 
-A name that does not resolve is a finding, naming the file and the unknown name, with the closest
-existing folder suggested: `difflib.get_close_matches` is in the standard library and a typo in
-`20_repo_splt` should not cost anyone a search.
+A name that does not resolve in the tree is looked for across the refs before anything is reported, per
+the severities above. If it exists nowhere it is a finding, naming the file and the unknown name, with
+the closest existing folder suggested: `difflib.get_close_matches` is in the standard library and a typo
+in `20_repo_splt` should not cost anyone a search.
 
 ### Numbers are identity, not order
 
@@ -117,4 +143,9 @@ it, since this is the change that adds the first non-scalar field.
   Recommended: a, on the grounds that b's "unknown rather than wrong" is a status that never gets
   revisited. A prerequisite living on an unmerged branch is a real situation, and the honest handling is
   that the dependent plan waits for that branch to land before it can say so.
-  NEW_ANS:
+  ANS: b, overriding the recommendation. Someone else may be implementing the prerequisite, and merging
+  their plans into ours so that a reference resolves is overkill: let them finish, then the merge brings
+  it in. So an unresolvable name that exists on another ref is a **warning**, not a gate failure. The
+  case the recommendation worried about is handled by who reads the warning: when the dependent folder is
+  actually being worked, the missing prerequisite is the thing an assistant should notice and raise the
+  now-critical merge over. See "Two severities" below.
