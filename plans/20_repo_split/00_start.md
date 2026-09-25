@@ -1,6 +1,10 @@
 ---
 status: draft
 priority: 0
+description: |
+  Split the skeleton and its pattern gallery from the app, so the reusable half can
+  be picked up by the next project. Cheaper alternatives are listed first, because
+  two repos is two maintenance streams for one person.
 ---
 
 # Split the skeleton from the app

@@ -1,6 +1,10 @@
 ---
 status: draft
 priority: 0
+description: |
+  Publish the release APK as a GitHub release asset, uploaded by hand, so a build
+  reaches a phone without waiting on the Play Console. Gated on whether the APK
+  carries a key, and on where the signing key lives.
 ---
 
 # Getting the APK onto a phone without the Play Console

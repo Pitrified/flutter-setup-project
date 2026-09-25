@@ -1,6 +1,10 @@
 ---
 status: draft
 priority: 0
+description: |
+  A navigation map an agent can read and a diagram a person can read, generated
+  from one source and gated against lib/, so the guards in GoRouter.redirect and
+  the modal sheets stop being invisible.
 ---
 
 # A navigation map that cannot go stale

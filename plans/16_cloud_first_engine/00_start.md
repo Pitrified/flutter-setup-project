@@ -1,6 +1,11 @@
 ---
 status: draft
 priority: 1
+description: |
+  Remove the on-device engine entirely: drop flutter_gemma and the first-launch
+  model download, reclaim most of the APK, and rewrite the offline claim that no
+  longer holds. Raised because APK size is the priority and local models are too
+  shaky and slow to keep.
 ---
 
 # Cloud-first, and the fate of the on-device engine
