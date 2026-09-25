@@ -1,5 +1,5 @@
 ---
-status: draft
+status: in progress
 priority: 0
 description: |
   An optional depends_on in a plan folder's frontmatter, so the tooling can catch a priority that
@@ -211,3 +211,23 @@ is a judgement the reader makes with the output in front of them.
   ANS: b. No new key. This script will already grow enough cases to handle, and `superseded` is small and
   rare: the cascade message says what is broken, and an assistant works out what to repoint at by reading
   the folder, case by case. See "How many cases this script gets to have" below.
+
+### Second batch, raised by the review before the phases were written (2026-09-26)
+
+- Q6: `depends_on` is already taken. Checked in frontmatter rather than by grep: 27 phase files carry it,
+  in three shapes (22 naming phase paths such as `[03_scaffold/02_generated_models.md]`, 3 naming doc
+  paths such as `[docs/getting-started.md]`, 2 empty), from the convention folders 02-05 were written
+  under. Exactly one `00_start.md` carries the new folder-level form, the one written yesterday in
+  `23_dependency_upgrades`.
+  a. Read it only from `00_start.md`. The collision is clean by file role, phase-level values stay as they
+     are, and the validator has no special case. Cost: a `depends_on` typo'd onto a phase file is silently
+     ignored.
+  b. Rename the new field, `requires:`, leaving `depends_on` entirely to the old convention. No ambiguity
+     for the price of a worse word.
+  c. Normalise the 27, converting phase paths to the folder they live in and dropping the doc paths.
+  Recommended: a. The two live in different files and mean different things, which is exactly the
+  condition under which one name is fine, and Q1 already put the new field at folder level only. c
+  rewrites 27 finished files to remove information (`produces` and `depends_on` between phases are a
+  record of how those phases were sequenced) for no query anyone has asked for. The silent-ignore cost is
+  real but small, because the field is optional: a missed `depends_on` leaves the status quo.
+  NEW_ANS:
