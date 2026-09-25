@@ -1,10 +1,13 @@
 ---
 status: draft
+priority: 1
 ---
 
 # Cloud-first, and the fate of the on-device engine
 
-Status: draft spin-off. Not picked up, no phases derived.
+Status: draft spin-off, **raised to priority 1 on 2026-09-25** and the open question below is
+answered: the ask was "reduce the APK size even more, no local models at all", which is the
+*removal* branch, not the demotion one. Phases still to be derived.
 
 ## Where this came from
 
@@ -31,10 +34,26 @@ An inventory, not a plan. Dropping `flutter_gemma` and the on-device path would 
 - Phase 14's audio options inherit the same shift, since the local-vs-cloud axis there was partly
   justified by the app already running a local model.
 
-## The obvious open question
+## The open question, now answered
 
-Whether "dismissed" means removed or demoted. Demoted (keep the code, stop treating it as the quality
-bar) costs nothing today and keeps the offline story for a future device generation. Removed reclaims
-about 60 MB of APK and a plugin dependency, and forecloses the offline claim.
+Whether "dismissed" meant removed or demoted. **Removed** (2026-09-25): no local models at all, and
+APK size is the reason, so keeping the code for a future device generation does not buy anything.
 
-Nothing here is decided. This folder gets a `tracking.md` and phases if and when it is picked up.
+What that makes concrete, and what phases will have to cover:
+
+- Drop the `flutter_gemma` dependency, `FlutterGemmaEngine`, and `EngineKind.gemma`. `FakeInferenceEngine`
+  stays: every test uses it.
+- Delete the first-launch download path that exists only to fetch a `.litertlm` file:
+  `ModelDownloadScreen`, `RuntimeModelManager`, `ModelConfig`, the `model_metadata` Hive box, and the
+  `AppNeedsModel` state and its redirect in `app.dart`.
+- Undo what phase 12 needed: the `jniLibs.excludes` block and the ABI notes in
+  `docs/build-and-release.md` exist to trim MediaPipe and LiteRT native libraries that will no longer
+  be there. Measure the new APK rather than predicting it; the current arm64 split is 43 MB and almost
+  all of that is native code being removed.
+- Rewrite the offline claim wherever it appears: `docs/functional-specs.md`, the store listing, and
+  `docs/privacy-policy.md`. A cloud-only app cannot say "fully offline after model download".
+- Note the dependency both ways with [`../13_key_distribution/00_start.md`](../13_key_distribution/00_start.md):
+  with no local fallback, a user without a working key has no app at all, so key distribution stops
+  being a nicety.
+
+This folder gets a `tracking.md` and phases when it is picked up.
