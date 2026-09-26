@@ -17,6 +17,30 @@ Install `ninja-build` if you don't have it - the Android build system requires i
 sudo apt install ninja-build
 ```
 
+## Fresh cloud session
+
+A claude.ai cloud session starts from a fresh clone on Ubuntu, as root, with no Flutter and no Android SDK.
+Until the cloud environment runs a setup script, install Flutter by hand at the version CI pins, from the repo root:
+
+```bash
+version=$(sed -n 's/.*flutter-version: *//p' .github/workflows/checks.yml)
+curl -fsSL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${version}-stable.tar.xz" \
+  | tar -xJ -C "$HOME"
+git config --global --add safe.directory '*'   # the SDK is a git checkout owned by another uid
+echo 'export PATH="$HOME/flutter/bin:$PATH"' >> ~/.bashrc
+export PATH="$HOME/flutter/bin:$PATH"
+flutter --disable-analytics
+scripts/check.sh
+```
+
+The SDK unpacks to about 2.3 GB and the first `pub get` adds about 700 MB, well inside the session's disk.
+Claude's shell reads `~/.bashrc` for each command, so the `echo` line puts `flutter` on its `PATH` for the rest of the session; `scripts/check.sh` falls back to `$HOME/flutter/bin` either way.
+
+What this does not give you:
+
+- **The Android SDK.** No APK is built in a cloud session. Its command-line tools download from `dl.google.com`, which the default Trusted network access refuses.
+- **Persistence.** The install lives in the session's container and is gone when the container is reclaimed. A new session repeats these steps.
+
 ## Install Flutter SDK
 
 ```bash
