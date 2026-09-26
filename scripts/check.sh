@@ -60,10 +60,11 @@ run "plans"    python3 scripts/plans.py check --citations
 # undefined getters. Warm it is ~2s; cold (a clean clone) about a minute.
 run "codegen"  dart run build_runner build --delete-conflicting-outputs
 # Formatting is mechanical, so it is checked rather than reviewed: dart format
-# at the pinned SDK over every tracked Dart file, failing with the names of the
-# files it would change. Generated files are untracked and skipped. The fix is
-# `git ls-files -z '*.dart' | xargs -0 dart format`.
-run "format"   bash -c "git ls-files -z '*.dart' | xargs -0 dart format --output=none --set-exit-if-changed"
+# at the pinned SDK over every Dart file git knows or would add (tracked, plus
+# untracked files not ignored), failing with the names of the files it would
+# change. Generated files are gitignored and skipped. The fix is the same list
+# piped to `dart format` without the two flags.
+run "format"   bash -c "git ls-files -z --cached --others --exclude-standard -- '*.dart' | xargs -0 dart format --output=none --set-exit-if-changed"
 run "analyze"  flutter analyze
 run "test"     flutter test --reporter=failures-only
 

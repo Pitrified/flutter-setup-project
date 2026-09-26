@@ -182,7 +182,8 @@ full output of any gate that fails. `-v` prints everything, which is worth it wh
 a gate passes and you still want to see what it did.
 
 Gates run in this order: links, plans, codegen, format, analyze, test.
-The format gate runs `dart format` over `git ls-files '*.dart'` and fails naming each file it would change; fix with `git ls-files -z '*.dart' | xargs -0 dart format`. Codegen is in the list
+The format gate runs `dart format` over every Dart file git tracks or would add, untracked new files included and gitignored generated files skipped, and fails naming each file it would change.
+Fix with `git ls-files -z --cached --others --exclude-standard -- '*.dart' | xargs -0 dart format`. Codegen is in the list
 because `*.freezed.dart` and `*.g.dart` are gitignored, so a fresh checkout has
 none and analyze fails on every freezed type. Warm it costs about 2s.
 
