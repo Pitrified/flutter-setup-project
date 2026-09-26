@@ -1,5 +1,5 @@
 ---
-status: draft
+status: in progress
 priority: 0
 description: |
   The tracked-development uplift: fold the managing-plan-folders skill and its script
@@ -13,7 +13,7 @@ comment: |
 
 # Move the plan-folder skill to dotfiles
 
-Draft spin-off, raised 2026-09-25. No phases derived.
+Spun off 2026-09-25. Phases in [`tracking.md`](tracking.md).
 
 ## Where this came from
 

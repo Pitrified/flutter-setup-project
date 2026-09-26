@@ -28,8 +28,8 @@ than coding to the stale line. Where a doc and a *request* disagree, stop and as
 
 ## Progress
 
-Each phase folder under [plans/](../plans/) owns its own `tracking.md`, written in the shape the
-`tracked-development` skill describes. Read the phase folder itself: the folders up to 09 predate the
+Each phase folder under [plans/](../plans/) owns its own `tracking.md` once it has phases, written in the shape the
+`tracked-development` skill describes; a draft has only its `00_start.md`. Read the phase folder itself: the folders up to 09 predate the
 convention and keep their own index, and none of them is the index for anything newer.
 
 ## Plans are a diary, docs are the as-is
@@ -73,6 +73,10 @@ script. `scripts/install-hooks.sh` points git at `.githooks` so a commit runs th
 
 It prints one line per gate and the full output of whichever one fails, so its output needs no
 filtering; `scripts/check.sh -v` prints everything.
+
+`scripts/plans.py` is a vendored copy of the one in the `tracked-development` skill in dotfiles.
+Where that skill is installed, `check.sh` prints a note when the two differ and never fails on it.
+The fix is always to copy the skill's file over this one, never the other way.
 
 A gate has to name the file and the line when it fails, and be fast enough that nobody skips it.
 Something that has never been seen failing is an assumption, not a gate.

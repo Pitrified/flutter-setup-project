@@ -62,6 +62,17 @@ run "codegen"  dart run build_runner build --delete-conflicting-outputs
 run "analyze"  flutter analyze
 run "test"     flutter test --reporter=failures-only
 
+# scripts/plans.py is a vendored copy; the canonical one ships with the
+# tracked-development skill in dotfiles. Where that skill is installed, say when
+# the two differ, and never fail on it: CI and a machine without dotfiles have
+# nothing to compare against. Reconciling copies the skill's file over this one.
+canon="$HOME/.claude/skills/tracked-development/scripts/plans.py"
+if [[ -f "$canon" ]] && ! cmp -s "$canon" scripts/plans.py; then
+  echo
+  echo "note: scripts/plans.py ($(python3 scripts/plans.py --version)) differs from" \
+    "the tracked-development copy ($(python3 "$canon" --version)); copy it from $canon"
+fi
+
 echo
 if [[ ${#failed[@]} -eq 0 ]]; then
   echo "all gates passed"
