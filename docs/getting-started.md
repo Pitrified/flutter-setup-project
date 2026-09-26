@@ -167,7 +167,7 @@ flutter run
 ## Gates
 
 `scripts/check.sh` is the one command that runs every check: markdown links resolve,
-the plan folders agree with their convention, codegen, `flutter analyze`, `flutter test`.
+the plan folders agree with their convention, codegen, `dart format`, `flutter analyze`, `flutter test`.
 CI runs the same script, and `scripts/install-hooks.sh` points git at `.githooks` so a
 commit runs it too (bypass with `git commit --no-verify`).
 
@@ -181,7 +181,8 @@ It is quiet by default: one line per gate, being that gate's own summary, and th
 full output of any gate that fails. `-v` prints everything, which is worth it when
 a gate passes and you still want to see what it did.
 
-Gates run in this order: links, plans, codegen, analyze, test. Codegen is in the list
+Gates run in this order: links, plans, codegen, format, analyze, test.
+The format gate runs `dart format` over `git ls-files '*.dart'` and fails naming each file it would change; fix with `git ls-files -z '*.dart' | xargs -0 dart format`. Codegen is in the list
 because `*.freezed.dart` and `*.g.dart` are gitignored, so a fresh checkout has
 none and analyze fails on every freezed type. Warm it costs about 2s.
 

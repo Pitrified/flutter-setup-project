@@ -2,7 +2,7 @@
 
 ## 1. Formatting
 
-- `dart format` is the authority
+- `dart format` is the authority, and a gate: `scripts/check.sh` fails on any tracked Dart file it would change
 - Line length: 80 characters
 - Trailing commas on all multi-line argument lists
 - Single quotes for strings
