@@ -143,6 +143,8 @@ Points to settle when it is built:
 
 ## Release build: a later phase
 
+Update 2026-09-26: a debug build now works in the `Default` environment, set up by hand, in [`../26_cloud_android_build/00_start.md`](../26_cloud_android_build/00_start.md). Its findings (the Maven Central rate limit, the mirror script, the time and disk a first build takes) feed the setup script here.
+
 Out of scope now. What it needs, so the phase does not start cold:
 
 - **Network.** The Android command-line tools come from `dl.google.com`, which is refused today.
