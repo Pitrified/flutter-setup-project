@@ -28,8 +28,8 @@ than coding to the stale line. Where a doc and a *request* disagree, stop and as
 
 ## Progress
 
-Each phase folder under [plans/](../plans/) owns its own `tracking.md`, written in the shape the
-`tracked-development` skill describes. Read the phase folder itself: the folders up to 09 predate the
+Each phase folder under [plans/](../plans/) owns its own `tracking.md` once it has phases, written in the shape the
+`tracked-development` skill describes; a draft has only its `00_start.md`. Read the phase folder itself: the folders up to 09 predate the
 convention and keep their own index, and none of them is the index for anything newer.
 
 ## Plans are a diary, docs are the as-is
