@@ -1,6 +1,6 @@
 ---
-status: draft
-priority: 1
+status: superseded
+priority: 0
 description: |
   Remove the on-device engine entirely: drop flutter_gemma and the first-launch
   model download, reclaim most of the APK, and rewrite the offline claim that no
@@ -9,6 +9,9 @@ description: |
 ---
 
 # Cloud-first, and the fate of the on-device engine
+
+Superseded on 2026-09-26 by [`../20_repo_split/00_start.md`](../20_repo_split/00_start.md) Q5.
+The tutor moves to `fala-language-tutor`, which is written cloud only, so nothing is removed here: the on-device engine stays in this repo as a gallery pattern. The body below is the record of the removal plan as it stood.
 
 Status: draft spin-off, **raised to priority 1 on 2026-09-25** and the open question below is
 answered: the ask was "reduce the APK size even more, no local models at all", which is the

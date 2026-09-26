@@ -17,10 +17,11 @@ Read-only: nothing moves in this phase.
    - `guide`: stays here only.
    - `both`: duplicated, as the LLM testing machinery is.
    - `link`: stays in fala-language-tutor, and the guide links to it rather than copying.
-   - `drop`: nobody keeps it, such as the on-device engine if Q5 is a.
+   - `drop`: nobody keeps it.
 3. The same for `pubspec.yaml` dependencies, for each repo.
 4. `plans/`: each folder's destination, which answers Q3.
 5. A list of what the guide says that is not written yet: headless and human setup, the pattern index, the distribution approaches.
+6. The gallery's candidate items (Q6): router and navigation, basic pages, components, storage including secure storage, the on-device engine (Q5), and whatever else the walk turns up. Each marked as present here today or to be written.
 
 ## Plan
 
@@ -36,4 +37,4 @@ Read-only: nothing moves in this phase.
 ## Done when
 
 - Every path in `git ls-files` falls under a row, checked by a script run once and logged, not by reading.
-- Q3, Q5 and Q6 have answers, or the audit has said what would answer them.
+- Every plan folder has a destination (Q3), and the gallery list (goal 6) exists.

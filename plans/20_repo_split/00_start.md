@@ -79,7 +79,7 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
 - **Git history.** fala-language-tutor starts with no history: it is written fresh, not extracted. This repo keeps its own. That answers Q2.
 - **What "used in other projects" means today.** After the split, fala-language-tutor is the other project, so a pattern it uses qualifies. The audit is where each one is judged.
 - **Interplay with other folders.**
-  `16_cloud_first_engine` removes the on-device engine from this repo; with the split, fala-language-tutor never has it and the guide drops it unless the audit finds a use (Q5).
+  `16_cloud_first_engine` removes the on-device engine from this repo; with the split it is superseded: fala-language-tutor never has the engine, and the guide keeps it as a gallery pattern (Q5).
   `23_dependency_upgrades` depends on this folder, as it already records.
   `24_cloud_sessions` replaces the fresh-session note with a setup script later.
   `07_release`, `13_key_distribution`, `14_audio_io` and `19_apk_distribution` are about the product and follow it (Q3).
@@ -96,21 +96,21 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
 - Q3: what happens to `plans/`?
   Recommended: plans follow their code, and the folders that span both are copied to both, marked as
   such. Reasoning is cheap to duplicate and expensive to lose.
-  NEW_ANS:
+  ANS: decided per folder by the audit (phase 02).
 
 ### Second batch (2026-09-26)
 
 - Q4: who creates `fala-language-tutor` on GitHub, and when?
   A session can only push to repos in the Claude GitHub App installation, which is set to selected repositories (`24_cloud_sessions/00_start.md`, "GitHub access").
   Recommended: the user creates it empty and adds it to the installation before phase 03 starts.
-  NEW_ANS:
+  ANS: done by the user on 2026-09-26: https://github.com/Pitrified/fala-language-tutor, added to the app.
 - Q5: `16_cloud_first_engine` removes the on-device engine from this repo. With the split, is it superseded?
   a. superseded: fala-language-tutor is written without it, and the guide's clean-up drops `flutter_gemma` unless the audit finds another use.
   b. kept, and done here before the split, so the session writing fala-language-tutor reads a smaller repo.
   Recommended: a. b removes code from a repo that is about to lose it anyway, and the plan for fala-language-tutor can simply say "no local LLM".
-  NEW_ANS:
+  ANS: a, superseded, with one change to the recommendation: removed in fala-language-tutor, kept in the guide. The on-device engine is a gallery pattern here, not a `drop`.
 - Q6: what is "the working app" in the guide after the clean-up?
   a. a neutral demo shell whose screens are the lifted patterns.
   b. a stripped chat over `FakeInferenceEngine`, keeping the streaming and structured-output path as the demonstration.
   Recommended: decide after the audit. b keeps the patterns fala-language-tutor uses runnable here, but it is a second copy of the product's shape.
-  NEW_ANS:
+  ANS: a working app whose screens are the gallery: the router and navigation, basic pages, some components, secure storage or whatever storage applies, and so on. Closest to a; the audit lists the items.
