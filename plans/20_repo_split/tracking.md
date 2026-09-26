@@ -23,7 +23,7 @@ Brainstorm, decisions and open questions are in [`00_start.md`](00_start.md).
 | 01 | Fresh-session note in this repo         | [`01_fresh_session_note.md`](01_fresh_session_note.md) | done    |
 | 02 | Audit                                   | [`02_audit.md`](02_audit.md)                           | done    |
 | 03 | Clean up before duplicating             | [`03_pre_split_cleanup.md`](03_pre_split_cleanup.md)   | done    |
-| 04 | Write fala-language-tutor               | [`04_fala_repo.md`](04_fala_repo.md)                   | draft   |
+| 04 | Write fala-language-tutor               | [`04_fala_repo.md`](04_fala_repo.md)                   | in progress |
 | 05 | Clean this repo into the guide          | [`05_guide_cleanup.md`](05_guide_cleanup.md)           | draft   |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
@@ -40,3 +40,4 @@ Append-only. Newest at the bottom.
 - 2026-09-26 : Q7 to Q10 answered. Q8 overrode the recommendation: the new repo numbers from 01. Q9 and Q10 became a new phase 03, cleaning up before duplicating; the fala and guide phases moved to 04 and 05, and every reference in this folder was updated to the new numbers.
 - 2026-09-26 : phase 3 - four unused files and four unused dependencies removed, the logger and structure docs corrected, the OpenAI engine's schema made a required parameter, and `EngineFactory` moved so no service imports a provider. One new test, seen failing first. All gates pass with 168 tests. `dart format` would change about a dozen files on `main` too; noted, not fixed.
 - 2026-09-26 : formatting made a gate, on the user's call that it be mechanical and enforced. The "about a dozen" files in the phase 3 entry was a truncated listing: `dart format` changed 45 of 79 tracked Dart files. Reformatted in one commit with no hand edits, then `format` added to `scripts/check.sh` between codegen and analyze, seen failing on a misformatted line first. Gates list updated in the instructions, getting-started and coding standards.
+- 2026-09-26 : phase 4 carried out in this session. fala-language-tutor `feat/01_bootstrap`: baseline, on-device engine removed, docs, plan folders; gates green in a clean clone. The audit misfiled `AppController`, corrected there. Waiting on CI, the merge in that repo, and a Pixel run.
