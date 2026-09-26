@@ -8,17 +8,11 @@ import '../services/inference/structured_output_parser.dart';
 import '../services/inference/structured_stream_engine.dart';
 import 'settings_provider.dart';
 
-/// Factory that creates an [InferenceEngine] given a model file path.
+/// Provider for the [EngineFactory] of the selected engine.
 ///
-/// Resolved from the engine registry based on the currently selected
-/// [EngineKind]. To select a different engine at runtime, mutate
-/// [selectedEngineKindProvider].
-typedef EngineFactory = InferenceEngine Function(String modelPath);
-
-/// Provider for the engine factory.
-///
-/// Derived from [selectedEngineKindProvider] via [engineFactoryFor]. Tests can
-/// still override this provider directly to inject a fixed factory.
+/// Derived from [selectedEngineKindProvider] via [engineFactoryFor]. To select
+/// a different engine at runtime, mutate [selectedEngineKindProvider]. Tests
+/// can still override this provider directly to inject a fixed factory.
 final engineFactoryProvider = Provider<EngineFactory>((ref) {
   final kind = ref.watch(selectedEngineKindProvider);
   final deps = EngineRegistryDeps(

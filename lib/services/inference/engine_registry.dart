@@ -1,10 +1,16 @@
-import '../../providers/inference_provider.dart';
 import '../settings/api_key_store.dart';
 import '../settings/app_settings_repository.dart';
 import 'engine_kind.dart';
 import 'fake_inference_engine.dart';
 import 'flutter_gemma_engine.dart';
+import 'inference_engine.dart';
 import 'openai_inference_engine.dart';
+import 'tutor_response_schema.dart';
+
+/// Factory that creates an [InferenceEngine] given a model file path.
+///
+/// Engines that need no model file ignore the path.
+typedef EngineFactory = InferenceEngine Function(String modelPath);
 
 /// Dependencies the registry hands to engine factories that need them.
 ///
@@ -34,6 +40,8 @@ EngineFactory engineFactoryFor(EngineKind kind, EngineRegistryDeps deps) {
       return (_) => OpenAiInferenceEngine(
         apiKeyStore: deps.apiKeyStore,
         modelProvider: deps.settings.openaiModel,
+        schemaName: 'tutor_response',
+        schema: tutorResponseJsonSchema,
       );
   }
 }
