@@ -65,8 +65,8 @@
 
 ## 8. Logging
 
-- Use project logger (`lib/utils/logger.dart`), never `print` or `debugPrint`
-- Log levels: debug, info, warning, error
+- Use the project logger, `AppLogger.instance` (`lib/services/logging/app_logger.dart`), never `print` or `debugPrint` directly. It wraps `debugPrint` and is a no-op in release builds
+- Log levels: `info`, `warn`, `error` (with an optional `cause`)
 - Debug logs: inference timing, prompt token count, model info
 - Error logs: stack trace, context of what was attempted
 - No sensitive data in logs (no user messages in production)
