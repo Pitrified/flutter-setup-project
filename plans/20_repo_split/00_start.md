@@ -1,15 +1,16 @@
 ---
-status: draft
-priority: 0
+status: planned
+priority: 1
 description: |
-  Split the skeleton and its pattern gallery from the app, so the reusable half can
-  be picked up by the next project. Cheaper alternatives are listed first, because
-  two repos is two maintenance streams for one person.
+  Split fala out into its own repo, fala-language-tutor, written fresh by a Claude session
+  from a plan, with only what the tutor needs and no local LLM. This repo becomes the Flutter
+  guide: setup from zero, a working app with the patterns other projects actually use,
+  skills, scaffolding, and distribution approaches. An audit decides what goes where.
 ---
 
 # Split the skeleton from the app
 
-Status: draft spin-off, raised 2026-09-25. No phases derived.
+Raised 2026-09-25 as a draft; brainstormed 2026-09-26 and phases derived, see [`tracking.md`](tracking.md).
 
 ## Where this came from
 
@@ -52,16 +53,64 @@ second half is what nobody else should inherit.
 3. Extract the parts that are already libraries (the inference interface, the partial JSON parser)
    into a package, and leave the docs where they are.
 
+## Brainstorm, 2026-09-26
+
+The user's framing, condensed; "the audit will guide scope decisions" covers all of it.
+
+- **Three stages.** An audit, the split-off of the new repo, the clean-up of this one.
+- **This repo becomes a guide.** How to set up Flutter from zero, both headless and for a person.
+  A working app with a gallery of useful patterns, but not all of them: "a giant gallery will immediately go stale".
+  Only what is actually used in other projects is lifted here, and a pattern can be a link to the project using it rather than a copy.
+  Plus useful AI skills, guides and scaffolding, and distribution information and approaches. This app will not be distributed.
+- **The new repo is `fala-language-tutor`.** The minimal set of things that keeps the tutor running. No local LLM.
+- **No bootstrap script.** A Claude session is pointed at a new empty repo with a plan, reads this repo and whatever else it needs, and writes all the code.
+  That is how fala-language-tutor gets built.
+- **The LLM testing machinery is duplicated for now**: the mock OpenAI server and the emulator end-to-end harness go into both repos.
+  At the third copy of the pattern, in a second new app, it gets assessed. The expectation is that something suitable exists online; if not, it becomes its own package and repo in the Python stack, not a feature here.
+- **Environment.** Work happens in the current cloud environment, set up by hand, for the next couple of days.
+  Until the setup script exists, both repos carry a brief note in their docs saying what to install in a fresh session.
+
+### What this settles, and what it does not
+
+- The cheaper alternatives above are not taken: this is a split, with the guide staying here under its current name and the product leaving.
+  Alternative 3, extracting a package, is the stance for the LLM testing machinery at its third copy, not for now.
+- **Order.** fala-language-tutor is written while this repo still holds the full working tutor, since that is what the session reads.
+  The clean-up of this repo comes after fala-language-tutor runs, not before.
+- **Git history.** fala-language-tutor starts with no history: it is written fresh, not extracted. This repo keeps its own. That answers Q2.
+- **What "used in other projects" means today.** After the split, fala-language-tutor is the other project, so a pattern it uses qualifies. The audit is where each one is judged.
+- **Interplay with other folders.**
+  `16_cloud_first_engine` removes the on-device engine from this repo; with the split, fala-language-tutor never has it and the guide drops it unless the audit finds a use (Q5).
+  `23_dependency_upgrades` depends on this folder, as it already records.
+  `24_cloud_sessions` replaces the fresh-session note with a setup script later.
+  `07_release`, `13_key_distribution`, `14_audio_io` and `19_apk_distribution` are about the product and follow it (Q3).
+
 ## Open questions
 
 - Q1: is there a second project that wants the skeleton, or is this tidiness?
   Recommended: answer honestly before doing anything. Tidiness is a reason to rename, not to split.
-  NEW_ANS:
+  ANS: from the brainstorm: not tidiness. This repo becomes the guide a Claude session reads when bootstrapping a new app, and fala-language-tutor is the first one built that way.
 - Q2: if it splits, does the skeleton repo keep history?
   Recommended: no. A fresh repo with a pointer costs an afternoon; a filtered history costs days and
   is read by nobody.
-  NEW_ANS:
+  ANS: from the brainstorm, reframed: the skeleton stays here with its history, and fala-language-tutor starts fresh because a session writes it rather than extracting it.
 - Q3: what happens to `plans/`?
   Recommended: plans follow their code, and the folders that span both are copied to both, marked as
   such. Reasoning is cheap to duplicate and expensive to lose.
+  NEW_ANS:
+
+### Second batch (2026-09-26)
+
+- Q4: who creates `fala-language-tutor` on GitHub, and when?
+  A session can only push to repos in the Claude GitHub App installation, which is set to selected repositories (`24_cloud_sessions/00_start.md`, "GitHub access").
+  Recommended: the user creates it empty and adds it to the installation before phase 03 starts.
+  NEW_ANS:
+- Q5: `16_cloud_first_engine` removes the on-device engine from this repo. With the split, is it superseded?
+  a. superseded: fala-language-tutor is written without it, and the guide's clean-up drops `flutter_gemma` unless the audit finds another use.
+  b. kept, and done here before the split, so the session writing fala-language-tutor reads a smaller repo.
+  Recommended: a. b removes code from a repo that is about to lose it anyway, and the plan for fala-language-tutor can simply say "no local LLM".
+  NEW_ANS:
+- Q6: what is "the working app" in the guide after the clean-up?
+  a. a neutral demo shell whose screens are the lifted patterns.
+  b. a stripped chat over `FakeInferenceEngine`, keeping the streaming and structured-output path as the demonstration.
+  Recommended: decide after the audit. b keeps the patterns fala-language-tutor uses runnable here, but it is a second copy of the product's shape.
   NEW_ANS:
