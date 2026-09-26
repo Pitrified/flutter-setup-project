@@ -20,7 +20,7 @@ Brainstorm, decisions and open questions are in [`00_start.md`](00_start.md).
 | #  | Phase                                   | Plan                                                   | Status  |
 | -- | --------------------------------------- | ------------------------------------------------------ | ------- |
 | 01 | Fresh-session note in this repo         | [`01_fresh_session_note.md`](01_fresh_session_note.md) | done    |
-| 02 | Audit                                   | [`02_audit.md`](02_audit.md)                           | in progress |
+| 02 | Audit                                   | [`02_audit.md`](02_audit.md)                           | done    |
 | 03 | Write fala-language-tutor               | [`03_fala_repo.md`](03_fala_repo.md)                   | draft   |
 | 04 | Clean this repo into the guide          | [`04_guide_cleanup.md`](04_guide_cleanup.md)           | draft   |
 
@@ -34,3 +34,4 @@ Append-only. Newest at the bottom.
 - 2026-09-26 : brainstormed with the user; Q1 and Q2 answered by it, Q4 to Q6 raised. Four phases derived; 03 and 04 stay `draft` until the audit reports. Priority raised to 1; `16_cloud_first_engine` is also at 1 and may be superseded by this folder (Q5).
 - 2026-09-26 : Q3 to Q6 answered. Plans split per folder by the audit; `fala-language-tutor` created and in the app installation; `16_cloud_first_engine` superseded, with the on-device engine removed in the new repo and kept here as a gallery pattern; the guide's app is a working gallery (router, navigation, pages, components, storage).
 - 2026-09-26 : phase 1 - "Fresh cloud session" in `docs/getting-started.md`, version read from the CI workflow. Its code block, run as is on a clean clone with an empty `HOME`, ended with all gates passing in 3 min 48 s.
+- 2026-09-26 : phase 2 - audit table in `02.1_audit_table.md`. Coverage checked with `/tmp` script: parse the backticked patterns in the first column of every table above "Dependencies", `fnmatch` each `git ls-files` path against them, fail on any unmatched path or empty pattern. 303 files, 148 patterns, 0 and 0; seen failing on a misspelt pattern first. Found dead code, four unused dependencies, a logger doc bug, two couplings and a shared `applicationId`; raised Q7 to Q10.

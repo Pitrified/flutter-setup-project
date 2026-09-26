@@ -1,5 +1,5 @@
 ---
-status: in progress
+status: done
 ---
 
 # Phase 02 - Audit
@@ -38,3 +38,16 @@ Read-only: nothing moves in this phase.
 
 - Every path in `git ls-files` falls under a row, checked by a script run once and logged, not by reading.
 - Every plan folder has a destination (Q3), and the gallery list (goal 6) exists.
+
+## What the implementation found
+
+The table is [`02.1_audit_table.md`](02.1_audit_table.md): 148 path patterns over 303 tracked files, plus dependencies, plan folders, gallery candidates and the guide's missing pages.
+
+- **Coverage checked by script**, not by reading: every `git ls-files` path matches a pattern and every pattern matches a file. Seen failing once on purpose (`tool/*` misspelt as `tools/*`: two files unmatched, one empty pattern) before it passed. The script is in the log entry.
+- **Dead code.** `lib/utils/logger.dart`, `lib/services/debug/debug_monitor.dart`, `lib/config/error_messages.dart` and `lib/widgets/error_boundary.dart` have no users. `DebugMonitor` also calls `debugPrint`, against the hard rules.
+- **Unused dependencies.** `logger`, `riverpod_annotation`, `riverpod_generator` and `mockito`.
+- **A doc bug.** `docs/coding-standards.md` names `lib/utils/logger.dart` as the project logger; the code uses `AppLogger` in `lib/services/logging/`.
+- **Two couplings in code meant to be generic.** `OpenAiInferenceEngine` imports the tutor's response schema, and `engine_registry.dart`, a service, imports a provider.
+- **Shared `applicationId`.** Both apps would be `com.fala.app`, and Android treats two apps with one id as the same app.
+- **Plans rule proposed** for Q3: the diary stays with its history, open product work moves. That moves 07, 09, 13, 14 and 19, and splits 23.
+- **Nothing in the brainstorm turned out wrong.** The questions below are what the table could not settle alone.
