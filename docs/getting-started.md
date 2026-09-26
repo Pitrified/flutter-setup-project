@@ -36,9 +36,32 @@ scripts/check.sh
 The SDK unpacks to about 2.3 GB and the first `pub get` adds about 700 MB, well inside the session's disk.
 Claude's shell reads `~/.bashrc` for each command, so the `echo` line puts `flutter` on its `PATH` for the rest of the session; `scripts/check.sh` falls back to `$HOME/flutter/bin` either way.
 
+To build an APK as well, install the Android SDK and point Gradle at a mirror of Maven Central.
+This needs `dl.google.com` in the environment's network access (Custom, with the Trusted defaults plus that host); the default Trusted level refuses it.
+
+```bash
+sdk="$HOME/android-sdk"
+tools=$(curl -fsSL https://dl.google.com/android/repository/repository2-3.xml \
+  | grep -o 'commandlinetools-linux-[0-9]*_latest.zip' | sort -t- -k3 -n -u | tail -1)
+mkdir -p "$sdk/cmdline-tools"
+curl -fsSL -o /tmp/cmdline-tools.zip "https://dl.google.com/android/repository/$tools"
+unzip -q /tmp/cmdline-tools.zip -d "$sdk/cmdline-tools" && rm /tmp/cmdline-tools.zip
+mv "$sdk/cmdline-tools/cmdline-tools" "$sdk/cmdline-tools/latest"
+yes | "$sdk/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+"$sdk/cmdline-tools/latest/bin/sdkmanager" --install platform-tools "platforms;android-36" "build-tools;36.0.0"
+echo 'export ANDROID_HOME="$HOME/android-sdk"' >> ~/.bashrc
+export ANDROID_HOME="$sdk"
+flutter config --android-sdk "$sdk"
+mkdir -p ~/.gradle/init.d && cp tool/maven-central-mirror.gradle ~/.gradle/init.d/
+flutter build apk --debug
+```
+
+The mirror script is machine-level and changes no file in the repo: Maven Central answers this environment's shared egress with HTTP 429 at times, and the script points every `mavenCentral()` repository at Google's mirror of it.
+The first build also installs the NDK and CMake through Gradle, and takes several minutes; the SDK ends up around 3 GB and the Gradle cache around 4 GB.
+
 What this does not give you:
 
-- **The Android SDK.** No APK is built in a cloud session. Its command-line tools download from `dl.google.com`, which the default Trusted network access refuses.
+- **An emulator.** There is no `/dev/kvm`, so `scripts/e2e.sh` does not run here.
 - **Persistence.** The install lives in the session's container and is gone when the container is reclaimed. A new session repeats these steps.
 
 ## Install Flutter SDK
