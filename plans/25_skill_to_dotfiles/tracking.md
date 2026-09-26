@@ -18,9 +18,9 @@ Analysis, the inventory and the six answered questions are in [`00_start.md`](00
 | #  | Phase                                  | Plan                                                         | Status  |
 | -- | -------------------------------------- | ------------------------------------------------------------ | ------- |
 | 01 | Uplift `tracked-development` in dotfiles | [`01_uplift_in_dotfiles.md`](01_uplift_in_dotfiles.md)     | done    |
-| 02 | Check it on the workstation            | [`02_workstation_check.md`](02_workstation_check.md)         | planned |
+| 02 | Check it on the workstation            | [`02_workstation_check.md`](02_workstation_check.md)         | in progress |
 | 03 | The skew line in the local gate        | [`03_skew_gate.md`](03_skew_gate.md)                         | done    |
-| 04 | Delete this repo's copy of the skill   | [`04_delete_repo_copy.md`](04_delete_repo_copy.md)           | planned |
+| 04 | Delete this repo's copy of the skill   | [`04_delete_repo_copy.md`](04_delete_repo_copy.md)           | in progress |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -33,3 +33,4 @@ Append-only. Newest at the bottom.
 - 2026-09-25 : phase 1 - `tracked-development` in dotfiles took the script (`VERSION` 1.0.0), the frontmatter reference, a new `reference/plans-script.md`, and the twelve conventions. Pushed on dotfiles `feat/tracked_development_uplift`, not merged. This repo's `scripts/plans.py` got the same `VERSION` edit and compares equal to the skill's copy.
 - 2026-09-25 : phase 3 - the non-failing skew note in `scripts/check.sh`, seen absent, differing and matching, and described in the repo instructions' "Gates" section.
 - 2026-09-25 : phase 2 needs the workstation and phase 4 waits on it and on `24_cloud_sessions` phase 1; both stay `planned`.
+- 2026-09-26 : phase 4's deletion pulled ahead of phase 2, on the user's call: `.claude/skills/managing-plan-folders/` removed on this branch so the workstation test sees exactly the future state, with only the dotfiles skill present. No other file outside `plans/` named the skill. Phase 4 stays `in progress` until a cloud session installs dotfiles skills (`24_cloud_sessions` phase 1); until then a cloud session on this branch has no plan-folder skill.
