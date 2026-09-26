@@ -18,7 +18,7 @@ Analysis, the inventory and the six answered questions are in [`00_start.md`](00
 | #  | Phase                                  | Plan                                                         | Status  |
 | -- | -------------------------------------- | ------------------------------------------------------------ | ------- |
 | 01 | Uplift `tracked-development` in dotfiles | [`01_uplift_in_dotfiles.md`](01_uplift_in_dotfiles.md)     | done    |
-| 02 | Check it on the workstation            | [`02_workstation_check.md`](02_workstation_check.md)         | in progress |
+| 02 | Check it on the workstation            | [`02_workstation_check.md`](02_workstation_check.md)         | done    |
 | 03 | The skew line in the local gate        | [`03_skew_gate.md`](03_skew_gate.md)                         | done    |
 | 04 | Delete this repo's copy of the skill   | [`04_delete_repo_copy.md`](04_delete_repo_copy.md)           | in progress |
 
@@ -34,3 +34,4 @@ Append-only. Newest at the bottom.
 - 2026-09-25 : phase 3 - the non-failing skew note in `scripts/check.sh`, seen absent, differing and matching, and described in the repo instructions' "Gates" section.
 - 2026-09-25 : phase 2 needs the workstation and phase 4 waits on it and on `24_cloud_sessions` phase 1; both stay `planned`.
 - 2026-09-26 : phase 4's deletion pulled ahead of phase 2, on the user's call: `.claude/skills/managing-plan-folders/` removed on this branch so the workstation test sees exactly the future state, with only the dotfiles skill present. No other file outside `plans/` named the skill. Phase 4 stays `in progress` until a cloud session installs dotfiles skills (`24_cloud_sessions` phase 1); until then a cloud session on this branch has no plan-folder skill.
+- 2026-09-26 : phase 2 - run on the workstation by the user from this branch with the repo copy removed; `tracked-development` loaded from dotfiles and ran the repo's script, copies equal at 1.0.0, no skew note. Unprompted triggering not shown. Two fixes from it: the spin-off branch rule in the skill (dotfiles `5f90cbf`) and the `tracking.md` line in the repo instructions.
