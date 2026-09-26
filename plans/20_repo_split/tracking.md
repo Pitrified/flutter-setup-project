@@ -23,8 +23,8 @@ Brainstorm, decisions and open questions are in [`00_start.md`](00_start.md).
 | 01 | Fresh-session note in this repo         | [`01_fresh_session_note.md`](01_fresh_session_note.md) | done    |
 | 02 | Audit                                   | [`02_audit.md`](02_audit.md)                           | done    |
 | 03 | Clean up before duplicating             | [`03_pre_split_cleanup.md`](03_pre_split_cleanup.md)   | done    |
-| 04 | Write fala-language-tutor               | [`04_fala_repo.md`](04_fala_repo.md)                   | in progress |
-| 05 | Clean this repo into the guide          | [`05_guide_cleanup.md`](05_guide_cleanup.md)           | draft   |
+| 04 | Write fala-language-tutor               | [`04_fala_repo.md`](04_fala_repo.md)                   | done    |
+| 05 | Clean this repo into the guide          | [`05_guide_cleanup.md`](05_guide_cleanup.md)           | superseded |
 
 Status values: draft / planned / in progress / done / superseded / discarded.
 
@@ -42,3 +42,5 @@ Append-only. Newest at the bottom.
 - 2026-09-26 : formatting made a gate, on the user's call that it be mechanical and enforced. The "about a dozen" files in the phase 3 entry was a truncated listing: `dart format` changed 45 of 79 tracked Dart files. Reformatted in one commit with no hand edits, then `format` added to `scripts/check.sh` between codegen and analyze, seen failing on a misformatted line first. Gates list updated in the instructions, getting-started and coding standards.
 - 2026-09-26 : phase 4 carried out in this session. fala-language-tutor `feat/01_bootstrap`: baseline, on-device engine removed, docs, plan folders; gates green in a clean clone. The audit misfiled `AppController`, corrected there. Waiting on CI, the merge in that repo, and a Pixel run.
 - 2026-09-26 : fala-language-tutor CI run 1 succeeded; its bootstrap folder is closed. Phase 4 here stays `in progress` until the merge there and a Pixel run.
+- 2026-09-26 : phase 4 done. The user ran the tutor on the Pixel from a cloud-built APK: install, language change, OpenAI conversation and settings across a restart work. The last conversation is not restored on reopen, a gap older than the split and in both repos; it belongs to fala-language-tutor. Phase 5, the guide clean-up, is next.
+- 2026-09-26 : phase 5 superseded by `27_guide_rebuild`, spun off as its own folder. With phases 1 to 4 done the split itself is complete: audit, pre-split clean-up, the tutor in its own repo and verified on the Pixel. Folder closed, priority back to 0.

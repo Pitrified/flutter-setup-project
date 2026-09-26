@@ -1,6 +1,6 @@
 ---
-status: planned
-priority: 1
+status: done
+priority: 0
 description: |
   Split fala out into its own repo, fala-language-tutor, written fresh by a Claude session
   from a plan, with only what the tutor needs and no local LLM. This repo becomes the Flutter
