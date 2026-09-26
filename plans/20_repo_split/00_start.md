@@ -125,7 +125,7 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
   a. keep numbers and names, so references to them from the diary here still read correctly, and fala's own new folders start after the highest.
   b. renumber from 01 in the new repo.
   Recommended: a. A number is identity, and the diary here cites them by name.
-  ANS: b, overriding the recommendation: "no, keep the new repo clean". The new repo numbers its folders from 01; the moved folders are renumbered there, and the diary here keeps its own names for them. The answer as typed ends mid-sentence after "and"; anything it was going to add is still open.
+  ANS: b, overriding the recommendation: "no, keep the new repo clean". The new repo numbers its folders from 01; the moved folders are renumbered there, and the diary here keeps its own names for them. The answer as typed ended mid-sentence after "and"; completed 2026-09-26 as "keep the new repo clean and renumber", which is what was assumed.
 - Q9: the dead code and unused dependencies the audit found: removed before phase 04, or left for each repo to drop?
   Recommended: before phase 04, here, as one small change with the logger doc fix, so the session writing fala-language-tutor does not copy dead code.
   ANS: clean up before duplicating the problem, except what makes sense as a gallery item. Judged per item in the new phase 03: `ErrorBoundary` never sets its error, so it catches nothing and is not a pattern worth showing; `ErrorMessages` maps tutor-specific exceptions and nothing reads it. All four files and all four dependencies go.
