@@ -1,5 +1,5 @@
 ---
-status: planned
+status: done
 ---
 
 # Phase 01 - Fresh-session note in this repo
@@ -22,3 +22,9 @@ Until `24_cloud_sessions` provides a setup script, a short note in the docs says
 ## Done when
 
 - The commands in the note, pasted into a shell on a container without Flutter, end with `scripts/check.sh` passing. This session installed Flutter that way on 2026-09-25, so the note is a transcription of a run that worked, re-run once to check.
+
+## What the implementation found
+
+- The section went in above "Install Flutter SDK", since a cloud session is a different starting point from a workstation rather than a step after it.
+- Checked on 2026-09-26 by extracting the code block from the doc and running it with `bash -e` in a clean clone, with `HOME` pointing at an empty directory so no earlier install or `~/.bashrc` line could help. It downloaded 3.44.5, ran `scripts/check.sh`, and ended `all gates passed` in 3 min 48 s.
+- `~/.bashrc` is where the `PATH` line goes because Claude's shell is initialised from the user's profile for each command; a bare `export` would last one command.
