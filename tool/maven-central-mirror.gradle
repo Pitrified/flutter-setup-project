@@ -1,0 +1,20 @@
+// Machine-level, not in any repo: Maven Central rate-limits this environment's
+// shared egress (HTTP 429), so every mavenCentral() repository is pointed at
+// Google's mirror of Central instead. Nothing is added; URLs are rewritten.
+def mirrorUrl = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def centralHosts = ['repo.maven.apache.org', 'repo1.maven.org']
+def rewrite = { RepositoryHandler repos ->
+    repos.withType(MavenArtifactRepository).configureEach { repo ->
+        if (repo.url?.host in centralHosts) {
+            repo.url = mirrorUrl
+        }
+    }
+}
+beforeSettings { settings ->
+    rewrite(settings.pluginManagement.repositories)
+    rewrite(settings.dependencyResolutionManagement.repositories)
+}
+allprojects {
+    rewrite(buildscript.repositories)
+    rewrite(repositories)
+}
