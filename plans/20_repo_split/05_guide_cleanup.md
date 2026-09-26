@@ -1,8 +1,10 @@
 ---
-status: draft
+status: superseded
 ---
 
 # Phase 05 - Clean this repo into the guide
+
+Superseded on 2026-09-26 by `27_guide_rebuild` (on `feat/27_guide_rebuild`), on the user's call: the rebuild is a feature of its own, larger than the rest of this folder, and its content should be agreed before it is built. The sketch below is kept as the starting point it was handed.
 
 ## Overview
 
