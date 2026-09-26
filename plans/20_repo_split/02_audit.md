@@ -6,7 +6,7 @@ status: done
 
 ## Overview
 
-Every tracked path gets a destination, so phases 03 and 04 are a list to execute rather than decisions made while deleting.
+Every tracked path gets a destination, so phases 04 and 05 are a list to execute rather than decisions made while deleting.
 Read-only: nothing moves in this phase.
 
 ## Goals
@@ -32,7 +32,7 @@ Read-only: nothing moves in this phase.
 ## Out of scope
 
 - Moving or deleting anything.
-- Writing the plan for fala-language-tutor; phase 03 does that from this table.
+- Writing the plan for fala-language-tutor; phase 04 does that from this table.
 
 ## Done when
 

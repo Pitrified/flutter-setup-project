@@ -2,7 +2,7 @@
 status: draft
 ---
 
-# Phase 04 - Clean this repo into the guide
+# Phase 05 - Clean this repo into the guide
 
 ## Overview
 

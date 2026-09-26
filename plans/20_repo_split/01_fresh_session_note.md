@@ -7,7 +7,7 @@ status: done
 ## Overview
 
 For the next few days work happens in one cloud environment set up by hand, and a new session starts without Flutter.
-Until `24_cloud_sessions` provides a setup script, a short note in the docs says what to install. fala-language-tutor gets the same note when it is created (phase 03).
+Until `24_cloud_sessions` provides a setup script, a short note in the docs says what to install. fala-language-tutor gets the same note when it is created (phase 04).
 
 ## Goals
 

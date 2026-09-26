@@ -102,7 +102,7 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
 
 - Q4: who creates `fala-language-tutor` on GitHub, and when?
   A session can only push to repos in the Claude GitHub App installation, which is set to selected repositories (`24_cloud_sessions/00_start.md`, "GitHub access").
-  Recommended: the user creates it empty and adds it to the installation before phase 03 starts.
+  Recommended: the user creates it empty and adds it to the installation before phase 04 starts.
   ANS: done by the user on 2026-09-26: https://github.com/Pitrified/fala-language-tutor, added to the app.
 - Q5: `16_cloud_first_engine` removes the on-device engine from this repo. With the split, is it superseded?
   a. superseded: fala-language-tutor is written without it, and the guide's clean-up drops `flutter_gemma` unless the audit finds another use.
@@ -119,16 +119,16 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
 
 - Q7: the guide's app keeps `com.fala.app` as its `applicationId` today. What does it become?
   Two apps with the same id replace each other on a phone, and fala-language-tutor keeps `com.fala.app` for its Play listing.
-  Recommended: a neutral id such as `com.pitrified.flutter_setup`, changed during phase 04.
-  NEW_ANS:
+  Recommended: a neutral id such as `com.pitrified.flutter_setup`, changed during phase 05.
+  ANS: ok.
 - Q8: the product folders that move (07, 09, 13, 14, 19): do they keep their numbers in fala-language-tutor?
   a. keep numbers and names, so references to them from the diary here still read correctly, and fala's own new folders start after the highest.
   b. renumber from 01 in the new repo.
   Recommended: a. A number is identity, and the diary here cites them by name.
-  NEW_ANS:
-- Q9: the dead code and unused dependencies the audit found: removed before phase 03, or left for each repo to drop?
-  Recommended: before phase 03, here, as one small change with the logger doc fix, so the session writing fala-language-tutor does not copy dead code.
-  NEW_ANS:
-- Q10: the two couplings (the OpenAI engine importing the tutor schema, the engine registry importing a provider): fixed before phase 03, or by each repo?
-  Recommended: before phase 03, here, so both repos start from the cleaner shape. Each is a small refactor with tests already around it.
-  NEW_ANS:
+  ANS: b, overriding the recommendation: "no, keep the new repo clean". The new repo numbers its folders from 01; the moved folders are renumbered there, and the diary here keeps its own names for them. The answer as typed ends mid-sentence after "and"; anything it was going to add is still open.
+- Q9: the dead code and unused dependencies the audit found: removed before phase 04, or left for each repo to drop?
+  Recommended: before phase 04, here, as one small change with the logger doc fix, so the session writing fala-language-tutor does not copy dead code.
+  ANS: clean up before duplicating the problem, except what makes sense as a gallery item. Judged per item in the new phase 03: `ErrorBoundary` never sets its error, so it catches nothing and is not a pattern worth showing; `ErrorMessages` maps tutor-specific exceptions and nothing reads it. All four files and all four dependencies go.
+- Q10: the two couplings (the OpenAI engine importing the tutor schema, the engine registry importing a provider): fixed before phase 04, or by each repo?
+  Recommended: before phase 04, here, so both repos start from the cleaner shape. Each is a small refactor with tests already around it.
+  ANS: yes, same idea: fixed here before duplicating.
