@@ -22,10 +22,7 @@ void main() {
     await tempDir.delete(recursive: true);
   });
 
-  Conversation makeConversation({
-    required String id,
-    DateTime? updatedAt,
-  }) {
+  Conversation makeConversation({required String id, DateTime? updatedAt}) {
     return Conversation(
       id: id,
       createdAt: DateTime(2024),
@@ -47,14 +44,12 @@ void main() {
   });
 
   test('listAll returns sorted by updatedAt descending', () async {
-    await repo.save(makeConversation(
-      id: 'old',
-      updatedAt: DateTime(2024, 1, 1),
-    ));
-    await repo.save(makeConversation(
-      id: 'new',
-      updatedAt: DateTime(2024, 6, 1),
-    ));
+    await repo.save(
+      makeConversation(id: 'old', updatedAt: DateTime(2024, 1, 1)),
+    );
+    await repo.save(
+      makeConversation(id: 'new', updatedAt: DateTime(2024, 6, 1)),
+    );
 
     final all = repo.listAll();
     expect(all, hasLength(2));

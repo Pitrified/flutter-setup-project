@@ -8,8 +8,9 @@ void main() {
     return MaterialApp(home: Scaffold(body: child));
   }
 
-  testWidgets('displays corrections with original and corrected text',
-      (tester) async {
+  testWidgets('displays corrections with original and corrected text', (
+    tester,
+  ) async {
     const corrections = [
       CorrectionError(
         original: 'eu sou',
@@ -29,16 +30,8 @@ void main() {
 
   testWidgets('displays multiple corrections', (tester) async {
     const corrections = [
-      CorrectionError(
-        original: 'a',
-        corrected: 'b',
-        explanation: 'fix 1',
-      ),
-      CorrectionError(
-        original: 'c',
-        corrected: 'd',
-        explanation: 'fix 2',
-      ),
+      CorrectionError(original: 'a', corrected: 'b', explanation: 'fix 1'),
+      CorrectionError(original: 'c', corrected: 'd', explanation: 'fix 2'),
     ];
 
     await tester.pumpWidget(

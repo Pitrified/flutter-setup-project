@@ -22,10 +22,7 @@ void main() {
     Hive.init(tempDir.path);
     settings = AppSettingsRepository(boxName: 'reg_test_settings');
     await settings.initialize();
-    deps = EngineRegistryDeps(
-      apiKeyStore: ApiKeyStore(),
-      settings: settings,
-    );
+    deps = EngineRegistryDeps(apiKeyStore: ApiKeyStore(), settings: settings);
   });
 
   tearDown(() async {
@@ -44,8 +41,7 @@ void main() {
       expect(factory('some/path'), isA<FlutterGemmaEngine>());
     });
 
-    test('returns an OpenAiInferenceEngine factory for EngineKind.openai',
-        () {
+    test('returns an OpenAiInferenceEngine factory for EngineKind.openai', () {
       final factory = engineFactoryFor(EngineKind.openai, deps);
       expect(factory(''), isA<OpenAiInferenceEngine>());
     });

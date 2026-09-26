@@ -13,8 +13,8 @@ class MessageBubble extends StatefulWidget {
     super.key,
     required ConversationMessage this.message,
     this.onTranslationRevealed,
-  })  : streamingContent = null,
-        streamingTranslation = null;
+  }) : streamingContent = null,
+       streamingTranslation = null;
 
   /// A live tutor bubble bound to in-flight partial data (phase 6). [content]
   /// is the reply prefix so far; [translation] is null until it arrives.
@@ -22,10 +22,10 @@ class MessageBubble extends StatefulWidget {
     super.key,
     required String content,
     String? translation,
-  })  : message = null,
-        streamingContent = content,
-        streamingTranslation = translation,
-        onTranslationRevealed = null;
+  }) : message = null,
+       streamingContent = content,
+       streamingTranslation = translation,
+       onTranslationRevealed = null;
 
   /// The committed message, or null for a streaming bubble.
   final ConversationMessage? message;

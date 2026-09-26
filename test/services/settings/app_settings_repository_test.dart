@@ -34,13 +34,15 @@ void main() {
     expect(repo.engineKind(), EngineKind.openai);
   });
 
-  test('engineKind falls back to the default for an unknown stored value',
-      () async {
-    // Simulate a future rename / corrupted setting by writing through Hive.
-    final box = await Hive.openBox<String>('test_app_settings');
-    await box.put(AppSettingsRepository.keyEngineKind, 'not_a_kind');
-    expect(repo.engineKind(), AppSettingsRepository.defaultEngineKind);
-  });
+  test(
+    'engineKind falls back to the default for an unknown stored value',
+    () async {
+      // Simulate a future rename / corrupted setting by writing through Hive.
+      final box = await Hive.openBox<String>('test_app_settings');
+      await box.put(AppSettingsRepository.keyEngineKind, 'not_a_kind');
+      expect(repo.engineKind(), AppSettingsRepository.defaultEngineKind);
+    },
+  );
 
   test('openaiModel defaults to gpt-4o-mini and round-trips', () async {
     expect(repo.openaiModel(), 'gpt-4o-mini');
@@ -54,12 +56,14 @@ void main() {
     expect(repo.defaultCefr(), CefrLevel.b2);
   });
 
-  test('defaultCefr falls back to default for an unknown stored value',
-      () async {
-    final box = await Hive.openBox<String>('test_app_settings');
-    await box.put(AppSettingsRepository.keyDefaultCefr, 'z9');
-    expect(repo.defaultCefr(), AppSettingsRepository.defaultCefrLevel);
-  });
+  test(
+    'defaultCefr falls back to default for an unknown stored value',
+    () async {
+      final box = await Hive.openBox<String>('test_app_settings');
+      await box.put(AppSettingsRepository.keyDefaultCefr, 'z9');
+      expect(repo.defaultCefr(), AppSettingsRepository.defaultCefrLevel);
+    },
+  );
 
   test('defaultTopic defaults to empty and round-trips', () async {
     expect(repo.defaultTopicValue(), '');
@@ -73,10 +77,15 @@ void main() {
     expect(repo.defaultLanguage(), TargetLanguage.esEs);
   });
 
-  test('defaultLanguage falls back to default for an unsupported stored code',
-      () async {
-    final box = await Hive.openBox<String>('test_app_settings');
-    await box.put(AppSettingsRepository.keyDefaultLanguage, 'ja-JP');
-    expect(repo.defaultLanguage(), AppSettingsRepository.defaultTargetLanguage);
-  });
+  test(
+    'defaultLanguage falls back to default for an unsupported stored code',
+    () async {
+      final box = await Hive.openBox<String>('test_app_settings');
+      await box.put(AppSettingsRepository.keyDefaultLanguage, 'ja-JP');
+      expect(
+        repo.defaultLanguage(),
+        AppSettingsRepository.defaultTargetLanguage,
+      );
+    },
+  );
 }

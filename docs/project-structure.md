@@ -27,8 +27,7 @@ fala/                                 # Flutter project root
       persistence/                    # ConversationRepository
       model/                          # RuntimeModelManager
       prompt/                         # PromptManager
-    widgets/                          # Shared reusable widgets
-    utils/                            # Logging, extensions, helpers
+      logging/                        # AppLogger
   test/
     models/
     services/
@@ -44,11 +43,11 @@ fala/                                 # Flutter project root
 |-------|------|---------------|------------------|
 | Models | lib/models/ | Nothing (pure data) | Everything else |
 | Config | lib/config/ | Models | Services, Screens, Providers |
-| Services | lib/services/ | Models, Config | Screens, Widgets |
+| Services | lib/services/ | Models, Config | Providers, Screens |
 | Providers | lib/providers/ | Services, Models, Config | Screens |
-| Screens | lib/screens/ | Providers, Widgets, Models | Services directly |
-| Widgets | lib/widgets/ | Models | Services, Providers, Screens |
-| Utils | lib/utils/ | Nothing | (used by all layers) |
+| Screens | lib/screens/ | Providers, Models | Services directly |
+
+Widgets used by one screen live in that screen's `widgets/` folder. There is no shared `lib/widgets/` or `lib/utils/` today; create one when a second screen needs the same widget or helper.
 
 Key constraint: screens never import from services directly - they go through providers.
 

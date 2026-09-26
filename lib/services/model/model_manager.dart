@@ -48,7 +48,8 @@ class ModelManager {
   ModelManager({this.modelDirName = 'models'});
 
   final String modelDirName;
-  final _downloadStatusController = StreamController<DownloadStatus>.broadcast();
+  final _downloadStatusController =
+      StreamController<DownloadStatus>.broadcast();
 
   Stream<DownloadStatus> get downloadStatusStream =>
       _downloadStatusController.stream;
@@ -112,10 +113,7 @@ class ModelManager {
         receivedBytes += chunk.length;
         final progress = totalBytes > 0 ? receivedBytes / totalBytes : 0.0;
         _downloadStatusController.add(
-          DownloadInProgress(
-            progress: progress,
-            bytesReceived: receivedBytes,
-          ),
+          DownloadInProgress(progress: progress, bytesReceived: receivedBytes),
         );
       }
 

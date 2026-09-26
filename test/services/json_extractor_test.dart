@@ -61,8 +61,7 @@ Here is the response:
     });
 
     test('handles nested JSON objects', () {
-      const input =
-          '{"outer": {"inner": "value"}, "list": [1, 2, 3]}';
+      const input = '{"outer": {"inner": "value"}, "list": [1, 2, 3]}';
       final result = extractor.extract(input);
       expect(result, isNotNull);
       final map = jsonDecode(result!) as Map<String, dynamic>;

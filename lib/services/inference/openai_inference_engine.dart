@@ -5,7 +5,6 @@ import 'package:openai_dart/openai_dart.dart';
 import '../../models/inference_status.dart';
 import '../settings/api_key_store.dart';
 import 'inference_engine.dart';
-import 'tutor_response_schema.dart';
 
 /// Builds an [OpenAIClient] from an API key.
 ///
@@ -35,9 +34,10 @@ OpenAIClient defaultOpenAIClientBuilder(String apiKey) =>
 ///
 /// Implements [InferenceEngine] so the rest of the app (notably
 /// `StructuredInferenceEngine<T>`) can swap between this and the on-device
-/// engines without code changes. Output is constrained to the
-/// [tutorResponseJsonSchema] using OpenAI's strict structured-output mode, so
-/// the parser downstream sees well-formed JSON.
+/// engines without code changes. Output is constrained to the [schema] it is
+/// given, using OpenAI's strict structured-output mode, so the parser
+/// downstream sees well-formed JSON. The engine knows nothing about the shape
+/// of that JSON; the caller that wires it passes the schema.
 ///
 /// The engine reads the API key and model id on every [generate] call so
 /// changes persisted via Settings are picked up without re-initializing the
@@ -47,9 +47,9 @@ class OpenAiInferenceEngine implements InferenceEngine {
   OpenAiInferenceEngine({
     required this.apiKeyStore,
     required this.modelProvider,
+    required this.schemaName,
+    required this.schema,
     this.clientBuilder = defaultOpenAIClientBuilder,
-    this.schemaName = 'tutor_response',
-    this.schema = tutorResponseJsonSchema,
   });
 
   /// Secure storage for the OpenAI API key. Read on every generate.

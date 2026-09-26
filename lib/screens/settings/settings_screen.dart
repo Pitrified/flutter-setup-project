@@ -31,10 +31,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           const Divider(),
           const SizedBox(height: 8),
-          Text(
-            'Language',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('Language', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
             'The language you are learning. Applies to new conversations: an '
@@ -65,10 +62,7 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),
-            Text(
-              'OpenAI',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('OpenAI', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             const _OpenAiSection(),
           ],
@@ -97,9 +91,7 @@ class _EngineDropdown extends ConsumerWidget {
         final messenger = ScaffoldMessenger.of(context);
         await ref.read(selectedEngineKindProvider.notifier).select(kind);
         messenger.showSnackBar(
-          SnackBar(
-            content: Text('Engine set to ${kind.displayName}.'),
-          ),
+          SnackBar(content: Text('Engine set to ${kind.displayName}.')),
         );
       },
     );
@@ -241,7 +233,9 @@ class _OpenAiSectionState extends ConsumerState<_OpenAiSection> {
       await store.write(keyInput);
       _keyController.clear();
     }
-    await ref.read(openaiModelProvider.notifier).setModel(_modelController.text);
+    await ref
+        .read(openaiModelProvider.notifier)
+        .setModel(_modelController.text);
     await _refreshKeyStatus();
     messenger.showSnackBar(
       const SnackBar(content: Text('OpenAI settings saved.')),
@@ -291,10 +285,7 @@ class _OpenAiSectionState extends ConsumerState<_OpenAiSection> {
         const SizedBox(height: 12),
         Row(
           children: [
-            FilledButton(
-              onPressed: _save,
-              child: const Text('Save'),
-            ),
+            FilledButton(onPressed: _save, child: const Text('Save')),
             const SizedBox(width: 12),
             OutlinedButton(
               onPressed: _hasStoredKey ? _clearKey : null,

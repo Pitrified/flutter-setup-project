@@ -30,18 +30,15 @@ class ConversationRepository {
   Conversation? load(String id) {
     final json = _box.get(id);
     if (json == null) return null;
-    return Conversation.fromJson(
-      jsonDecode(json) as Map<String, dynamic>,
-    );
+    return Conversation.fromJson(jsonDecode(json) as Map<String, dynamic>);
   }
 
   /// List all conversations, sorted by updatedAt descending.
   List<Conversation> listAll() {
     return _box.values
         .map(
-          (json) => Conversation.fromJson(
-            jsonDecode(json) as Map<String, dynamic>,
-          ),
+          (json) =>
+              Conversation.fromJson(jsonDecode(json) as Map<String, dynamic>),
         )
         .toList()
       ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));

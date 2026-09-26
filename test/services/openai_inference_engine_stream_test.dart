@@ -12,6 +12,17 @@ import 'package:openai_dart/openai_dart.dart';
 OpenAIClient _clientWith(http.Client httpClient) =>
     OpenAIClient.withApiKey('sk-test', httpClient: httpClient);
 
+/// A schema with nothing tutor-specific in it: the engine passes on whatever
+/// it is given.
+const _testSchema = <String, dynamic>{
+  'type': 'object',
+  'additionalProperties': false,
+  'required': ['reply'],
+  'properties': {
+    'reply': {'type': 'string'},
+  },
+};
+
 OpenAiInferenceEngine _engineWith({
   required http.Client httpClient,
   required ApiKeyStore store,
@@ -20,6 +31,8 @@ OpenAiInferenceEngine _engineWith({
   return OpenAiInferenceEngine(
     apiKeyStore: store,
     modelProvider: () => model,
+    schemaName: 'test_reply',
+    schema: _testSchema,
     clientBuilder: (_) => _clientWith(httpClient),
   );
 }

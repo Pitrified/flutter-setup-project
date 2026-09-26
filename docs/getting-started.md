@@ -17,6 +17,30 @@ Install `ninja-build` if you don't have it - the Android build system requires i
 sudo apt install ninja-build
 ```
 
+## Fresh cloud session
+
+A claude.ai cloud session starts from a fresh clone on Ubuntu, as root, with no Flutter and no Android SDK.
+Until the cloud environment runs a setup script, install Flutter by hand at the version CI pins, from the repo root:
+
+```bash
+version=$(sed -n 's/.*flutter-version: *//p' .github/workflows/checks.yml)
+curl -fsSL "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${version}-stable.tar.xz" \
+  | tar -xJ -C "$HOME"
+git config --global --add safe.directory '*'   # the SDK is a git checkout owned by another uid
+echo 'export PATH="$HOME/flutter/bin:$PATH"' >> ~/.bashrc
+export PATH="$HOME/flutter/bin:$PATH"
+flutter --disable-analytics
+scripts/check.sh
+```
+
+The SDK unpacks to about 2.3 GB and the first `pub get` adds about 700 MB, well inside the session's disk.
+Claude's shell reads `~/.bashrc` for each command, so the `echo` line puts `flutter` on its `PATH` for the rest of the session; `scripts/check.sh` falls back to `$HOME/flutter/bin` either way.
+
+What this does not give you:
+
+- **The Android SDK.** No APK is built in a cloud session. Its command-line tools download from `dl.google.com`, which the default Trusted network access refuses.
+- **Persistence.** The install lives in the session's container and is gone when the container is reclaimed. A new session repeats these steps.
+
 ## Install Flutter SDK
 
 ```bash
@@ -143,7 +167,7 @@ flutter run
 ## Gates
 
 `scripts/check.sh` is the one command that runs every check: markdown links resolve,
-the plan folders agree with their convention, codegen, `flutter analyze`, `flutter test`.
+the plan folders agree with their convention, codegen, `dart format`, `flutter analyze`, `flutter test`.
 CI runs the same script, and `scripts/install-hooks.sh` points git at `.githooks` so a
 commit runs it too (bypass with `git commit --no-verify`).
 
@@ -157,7 +181,9 @@ It is quiet by default: one line per gate, being that gate's own summary, and th
 full output of any gate that fails. `-v` prints everything, which is worth it when
 a gate passes and you still want to see what it did.
 
-Gates run in this order: links, plans, codegen, analyze, test. Codegen is in the list
+Gates run in this order: links, plans, codegen, format, analyze, test.
+The format gate runs `dart format` over every Dart file git tracks or would add, untracked new files included and gitignored generated files skipped, and fails naming each file it would change.
+Fix with `git ls-files -z --cached --others --exclude-standard -- '*.dart' | xargs -0 dart format`. Codegen is in the list
 because `*.freezed.dart` and `*.g.dart` are gitignored, so a fresh checkout has
 none and analyze fails on every freezed type. Warm it costs about 2s.
 

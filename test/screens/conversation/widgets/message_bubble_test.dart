@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ConversationMessage _userMessage() => ConversationMessage(
-      id: 'u1',
-      role: MessageRole.user,
-      content: 'eu vai na praia',
-      timestamp: DateTime(2024),
-    );
+  id: 'u1',
+  role: MessageRole.user,
+  content: 'eu vai na praia',
+  timestamp: DateTime(2024),
+);
 
 ConversationMessage _tutorMessage({required String translation}) =>
     ConversationMessage(
@@ -33,17 +33,16 @@ ConversationMessage _tutorMessage({required String translation}) =>
 Future<void> _pumpBubble(WidgetTester tester, ConversationMessage m) async {
   await tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(
-        body: MessageBubble(message: m),
-      ),
+      home: Scaffold(body: MessageBubble(message: m)),
     ),
   );
 }
 
 void main() {
   group('MessageBubble translation toggle', () {
-    testWidgets('tutor message with translation: tap reveals, tap hides',
-        (tester) async {
+    testWidgets('tutor message with translation: tap reveals, tap hides', (
+      tester,
+    ) async {
       const translation = 'Great! Do you like the beach?';
       await _pumpBubble(tester, _tutorMessage(translation: translation));
 
@@ -58,8 +57,9 @@ void main() {
       expect(find.text(translation), findsNothing);
     });
 
-    testWidgets('tutor message without translation: tap is inert',
-        (tester) async {
+    testWidgets('tutor message without translation: tap is inert', (
+      tester,
+    ) async {
       await _pumpBubble(tester, _tutorMessage(translation: ''));
       await tester.tap(find.byType(MessageBubble), warnIfMissed: false);
       await tester.pumpAndSettle();
@@ -68,8 +68,9 @@ void main() {
       expect(find.text('Que bom! Voce gosta de praia?'), findsOneWidget);
     });
 
-    testWidgets('user message: tap is inert and no translation shown',
-        (tester) async {
+    testWidgets('user message: tap is inert and no translation shown', (
+      tester,
+    ) async {
       await _pumpBubble(tester, _userMessage());
       await tester.tap(find.byType(MessageBubble), warnIfMissed: false);
       await tester.pumpAndSettle();

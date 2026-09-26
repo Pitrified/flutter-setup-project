@@ -12,12 +12,16 @@ import 'streaming_reply_view.dart';
 /// their data arrives and only draw the strike->replace once both [original]
 /// and [corrected] exist.
 class CorrectionCard extends StatelessWidget {
-  const CorrectionCard({super.key, required List<CorrectionError> this.corrections})
-      : partials = null;
+  const CorrectionCard({
+    super.key,
+    required List<CorrectionError> this.corrections,
+  }) : partials = null;
 
   /// Live, partially-streamed corrections (phase 6).
-  const CorrectionCard.partial({super.key, required List<PartialCorrection> this.partials})
-      : corrections = null;
+  const CorrectionCard.partial({
+    super.key,
+    required List<PartialCorrection> this.partials,
+  }) : corrections = null;
 
   final List<CorrectionError>? corrections;
   final List<PartialCorrection>? partials;
@@ -63,10 +67,7 @@ class CorrectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < rows.length; i++)
-            KeyedSubtree(
-              key: ValueKey(i),
-              child: _buildRow(context, rows[i]),
-            ),
+            KeyedSubtree(key: ValueKey(i), child: _buildRow(context, rows[i])),
         ],
       ),
     );

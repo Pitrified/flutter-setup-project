@@ -44,14 +44,14 @@ void main() {
     // Mock asset bundle
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
-      final key = String.fromCharCodes(message!.buffer.asUint8List());
-      if (key == 'assets/fixtures/tutor_responses.json') {
-        return ByteData.sublistView(
-          Uint8List.fromList(fixtureJson.codeUnits),
-        );
-      }
-      return null;
-    });
+          final key = String.fromCharCodes(message!.buffer.asUint8List());
+          if (key == 'assets/fixtures/tutor_responses.json') {
+            return ByteData.sublistView(
+              Uint8List.fromList(fixtureJson.codeUnits),
+            );
+          }
+          return null;
+        });
   });
 
   tearDown(() async {
@@ -98,8 +98,9 @@ void main() {
       const InferenceRequest(prompt: 'msg1'),
     );
     expect(result1, isA<InferenceSuccess>());
-    final json1 = jsonDecode((result1 as InferenceSuccess).rawText)
-        as Map<String, dynamic>;
+    final json1 =
+        jsonDecode((result1 as InferenceSuccess).rawText)
+            as Map<String, dynamic>;
     expect(
       (json1['conversation'] as Map<String, dynamic>)['content'],
       'Muito bem!',
@@ -108,8 +109,9 @@ void main() {
     final result2 = await engine.generate(
       const InferenceRequest(prompt: 'msg2'),
     );
-    final json2 = jsonDecode((result2 as InferenceSuccess).rawText)
-        as Map<String, dynamic>;
+    final json2 =
+        jsonDecode((result2 as InferenceSuccess).rawText)
+            as Map<String, dynamic>;
     expect(
       (json2['conversation'] as Map<String, dynamic>)['content'],
       'Otimo!',
@@ -124,11 +126,10 @@ void main() {
     await engine.generate(const InferenceRequest(prompt: '2'));
 
     // Third call should cycle back
-    final result = await engine.generate(
-      const InferenceRequest(prompt: '3'),
-    );
-    final json = jsonDecode((result as InferenceSuccess).rawText)
-        as Map<String, dynamic>;
+    final result = await engine.generate(const InferenceRequest(prompt: '3'));
+    final json =
+        jsonDecode((result as InferenceSuccess).rawText)
+            as Map<String, dynamic>;
     expect(
       (json['conversation'] as Map<String, dynamic>)['content'],
       'Muito bem!',

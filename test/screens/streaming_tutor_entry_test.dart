@@ -27,34 +27,39 @@ void main() {
   group('StreamingTutorEntry', () {
     testWidgets('reply text grows as the buffer fills', (tester) async {
       await tester.pumpWidget(
-        _wrap(StreamingTutorEntry(
-          delta: _delta('{"conversation":{"content":"Ol'),
-        )),
+        _wrap(
+          StreamingTutorEntry(delta: _delta('{"conversation":{"content":"Ol')),
+        ),
       );
       expect(find.text('Ol'), findsOneWidget);
 
       await tester.pumpWidget(
-        _wrap(StreamingTutorEntry(
-          delta: _delta('{"conversation":{"content":"Ola!"'),
-        )),
+        _wrap(
+          StreamingTutorEntry(
+            delta: _delta('{"conversation":{"content":"Ola!"'),
+          ),
+        ),
       );
       expect(find.text('Ola!'), findsOneWidget);
       expect(find.text('Ol'), findsNothing);
     });
 
-    testWidgets('a correction row appears partial then completes',
-        (tester) async {
+    testWidgets('a correction row appears partial then completes', (
+      tester,
+    ) async {
       // A RichText whose rendered plain text contains [s].
       Finder richTextWith(String s) => find.byWidgetPredicate(
-            (w) => w is RichText && w.text.toPlainText().contains(s),
-          );
+        (w) => w is RichText && w.text.toPlainText().contains(s),
+      );
 
       // original present, corrected not yet -> no strike->replace, no
       // explanation.
       await tester.pumpWidget(
-        _wrap(StreamingTutorEntry(
-          delta: _delta('{"correction":{"errors":[{"original":"eu gosto"'),
-        )),
+        _wrap(
+          StreamingTutorEntry(
+            delta: _delta('{"correction":{"errors":[{"original":"eu gosto"'),
+          ),
+        ),
       );
       expect(find.text('eu gosto'), findsOneWidget);
       expect(richTextWith('Eu gosto'), findsNothing);
@@ -62,26 +67,31 @@ void main() {
 
       // Both present and closed -> full strike->replace + explanation.
       await tester.pumpWidget(
-        _wrap(StreamingTutorEntry(
-          delta: _delta(
-            '{"correction":{"errors":[{"original":"eu gosto",'
-            '"corrected":"Eu gosto","explanation":"Capitalize."}]}}',
+        _wrap(
+          StreamingTutorEntry(
+            delta: _delta(
+              '{"correction":{"errors":[{"original":"eu gosto",'
+              '"corrected":"Eu gosto","explanation":"Capitalize."}]}}',
+            ),
           ),
-        )),
+        ),
       );
       expect(richTextWith('Eu gosto'), findsOneWidget);
       expect(find.text('Capitalize.'), findsOneWidget);
     });
 
-    testWidgets('renders the correction card above the reply bubble',
-        (tester) async {
+    testWidgets('renders the correction card above the reply bubble', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        _wrap(StreamingTutorEntry(
-          delta: _delta(
-            '{"correction":{"errors":[{"original":"x","corrected":"y",'
-            '"explanation":"z"}]},"conversation":{"content":"Ola!"}}',
+        _wrap(
+          StreamingTutorEntry(
+            delta: _delta(
+              '{"correction":{"errors":[{"original":"x","corrected":"y",'
+              '"explanation":"z"}]},"conversation":{"content":"Ola!"}}',
+            ),
           ),
-        )),
+        ),
       );
 
       final cardY = tester.getTopLeft(find.byType(CorrectionCard)).dy;
@@ -100,22 +110,28 @@ void main() {
 
   group('showStreamingOverlay', () {
     ConversationMessage msg(MessageRole role) => ConversationMessage(
-          id: role.name,
-          role: role,
-          content: 'x',
-          timestamp: DateTime(2026),
-        );
+      id: role.name,
+      role: role,
+      content: 'x',
+      timestamp: DateTime(2026),
+    );
 
     test('hidden when not sending', () {
       expect(
-        showStreamingOverlay(isSending: false, messages: [msg(MessageRole.user)]),
+        showStreamingOverlay(
+          isSending: false,
+          messages: [msg(MessageRole.user)],
+        ),
         isFalse,
       );
     });
 
     test('shown while sending and awaiting the tutor reply', () {
       expect(
-        showStreamingOverlay(isSending: true, messages: [msg(MessageRole.user)]),
+        showStreamingOverlay(
+          isSending: true,
+          messages: [msg(MessageRole.user)],
+        ),
         isTrue,
       );
     });
@@ -131,7 +147,10 @@ void main() {
     });
 
     test('hidden when there are no messages', () {
-      expect(showStreamingOverlay(isSending: true, messages: const []), isFalse);
+      expect(
+        showStreamingOverlay(isSending: true, messages: const []),
+        isFalse,
+      );
     });
   });
 }

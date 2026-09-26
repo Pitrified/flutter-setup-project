@@ -1,15 +1,16 @@
 ---
-status: draft
-priority: 0
+status: planned
+priority: 1
 description: |
-  Split the skeleton and its pattern gallery from the app, so the reusable half can
-  be picked up by the next project. Cheaper alternatives are listed first, because
-  two repos is two maintenance streams for one person.
+  Split fala out into its own repo, fala-language-tutor, written fresh by a Claude session
+  from a plan, with only what the tutor needs and no local LLM. This repo becomes the Flutter
+  guide: setup from zero, a working app with the patterns other projects actually use,
+  skills, scaffolding, and distribution approaches. An audit decides what goes where.
 ---
 
 # Split the skeleton from the app
 
-Status: draft spin-off, raised 2026-09-25. No phases derived.
+Raised 2026-09-25 as a draft; brainstormed 2026-09-26 and phases derived, see [`tracking.md`](tracking.md).
 
 ## Where this came from
 
@@ -52,16 +53,82 @@ second half is what nobody else should inherit.
 3. Extract the parts that are already libraries (the inference interface, the partial JSON parser)
    into a package, and leave the docs where they are.
 
+## Brainstorm, 2026-09-26
+
+The user's framing, condensed; "the audit will guide scope decisions" covers all of it.
+
+- **Three stages.** An audit, the split-off of the new repo, the clean-up of this one.
+- **This repo becomes a guide.** How to set up Flutter from zero, both headless and for a person.
+  A working app with a gallery of useful patterns, but not all of them: "a giant gallery will immediately go stale".
+  Only what is actually used in other projects is lifted here, and a pattern can be a link to the project using it rather than a copy.
+  Plus useful AI skills, guides and scaffolding, and distribution information and approaches. This app will not be distributed.
+- **The new repo is `fala-language-tutor`.** The minimal set of things that keeps the tutor running. No local LLM.
+- **No bootstrap script.** A Claude session is pointed at a new empty repo with a plan, reads this repo and whatever else it needs, and writes all the code.
+  That is how fala-language-tutor gets built.
+- **The LLM testing machinery is duplicated for now**: the mock OpenAI server and the emulator end-to-end harness go into both repos.
+  At the third copy of the pattern, in a second new app, it gets assessed. The expectation is that something suitable exists online; if not, it becomes its own package and repo in the Python stack, not a feature here.
+- **Environment.** Work happens in the current cloud environment, set up by hand, for the next couple of days.
+  Until the setup script exists, both repos carry a brief note in their docs saying what to install in a fresh session.
+
+### What this settles, and what it does not
+
+- The cheaper alternatives above are not taken: this is a split, with the guide staying here under its current name and the product leaving.
+  Alternative 3, extracting a package, is the stance for the LLM testing machinery at its third copy, not for now.
+- **Order.** fala-language-tutor is written while this repo still holds the full working tutor, since that is what the session reads.
+  The clean-up of this repo comes after fala-language-tutor runs, not before.
+- **Git history.** fala-language-tutor starts with no history: it is written fresh, not extracted. This repo keeps its own. That answers Q2.
+- **What "used in other projects" means today.** After the split, fala-language-tutor is the other project, so a pattern it uses qualifies. The audit is where each one is judged.
+- **Interplay with other folders.**
+  `16_cloud_first_engine` removes the on-device engine from this repo; with the split it is superseded: fala-language-tutor never has the engine, and the guide keeps it as a gallery pattern (Q5).
+  `23_dependency_upgrades` depends on this folder, as it already records.
+  `24_cloud_sessions` replaces the fresh-session note with a setup script later.
+  `07_release`, `13_key_distribution`, `14_audio_io` and `19_apk_distribution` are about the product and follow it (Q3).
+
 ## Open questions
 
 - Q1: is there a second project that wants the skeleton, or is this tidiness?
   Recommended: answer honestly before doing anything. Tidiness is a reason to rename, not to split.
-  NEW_ANS:
+  ANS: from the brainstorm: not tidiness. This repo becomes the guide a Claude session reads when bootstrapping a new app, and fala-language-tutor is the first one built that way.
 - Q2: if it splits, does the skeleton repo keep history?
   Recommended: no. A fresh repo with a pointer costs an afternoon; a filtered history costs days and
   is read by nobody.
-  NEW_ANS:
+  ANS: from the brainstorm, reframed: the skeleton stays here with its history, and fala-language-tutor starts fresh because a session writes it rather than extracting it.
 - Q3: what happens to `plans/`?
   Recommended: plans follow their code, and the folders that span both are copied to both, marked as
   such. Reasoning is cheap to duplicate and expensive to lose.
-  NEW_ANS:
+  ANS: decided per folder by the audit (phase 02).
+
+### Second batch (2026-09-26)
+
+- Q4: who creates `fala-language-tutor` on GitHub, and when?
+  A session can only push to repos in the Claude GitHub App installation, which is set to selected repositories (`24_cloud_sessions/00_start.md`, "GitHub access").
+  Recommended: the user creates it empty and adds it to the installation before phase 04 starts.
+  ANS: done by the user on 2026-09-26: https://github.com/Pitrified/fala-language-tutor, added to the app.
+- Q5: `16_cloud_first_engine` removes the on-device engine from this repo. With the split, is it superseded?
+  a. superseded: fala-language-tutor is written without it, and the guide's clean-up drops `flutter_gemma` unless the audit finds another use.
+  b. kept, and done here before the split, so the session writing fala-language-tutor reads a smaller repo.
+  Recommended: a. b removes code from a repo that is about to lose it anyway, and the plan for fala-language-tutor can simply say "no local LLM".
+  ANS: a, superseded, with one change to the recommendation: removed in fala-language-tutor, kept in the guide. The on-device engine is a gallery pattern here, not a `drop`.
+- Q6: what is "the working app" in the guide after the clean-up?
+  a. a neutral demo shell whose screens are the lifted patterns.
+  b. a stripped chat over `FakeInferenceEngine`, keeping the streaming and structured-output path as the demonstration.
+  Recommended: decide after the audit. b keeps the patterns fala-language-tutor uses runnable here, but it is a second copy of the product's shape.
+  ANS: a working app whose screens are the gallery: the router and navigation, basic pages, some components, secure storage or whatever storage applies, and so on. Closest to a; the audit lists the items.
+
+### Third batch, from the audit (2026-09-26)
+
+- Q7: the guide's app keeps `com.fala.app` as its `applicationId` today. What does it become?
+  Two apps with the same id replace each other on a phone, and fala-language-tutor keeps `com.fala.app` for its Play listing.
+  Recommended: a neutral id such as `com.pitrified.flutter_setup`, changed during phase 05.
+  ANS: ok.
+- Q8: the product folders that move (07, 09, 13, 14, 19): do they keep their numbers in fala-language-tutor?
+  a. keep numbers and names, so references to them from the diary here still read correctly, and fala's own new folders start after the highest.
+  b. renumber from 01 in the new repo.
+  Recommended: a. A number is identity, and the diary here cites them by name.
+  ANS: b, overriding the recommendation: "no, keep the new repo clean". The new repo numbers its folders from 01; the moved folders are renumbered there, and the diary here keeps its own names for them. The answer as typed ended mid-sentence after "and"; completed 2026-09-26 as "keep the new repo clean and renumber", which is what was assumed.
+- Q9: the dead code and unused dependencies the audit found: removed before phase 04, or left for each repo to drop?
+  Recommended: before phase 04, here, as one small change with the logger doc fix, so the session writing fala-language-tutor does not copy dead code.
+  ANS: clean up before duplicating the problem, except what makes sense as a gallery item. Judged per item in the new phase 03: `ErrorBoundary` never sets its error, so it catches nothing and is not a pattern worth showing; `ErrorMessages` maps tutor-specific exceptions and nothing reads it. All four files and all four dependencies go.
+- Q10: the two couplings (the OpenAI engine importing the tutor schema, the engine registry importing a provider): fixed before phase 04, or by each repo?
+  Recommended: before phase 04, here, so both repos start from the cleaner shape. Each is a small refactor with tests already around it.
+  ANS: yes, same idea: fixed here before duplicating.

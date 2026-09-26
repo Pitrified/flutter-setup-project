@@ -15,10 +15,7 @@ void main() {
       'translation': 'I like coffee',
       'errors': <Map<String, dynamic>>[],
     },
-    'conversation': {
-      'content': 'Muito bem!',
-      'translation': 'Very good!',
-    },
+    'conversation': {'content': 'Muito bem!', 'translation': 'Very good!'},
   });
 
   group('StructuredOutputParser', () {
@@ -80,10 +77,7 @@ void main() {
       expect(result, isA<ParseSuccess<TutorResponse>>());
       final success = result as ParseSuccess<TutorResponse>;
       expect(success.value.correction.errors, hasLength(1));
-      expect(
-        success.value.correction.errors.first.original,
-        'Eu sou cansado',
-      );
+      expect(success.value.correction.errors.first.original, 'Eu sou cansado');
     });
   });
 }

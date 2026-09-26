@@ -141,8 +141,9 @@ class DefaultTopicNotifier extends Notifier<String> {
 }
 
 /// Provider for the default topic seed (or empty string).
-final defaultTopicProvider =
-    NotifierProvider<DefaultTopicNotifier, String>(DefaultTopicNotifier.new);
+final defaultTopicProvider = NotifierProvider<DefaultTopicNotifier, String>(
+  DefaultTopicNotifier.new,
+);
 
 /// Reactive holder for the default [TargetLanguage] used to seed new
 /// conversations.

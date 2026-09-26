@@ -6,11 +6,7 @@ part 'conversation_message.freezed.dart';
 part 'conversation_message.g.dart';
 
 /// Role of a message sender.
-enum MessageRole {
-  user,
-  tutor,
-  system,
-}
+enum MessageRole { user, tutor, system }
 
 /// A single message in a conversation.
 @freezed

@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 
 import '../../models/app_exception.dart';
+
 /// Manages versioned prompt templates from app assets.
 ///
 /// Prompts are stored as plain text files in `assets/prompts/{name}/vN.txt`.
@@ -14,10 +15,7 @@ class PromptManager {
   ///
   /// If [version] is null, loads the highest available version.
   /// Templates use {{variable}} syntax for substitution.
-  Future<String> loadTemplate({
-    required String name,
-    int? version,
-  }) async {
+  Future<String> loadTemplate({required String name, int? version}) async {
     final key = '$name/v${version ?? "latest"}';
     if (_cache.containsKey(key)) return _cache[key]!;
 

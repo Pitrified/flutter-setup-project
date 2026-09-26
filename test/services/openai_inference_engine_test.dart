@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:fala/services/inference/inference_engine.dart';
 import 'package:fala/services/inference/openai_inference_engine.dart';
 import 'package:fala/services/settings/api_key_store.dart';
@@ -10,6 +12,17 @@ import 'package:openai_dart/openai_dart.dart';
 OpenAIClient _clientWith(http.Client httpClient) =>
     OpenAIClient.withApiKey('sk-test', httpClient: httpClient);
 
+/// A schema with nothing tutor-specific in it: the engine passes on whatever
+/// it is given.
+const _testSchema = <String, dynamic>{
+  'type': 'object',
+  'additionalProperties': false,
+  'required': ['reply'],
+  'properties': {
+    'reply': {'type': 'string'},
+  },
+};
+
 OpenAiInferenceEngine _engineWith({
   required http.Client httpClient,
   required ApiKeyStore store,
@@ -18,6 +31,8 @@ OpenAiInferenceEngine _engineWith({
   return OpenAiInferenceEngine(
     apiKeyStore: store,
     modelProvider: () => model,
+    schemaName: 'test_reply',
+    schema: _testSchema,
     clientBuilder: (_) => _clientWith(httpClient),
   );
 }
@@ -34,9 +49,7 @@ void main() {
       store: store,
     );
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
     expect(
       (result as InferenceFailure).error,
@@ -67,11 +80,33 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceSuccess>());
     expect((result as InferenceSuccess).rawText, rawJson);
+  });
+
+  test('generate sends the schema it was given, not a built-in one', () async {
+    final store = ApiKeyStore();
+    await store.write('sk-test');
+    Map<String, dynamic>? sentFormat;
+    final mock = MockClient((request) async {
+      final body = jsonDecode(request.body) as Map<String, dynamic>;
+      sentFormat = body['response_format'] as Map<String, dynamic>;
+      return http.Response(
+        '{"id":"chatcmpl-1","object":"chat.completion","created":1,'
+        '"model":"gpt-4o-mini","choices":[{"index":0,"finish_reason":"stop",'
+        '"message":{"role":"assistant","content":"{\\"reply\\":\\"oi\\"}"}}]}',
+        200,
+        headers: {'content-type': 'application/json'},
+      );
+    });
+    final engine = _engineWith(httpClient: mock, store: store);
+    await engine.initialize();
+    await engine.generate(const InferenceRequest(prompt: 'oi'));
+    final jsonSchema = sentFormat!['json_schema'] as Map<String, dynamic>;
+    expect(sentFormat!['type'], 'json_schema');
+    expect(jsonSchema['name'], 'test_reply');
+    expect(jsonSchema['schema'], _testSchema);
   });
 
   test('generate maps HTTP 401 to a "key rejected" failure', () async {
@@ -87,9 +122,7 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
     expect(
       (result as InferenceFailure).error,
@@ -109,14 +142,9 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
-    expect(
-      (result as InferenceFailure).error,
-      contains('rate limit'),
-    );
+    expect((result as InferenceFailure).error, contains('rate limit'));
   });
 
   test('generate returns failure when response has empty content', () async {
@@ -135,14 +163,9 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
-    expect(
-      (result as InferenceFailure).error,
-      contains('empty response'),
-    );
+    expect((result as InferenceFailure).error, contains('empty response'));
   });
 }
 

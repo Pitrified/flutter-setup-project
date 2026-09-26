@@ -10,13 +10,7 @@
 /// translations in English, so an English target would make every translation a
 /// restatement. It becomes available when the explanation language is itself a
 /// setting (see `docs/functional-specs.md`, "Target language").
-enum TargetLanguage {
-  ptBr,
-  esEs,
-  frFr,
-  itIt,
-  deDe,
-}
+enum TargetLanguage { ptBr, esEs, frFr, itIt, deDe }
 
 /// Codes, labels and parsing for [TargetLanguage].
 extension TargetLanguageX on TargetLanguage {
