@@ -17,10 +17,7 @@ typedef EngineFactory = InferenceEngine Function(String modelPath);
 /// `fake` and `gemma` ignore everything in here; `openai` uses the API key
 /// store and reads its model id from the settings repo on every call.
 class EngineRegistryDeps {
-  const EngineRegistryDeps({
-    required this.apiKeyStore,
-    required this.settings,
-  });
+  const EngineRegistryDeps({required this.apiKeyStore, required this.settings});
 
   final ApiKeyStore apiKeyStore;
   final AppSettingsRepository settings;

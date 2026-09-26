@@ -61,9 +61,7 @@ class FlutterGemmaEngine implements InferenceEngine {
         temperature: request.temperature,
         topK: request.topK,
       );
-      await chat.addQueryChunk(
-        Message(text: request.prompt, isUser: true),
-      );
+      await chat.addQueryChunk(Message(text: request.prompt, isUser: true));
       final buffer = StringBuffer();
       await for (final response in chat.generateChatResponseAsync()) {
         if (response is TextResponse) {
@@ -94,9 +92,7 @@ class FlutterGemmaEngine implements InferenceEngine {
         temperature: request.temperature,
         topK: request.topK,
       );
-      await chat.addQueryChunk(
-        Message(text: request.prompt, isUser: true),
-      );
+      await chat.addQueryChunk(Message(text: request.prompt, isUser: true));
       // No constrained decoding on-device, so partial buffers may not be
       // valid-JSON prefixes; phase 1's tolerant parser handles that.
       await for (final response in chat.generateChatResponseAsync()) {

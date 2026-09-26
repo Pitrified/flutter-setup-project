@@ -109,7 +109,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     for (final language in TargetLanguage.values) {
-      expect(find.text(language.endonym), findsOneWidget, reason: language.name);
+      expect(
+        find.text(language.endonym),
+        findsOneWidget,
+        reason: language.name,
+      );
     }
 
     // The sheet is height-capped, so the last entry starts below the fold and a

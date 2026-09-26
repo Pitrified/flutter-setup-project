@@ -49,9 +49,7 @@ void main() {
       store: store,
     );
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
     expect(
       (result as InferenceFailure).error,
@@ -82,9 +80,7 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceSuccess>());
     expect((result as InferenceSuccess).rawText, rawJson);
   });
@@ -126,9 +122,7 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
     expect(
       (result as InferenceFailure).error,
@@ -148,14 +142,9 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
-    expect(
-      (result as InferenceFailure).error,
-      contains('rate limit'),
-    );
+    expect((result as InferenceFailure).error, contains('rate limit'));
   });
 
   test('generate returns failure when response has empty content', () async {
@@ -174,14 +163,9 @@ void main() {
     });
     final engine = _engineWith(httpClient: mock, store: store);
     await engine.initialize();
-    final result = await engine.generate(
-      const InferenceRequest(prompt: 'oi'),
-    );
+    final result = await engine.generate(const InferenceRequest(prompt: 'oi'));
     expect(result, isA<InferenceFailure>());
-    expect(
-      (result as InferenceFailure).error,
-      contains('empty response'),
-    );
+    expect((result as InferenceFailure).error, contains('empty response'));
   });
 }
 

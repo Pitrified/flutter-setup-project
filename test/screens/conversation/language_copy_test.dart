@@ -124,5 +124,4 @@ void main() {
     expect(find.text('Say something in Portuguese!'), findsOneWidget);
     expect(find.text('Type in Portuguese...'), findsOneWidget);
   });
-
 }

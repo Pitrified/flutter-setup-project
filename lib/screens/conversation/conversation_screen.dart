@@ -29,8 +29,7 @@ class ConversationScreen extends ConsumerStatefulWidget {
   const ConversationScreen({super.key});
 
   @override
-  ConsumerState<ConversationScreen> createState() =>
-      _ConversationScreenState();
+  ConsumerState<ConversationScreen> createState() => _ConversationScreenState();
 }
 
 class _ConversationScreenState extends ConsumerState<ConversationScreen>
@@ -148,12 +147,12 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
             curve: Curves.easeOut,
           )
           .then((_) {
-        if (!_scrollController.hasClients) return;
-        final pos = _scrollController.position;
-        if (pos.maxScrollExtent - pos.pixels > 1) {
-          _scrollController.jumpTo(pos.maxScrollExtent);
-        }
-      });
+            if (!_scrollController.hasClients) return;
+            final pos = _scrollController.position;
+            if (pos.maxScrollExtent - pos.pixels > 1) {
+              _scrollController.jumpTo(pos.maxScrollExtent);
+            }
+          });
     });
   }
 
@@ -200,9 +199,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
     final controller = ref.watch(conversationControllerProvider);
 
     if (controller == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -317,7 +314,8 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
         final delta = snapshot.data;
         if (delta == null) return const TypingIndicator();
         final view = StreamingReplyView(delta);
-        final hasContent = (view.conversationContent ?? '').isNotEmpty ||
+        final hasContent =
+            (view.conversationContent ?? '').isNotEmpty ||
             view.corrections.isNotEmpty;
         if (!hasContent) return const TypingIndicator();
         // Each delta grows the overlay; follow it down if pinned.
@@ -357,9 +355,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen>
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
         ),
       ),
       child: SafeArea(
@@ -414,10 +410,7 @@ class _AppDrawer extends StatelessWidget {
         child: ListView(
           children: [
             const DrawerHeader(
-              child: Text(
-                'fala',
-                style: TextStyle(fontSize: 24),
-              ),
+              child: Text('fala', style: TextStyle(fontSize: 24)),
             ),
             ListTile(
               leading: const Icon(Icons.settings_outlined),
@@ -459,9 +452,7 @@ class _CefrAction extends ConsumerWidget {
               );
               if (picked == null || picked == current) return;
               await controller.setCefrLevel(picked);
-              await ref
-                  .read(defaultCefrLevelProvider.notifier)
-                  .select(picked);
+              await ref.read(defaultCefrLevelProvider.notifier).select(picked);
             },
           ),
         );
@@ -506,7 +497,8 @@ class _LanguageAction extends ConsumerWidget {
                 picked: picked,
                 current: current,
                 hasMessages:
-                    controller.currentConversation?.messages.isNotEmpty ?? false,
+                    controller.currentConversation?.messages.isNotEmpty ??
+                    false,
               );
               if (action == LanguageSwitchAction.none) return;
 
@@ -557,8 +549,8 @@ class _TopicAction extends ConsumerWidget {
         final label = raw.isEmpty
             ? 'Pick a topic'
             : raw.length > 18
-                ? '${raw.substring(0, 17)}\u2026'
-                : raw;
+            ? '${raw.substring(0, 17)}\u2026'
+            : raw;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: TextButton.icon(

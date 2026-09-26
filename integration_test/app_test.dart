@@ -58,8 +58,9 @@ const _baseUrl = String.fromEnvironment('OPENAI_BASE_URL');
 /// The test runs on the device, so it reaches the host exactly as the app does.
 /// This is why the failure paths need no second harness and no restart.
 Future<void> mockScenario(String scenario) async {
-  final control = Uri.parse(_baseUrl.replaceFirst(RegExp(r'/v1/?$'), ''))
-      .resolve('/_control');
+  final control = Uri.parse(
+    _baseUrl.replaceFirst(RegExp(r'/v1/?$'), ''),
+  ).resolve('/_control');
   final client = HttpClient();
   try {
     final request = await client.postUrl(control);

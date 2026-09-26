@@ -22,12 +22,12 @@ enum StructuredFailureKind {
 class StructuredFailure {
   /// The engine could not generate a response.
   const StructuredFailure.inference(this.error)
-      : kind = StructuredFailureKind.inference,
-        rawText = null;
+    : kind = StructuredFailureKind.inference,
+      rawText = null;
 
   /// The engine produced [rawText] but it could not be parsed to T.
   const StructuredFailure.parse({required this.rawText, required this.error})
-      : kind = StructuredFailureKind.parse;
+    : kind = StructuredFailureKind.parse;
 
   final StructuredFailureKind kind;
 
@@ -153,59 +153,65 @@ class StructuredStreamEngine<T> {
 
     controller.onListen = () {
       resetTimer();
-      sub = engine.generateStream(request).listen(
-        (buffer) {
-          // Already terminated (e.g. a timeout closed us): drop late buffered
-          // events before re-arming the timer, so no dangling timer outlives
-          // the stream.
-          if (controller.isClosed) return;
-          resetTimer();
-          lastBuffer = buffer;
-          final result = parser.parse(buffer);
-          lastPartial = result.value;
-          lastClosure = result.closure;
+      sub = engine
+          .generateStream(request)
+          .listen(
+            (buffer) {
+              // Already terminated (e.g. a timeout closed us): drop late buffered
+              // events before re-arming the timer, so no dangling timer outlives
+              // the stream.
+              if (controller.isClosed) return;
+              resetTimer();
+              lastBuffer = buffer;
+              final result = parser.parse(buffer);
+              lastPartial = result.value;
+              lastClosure = result.closure;
 
-          // Coalesce: skip ticks whose map *and* closed-flags are unchanged
-          // (e.g. trailing whitespace), to limit downstream rebuilds.
-          final signature = _signature(result);
-          if (signature == lastSignature) return;
-          lastSignature = signature;
+              // Coalesce: skip ticks whose map *and* closed-flags are unchanged
+              // (e.g. trailing whitespace), to limit downstream rebuilds.
+              final signature = _signature(result);
+              if (signature == lastSignature) return;
+              lastSignature = signature;
 
-          if (!controller.isClosed) {
-            controller.add(
-              StructuredDelta<T>(partial: lastPartial, closure: lastClosure),
-            );
-          }
-        },
-        onError: (Object error) {
-          timer?.cancel();
-          final message =
-              error is InferenceStreamException ? error.message : '$error';
-          emitFailure(StructuredFailure.inference(message));
-        },
-        onDone: () {
-          timer?.cancel();
-          if (controller.isClosed) return;
-          // Strict final parse on the full buffer, matching the one-shot path.
-          switch (finalParser.parse(lastBuffer)) {
-            case ParseSuccess(:final value):
-              controller
-                ..add(
+              if (!controller.isClosed) {
+                controller.add(
                   StructuredDelta<T>(
                     partial: lastPartial,
                     closure: lastClosure,
-                    value: value,
-                    isComplete: true,
                   ),
-                )
-                ..close();
-            case ParseFailure(:final rawText, :final error):
-              emitFailure(
-                StructuredFailure.parse(rawText: rawText, error: error),
-              );
-          }
-        },
-      );
+                );
+              }
+            },
+            onError: (Object error) {
+              timer?.cancel();
+              final message = error is InferenceStreamException
+                  ? error.message
+                  : '$error';
+              emitFailure(StructuredFailure.inference(message));
+            },
+            onDone: () {
+              timer?.cancel();
+              if (controller.isClosed) return;
+              // Strict final parse on the full buffer, matching the one-shot path.
+              switch (finalParser.parse(lastBuffer)) {
+                case ParseSuccess(:final value):
+                  controller
+                    ..add(
+                      StructuredDelta<T>(
+                        partial: lastPartial,
+                        closure: lastClosure,
+                        value: value,
+                        isComplete: true,
+                      ),
+                    )
+                    ..close();
+                case ParseFailure(:final rawText, :final error):
+                  emitFailure(
+                    StructuredFailure.parse(rawText: rawText, error: error),
+                  );
+              }
+            },
+          );
     };
 
     controller.onCancel = () {
@@ -241,10 +247,9 @@ class StructuredStreamEngine<T> {
       jsonEncode([result.value, _closureToJson(result.closure)]);
 
   static Object _closureToJson(JsonClosure c) => <String, Object>{
-        'c': c.closed,
-        if (c.fields.isNotEmpty)
-          'f': c.fields.map((k, v) => MapEntry(k, _closureToJson(v))),
-        if (c.elements.isNotEmpty)
-          'e': c.elements.map(_closureToJson).toList(),
-      };
+    'c': c.closed,
+    if (c.fields.isNotEmpty)
+      'f': c.fields.map((k, v) => MapEntry(k, _closureToJson(v))),
+    if (c.elements.isNotEmpty) 'e': c.elements.map(_closureToJson).toList(),
+  };
 }

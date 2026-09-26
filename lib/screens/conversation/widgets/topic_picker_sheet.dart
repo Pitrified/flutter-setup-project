@@ -79,10 +79,7 @@ class _TopicPickerBodyState extends State<_TopicPickerBody> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(
-                    onPressed: _apply,
-                    child: const Text('Apply'),
-                  ),
+                  FilledButton(onPressed: _apply, child: const Text('Apply')),
                 ],
               ),
             ),
@@ -92,8 +89,7 @@ class _TopicPickerBodyState extends State<_TopicPickerBody> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () =>
-                        Navigator.of(context).pop(Topic.none),
+                    onPressed: () => Navigator.of(context).pop(Topic.none),
                     icon: const Icon(Icons.clear),
                     label: const Text('Clear topic'),
                   ),

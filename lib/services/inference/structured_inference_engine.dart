@@ -83,20 +83,23 @@ class StructuredInferenceEngine<T> {
     try {
       result = await engine.generate(request).timeout(timeout);
     } on TimeoutException {
-      return const StructuredInferenceFailure(
-        error: 'Response timed out',
-      );
+      return const StructuredInferenceFailure(error: 'Response timed out');
     }
     final inferenceTime = stopwatch.elapsed;
 
     final structured = switch (result) {
-      InferenceFailure(:final error) =>
-        StructuredInferenceFailure<T>(error: error),
+      InferenceFailure(:final error) => StructuredInferenceFailure<T>(
+        error: error,
+      ),
       InferenceSuccess(:final rawText) => switch (parser.parse(rawText)) {
-        ParseSuccess(:final value) =>
-          StructuredSuccess<T>(value: value, rawText: rawText),
-        ParseFailure(:final rawText, :final error) =>
-          StructuredParseFailure<T>(rawText: rawText, error: error),
+        ParseSuccess(:final value) => StructuredSuccess<T>(
+          value: value,
+          rawText: rawText,
+        ),
+        ParseFailure(:final rawText, :final error) => StructuredParseFailure<T>(
+          rawText: rawText,
+          error: error,
+        ),
       },
     };
     final totalTime = stopwatch.elapsed;

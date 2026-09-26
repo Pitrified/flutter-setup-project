@@ -3,14 +3,7 @@
 /// Used by the conversation flow to bias the tutor's vocabulary and grammar
 /// complexity. Persisted on each `Conversation` as a plain string, and as a
 /// default in `AppSettingsRepository` under `default_cefr`.
-enum CefrLevel {
-  a1,
-  a2,
-  b1,
-  b2,
-  c1,
-  c2,
-}
+enum CefrLevel { a1, a2, b1, b2, c1, c2 }
 
 /// Human-friendly display + parsing helpers for [CefrLevel].
 extension CefrLevelX on CefrLevel {

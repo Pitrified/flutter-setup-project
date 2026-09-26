@@ -91,8 +91,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
                         onPressed: () => context.go(AppRoutes.conversation),
                         child: const Text('Start Conversation'),
                       ),
-                    if (state is AppLoading)
-                      const CircularProgressIndicator(),
+                    if (state is AppLoading) const CircularProgressIndicator(),
                     if (state is AppError)
                       Column(
                         children: [
@@ -123,9 +122,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen> {
     return switch (state) {
       AppLoading() => const Text('Loading...'),
       AppReady() => Text(
-          'Model: ${_modelLabel()}',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        'Model: ${_modelLabel()}',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
       AppNeedsModel() => const Text('Model required'),
       AppError() => const SizedBox.shrink(),
     };

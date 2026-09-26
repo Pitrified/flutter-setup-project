@@ -39,9 +39,9 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
       await FlutterGemma.installModel(
         modelType: ModelType.qwen3,
         fileType: ModelFileType.litertlm,
-      )
-          .fromNetwork(ModelConfig.defaultModel.downloadUrl)
-          .withProgress((progress) {
+      ).fromNetwork(ModelConfig.defaultModel.downloadUrl).withProgress((
+        progress,
+      ) {
         if (mounted) setState(() => _progress = progress);
       }).install();
       if (mounted) {
@@ -96,10 +96,7 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
           const SizedBox(height: 16),
           Text(_error!),
           const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: _startDownload,
-            child: const Text('Retry'),
-          ),
+          OutlinedButton(onPressed: _startDownload, child: const Text('Retry')),
         ],
       );
     }

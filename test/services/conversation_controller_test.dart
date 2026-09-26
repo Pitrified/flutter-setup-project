@@ -148,10 +148,7 @@ void main() {
     final tutorMsg = await controller.sendMessage('Oi');
 
     expect(tutorMsg, isNotNull);
-    expect(
-      tutorMsg!.content,
-      'Error generating response: engine down',
-    );
+    expect(tutorMsg!.content, 'Error generating response: engine down');
     expect(tutorMsg.tutorResponse, isNull);
   });
 
@@ -174,8 +171,7 @@ void main() {
     expect(tutorMsg.tutorResponse, isNull);
   });
 
-  test('startConversation persists CefrLevel.displayName and topic',
-      () async {
+  test('startConversation persists CefrLevel.displayName and topic', () async {
     final conv = await controller.startConversation(
       cefrLevel: CefrLevel.b1,
       topic: 'Food',
@@ -184,14 +180,16 @@ void main() {
     expect(conv.topic, 'Food');
   });
 
-  test('setCefrLevel updates the active conversation without restarting it',
-      () async {
-    await controller.startConversation();
-    final originalId = controller.currentConversation!.id;
-    await controller.setCefrLevel(CefrLevel.c1);
-    expect(controller.currentConversation!.id, originalId);
-    expect(controller.currentConversation!.cefrLevel, 'C1');
-  });
+  test(
+    'setCefrLevel updates the active conversation without restarting it',
+    () async {
+      await controller.startConversation();
+      final originalId = controller.currentConversation!.id;
+      await controller.setCefrLevel(CefrLevel.c1);
+      expect(controller.currentConversation!.id, originalId);
+      expect(controller.currentConversation!.cefrLevel, 'C1');
+    },
+  );
 
   test('setTopic trims input and updates the active conversation', () async {
     await controller.startConversation();
@@ -199,64 +197,72 @@ void main() {
     expect(controller.currentConversation!.topic, 'Travel');
   });
 
-  test('sendMessage substitutes cefr_level and topic into the prompt',
-      () async {
-    await controller.startConversation(
-      cefrLevel: CefrLevel.a2,
-      topic: 'Music',
-    );
-    await controller.sendMessage('Oi');
-    expect(promptManager.lastVariables, isNotNull);
-    expect(promptManager.lastVariables!['cefr_level'], 'A2');
-    expect(promptManager.lastVariables!['topic'], 'Music');
-  });
+  test(
+    'sendMessage substitutes cefr_level and topic into the prompt',
+    () async {
+      await controller.startConversation(
+        cefrLevel: CefrLevel.a2,
+        topic: 'Music',
+      );
+      await controller.sendMessage('Oi');
+      expect(promptManager.lastVariables, isNotNull);
+      expect(promptManager.lastVariables!['cefr_level'], 'A2');
+      expect(promptManager.lastVariables!['topic'], 'Music');
+    },
+  );
 
-  test('sendMessage emits intermediate deltas then a terminal on streamingReply',
-      () async {
-    await controller.startConversation();
+  test(
+    'sendMessage emits intermediate deltas then a terminal on streamingReply',
+    () async {
+      await controller.startConversation();
 
-    final deltas = <StructuredDelta<TutorResponse>>[];
-    final sub = controller.streamingReply.listen(deltas.add);
+      final deltas = <StructuredDelta<TutorResponse>>[];
+      final sub = controller.streamingReply.listen(deltas.add);
 
-    await controller.sendMessage('Oi');
-    await Future<void>.delayed(Duration.zero);
-    await sub.cancel();
+      await controller.sendMessage('Oi');
+      await Future<void>.delayed(Duration.zero);
+      await sub.cancel();
 
-    expect(deltas.length, greaterThan(1));
-    // At least one in-flight delta with a partial map and no typed value yet.
-    expect(deltas.any((d) => !d.isTerminal && d.value == null), isTrue);
-    // The last delta is the terminal success with the typed value.
-    expect(deltas.last.isTerminal, isTrue);
-    expect(deltas.last.value, isNotNull);
-    expect(deltas.last.value!.conversation.content, 'Ola!');
-  });
+      expect(deltas.length, greaterThan(1));
+      // At least one in-flight delta with a partial map and no typed value yet.
+      expect(deltas.any((d) => !d.isTerminal && d.value == null), isTrue);
+      // The last delta is the terminal success with the typed value.
+      expect(deltas.last.isTerminal, isTrue);
+      expect(deltas.last.value, isNotNull);
+      expect(deltas.last.value!.conversation.content, 'Ola!');
+    },
+  );
 
-  test('persists exactly one tutor message with the terminal typed value',
-      () async {
-    await controller.startConversation();
+  test(
+    'persists exactly one tutor message with the terminal typed value',
+    () async {
+      await controller.startConversation();
 
-    final msg = await controller.sendMessage('Oi');
+      final msg = await controller.sendMessage('Oi');
 
-    final tutors = controller.currentConversation!.messages
-        .where((m) => m.role == MessageRole.tutor)
-        .toList();
-    expect(tutors, hasLength(1));
-    expect(tutors.single.tutorResponse, isNotNull);
-    expect(tutors.single.tutorResponse!.conversation.content, 'Ola!');
-    expect(msg!.tutorResponse, tutors.single.tutorResponse);
-  });
+      final tutors = controller.currentConversation!.messages
+          .where((m) => m.role == MessageRole.tutor)
+          .toList();
+      expect(tutors, hasLength(1));
+      expect(tutors.single.tutorResponse, isNotNull);
+      expect(tutors.single.tutorResponse!.conversation.content, 'Ola!');
+      expect(msg!.tutorResponse, tutors.single.tutorResponse);
+    },
+  );
 
-  test('the prompt names the conversation language and the explanation language',
-      () async {
-    await controller.startConversation(language: TargetLanguage.esEs);
-    await controller.sendMessage('Hola');
+  test(
+    'the prompt names the conversation language and the explanation language',
+    () async {
+      await controller.startConversation(language: TargetLanguage.esEs);
+      await controller.sendMessage('Hola');
 
-    expect(
-      promptManager.lastVariables!['target_language'],
-      'Spanish (European)',
-    );
-    expect(promptManager.lastVariables!['explanation_language'], 'English');
-  });
+      expect(
+        promptManager.lastVariables!['target_language'],
+        'Spanish (European)',
+      );
+      expect(promptManager.lastVariables!['explanation_language'], 'English');
+    },
+  );
 
   test('a pt-BR conversation is named to the model as before', () async {
     await controller.startConversation();
@@ -282,16 +288,18 @@ void main() {
     );
   });
 
-  test('startConversation stores the language code, defaulting to pt-BR',
-      () async {
-    final defaulted = await controller.startConversation();
-    expect(defaulted.language, 'pt-BR');
+  test(
+    'startConversation stores the language code, defaulting to pt-BR',
+    () async {
+      final defaulted = await controller.startConversation();
+      expect(defaulted.language, 'pt-BR');
 
-    final spanish = await controller.startConversation(
-      language: TargetLanguage.esEs,
-    );
-    expect(spanish.language, 'es-ES');
-  });
+      final spanish = await controller.startConversation(
+        language: TargetLanguage.esEs,
+      );
+      expect(spanish.language, 'es-ES');
+    },
+  );
 
   test('setLanguage switches an empty conversation', () async {
     await controller.startConversation();
@@ -318,22 +326,24 @@ void main() {
     expect(controller.currentConversation!.id, conv.id);
   });
 
-  test('on failure appends fallback text and stays usable for the next send',
-      () async {
-    await controller.startConversation();
-    engine
-      ..buffers = const ['{']
-      ..throwMessage = 'engine down';
+  test(
+    'on failure appends fallback text and stays usable for the next send',
+    () async {
+      await controller.startConversation();
+      engine
+        ..buffers = const ['{']
+        ..throwMessage = 'engine down';
 
-    final failMsg = await controller.sendMessage('Oi');
-    expect(failMsg!.content, 'Error generating response: engine down');
+      final failMsg = await controller.sendMessage('Oi');
+      expect(failMsg!.content, 'Error generating response: engine down');
 
-    // The send flag was reset and the in-flight channel is not left
-    // open/broken: a second send succeeds.
-    engine
-      ..throwMessage = null
-      ..buffers = _cumulative(_olaJson);
-    final okMsg = await controller.sendMessage('De novo');
-    expect(okMsg!.content, 'Ola!');
-  });
+      // The send flag was reset and the in-flight channel is not left
+      // open/broken: a second send succeeds.
+      engine
+        ..throwMessage = null
+        ..buffers = _cumulative(_olaJson);
+      final okMsg = await controller.sendMessage('De novo');
+      expect(okMsg!.content, 'Ola!');
+    },
+  );
 }

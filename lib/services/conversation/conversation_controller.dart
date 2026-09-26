@@ -120,10 +120,7 @@ class ConversationController {
     if (current == null) return;
     final trimmed = topic.trim();
     if (current.topic == trimmed) return;
-    final updated = current.copyWith(
-      topic: trimmed,
-      updatedAt: DateTime.now(),
-    );
+    final updated = current.copyWith(topic: trimmed, updatedAt: DateTime.now());
     await repository.save(updated);
     _currentConversation = updated;
     _conversationController.add(updated);
@@ -261,14 +258,14 @@ class ConversationController {
       }
       return switch (failure.kind) {
         StructuredFailureKind.parse => (
-            'Error generating response: '
-                'the reply was not in the expected format.',
-            null,
-          ),
+          'Error generating response: '
+              'the reply was not in the expected format.',
+          null,
+        ),
         StructuredFailureKind.inference => (
-            'Error generating response: ${failure.error}',
-            null,
-          ),
+          'Error generating response: ${failure.error}',
+          null,
+        ),
       };
     }
     return ('Error generating response: unknown', null);
@@ -281,10 +278,12 @@ class ConversationController {
     final recent = messages.length > maxHistoryMessages
         ? messages.sublist(messages.length - maxHistoryMessages)
         : messages;
-    return recent.map((m) {
-      final role = m.role == MessageRole.user ? 'User' : 'Tutor';
-      return '$role: ${m.content}';
-    }).join('\n');
+    return recent
+        .map((m) {
+          final role = m.role == MessageRole.user ? 'User' : 'Tutor';
+          return '$role: ${m.content}';
+        })
+        .join('\n');
   }
 
   /// Dispose resources.

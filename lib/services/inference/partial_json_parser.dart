@@ -50,9 +50,9 @@ class JsonClosure {
 
   /// An open (not-yet-closed) leaf with no children.
   const JsonClosure.open()
-      : closed = false,
-        fields = const {},
-        elements = const [];
+    : closed = false,
+      fields = const {},
+      elements = const [];
 
   /// Whether a real terminator for this node has been seen in the input.
   final bool closed;

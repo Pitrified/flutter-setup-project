@@ -21,9 +21,8 @@ final appControllerProvider = Provider<AppController>((ref) {
   final factory = ref.watch(engineFactoryProvider);
   return AppController(
     engineFactory: factory,
-    modelChecker: () => FlutterGemma.isModelInstalled(
-      ModelConfig.defaultModelFileName,
-    ),
+    modelChecker: () =>
+        FlutterGemma.isModelInstalled(ModelConfig.defaultModelFileName),
     onEngineReady: (engine) {
       ref.read(inferenceEngineProvider.notifier).setEngine(engine);
     },

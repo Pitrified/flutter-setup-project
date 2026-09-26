@@ -41,14 +41,14 @@ void main() {
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
-      final key = String.fromCharCodes(message!.buffer.asUint8List());
-      if (key == 'assets/fixtures/tutor_responses.json') {
-        return ByteData.sublistView(
-          Uint8List.fromList(fixtureJson.codeUnits),
-        );
-      }
-      return null;
-    });
+          final key = String.fromCharCodes(message!.buffer.asUint8List());
+          if (key == 'assets/fixtures/tutor_responses.json') {
+            return ByteData.sublistView(
+              Uint8List.fromList(fixtureJson.codeUnits),
+            );
+          }
+          return null;
+        });
   });
 
   tearDown(() async {
@@ -130,9 +130,10 @@ void main() {
   test('bufferedGenerateStream emits the one-shot result once', () async {
     await engine.initialize();
 
-    final emissions =
-        await bufferedGenerateStream(engine, const InferenceRequest(prompt: 'x'))
-            .toList();
+    final emissions = await bufferedGenerateStream(
+      engine,
+      const InferenceRequest(prompt: 'x'),
+    ).toList();
 
     expect(emissions, hasLength(1));
     expect(jsonDecode(emissions.single), isA<Map<String, dynamic>>());

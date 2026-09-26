@@ -8,8 +8,7 @@ import 'service_providers.dart';
 ///
 /// Returns null when the inference engine is not yet initialized.
 /// Depends on structured inference engine, repository, and prompt manager.
-final conversationControllerProvider =
-    Provider<ConversationController?>((ref) {
+final conversationControllerProvider = Provider<ConversationController?>((ref) {
   final streamEngine = ref.watch(structuredStreamEngineProvider);
   if (streamEngine == null) return null;
   return ConversationController(

@@ -19,16 +19,19 @@ void main() {
     'conversation_history': '',
   };
 
-  test('the latest template resolves with the controller variable set', () async {
-    final prompt = await PromptManager().buildPrompt(
-      name: 'tutor_response',
-      variables: variablesFor(TargetLanguage.ptBr),
-    );
+  test(
+    'the latest template resolves with the controller variable set',
+    () async {
+      final prompt = await PromptManager().buildPrompt(
+        name: 'tutor_response',
+        variables: variablesFor(TargetLanguage.ptBr),
+      );
 
-    expect(prompt, contains('language tutor for Portuguese (Brazilian)'));
-    expect(prompt, contains('English translation'));
-    expect(prompt, isNot(contains('{{')));
-  });
+      expect(prompt, contains('language tutor for Portuguese (Brazilian)'));
+      expect(prompt, contains('English translation'));
+      expect(prompt, isNot(contains('{{')));
+    },
+  );
 
   test('the same template names any other language', () async {
     final prompt = await PromptManager().buildPrompt(

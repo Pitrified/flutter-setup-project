@@ -83,22 +83,22 @@ class AppController {
     try {
       await _engine!.initialize().timeout(const Duration(seconds: 10));
     } on TimeoutException {
-      _setState(
-        const AppError(message: 'Engine initialization timed out'),
-      );
+      _setState(const AppError(message: 'Engine initialization timed out'));
       return;
     }
 
     if (_engine!.isReady) {
       onEngineReady(_engine!);
-      _setState(AppReady(
-        modelInfo: ModelMetadata(
-          name: modelName,
-          filePath: '',
-          fileSizeBytes: 0,
-          downloadedAt: DateTime.now(),
+      _setState(
+        AppReady(
+          modelInfo: ModelMetadata(
+            name: modelName,
+            filePath: '',
+            fileSizeBytes: 0,
+            downloadedAt: DateTime.now(),
+          ),
         ),
-      ));
+      );
     } else {
       _setState(
         const AppError(message: 'Failed to initialize inference engine'),

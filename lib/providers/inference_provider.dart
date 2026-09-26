@@ -44,8 +44,8 @@ class InferenceEngineNotifier extends Notifier<InferenceEngine?> {
 /// Provider for the raw inference engine.
 final inferenceEngineProvider =
     NotifierProvider<InferenceEngineNotifier, InferenceEngine?>(
-  InferenceEngineNotifier.new,
-);
+      InferenceEngineNotifier.new,
+    );
 
 /// Provider for the structured inference engine (TutorResponse).
 ///
@@ -58,14 +58,14 @@ final inferenceEngineProvider =
 /// batch/regenerate path); nothing watches it today.
 final structuredInferenceEngineProvider =
     Provider<StructuredInferenceEngine<TutorResponse>?>((ref) {
-  final engine = ref.watch(inferenceEngineProvider);
-  if (engine == null) return null;
-  return StructuredInferenceEngine(
-    engine: engine,
-    parser: const StructuredOutputParser(fromJson: TutorResponse.fromJson),
-    timeout: const Duration(seconds: 60),
-  );
-});
+      final engine = ref.watch(inferenceEngineProvider);
+      if (engine == null) return null;
+      return StructuredInferenceEngine(
+        engine: engine,
+        parser: const StructuredOutputParser(fromJson: TutorResponse.fromJson),
+        timeout: const Duration(seconds: 60),
+      );
+    });
 
 /// Provider for the structured *streaming* engine (TutorResponse).
 ///
@@ -76,11 +76,11 @@ final structuredInferenceEngineProvider =
 /// Returns null when the engine is not yet initialized.
 final structuredStreamEngineProvider =
     Provider<StructuredStreamEngine<TutorResponse>?>((ref) {
-  final engine = ref.watch(inferenceEngineProvider);
-  if (engine == null) return null;
-  return StructuredStreamEngine<TutorResponse>(
-    engine: engine,
-    fromJson: TutorResponse.fromJson,
-    timeout: const Duration(seconds: 60),
-  );
-});
+      final engine = ref.watch(inferenceEngineProvider);
+      if (engine == null) return null;
+      return StructuredStreamEngine<TutorResponse>(
+        engine: engine,
+        fromJson: TutorResponse.fromJson,
+        timeout: const Duration(seconds: 60),
+      );
+    });

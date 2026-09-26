@@ -109,27 +109,34 @@ void main() {
       );
     }
     // The last intermediate has filled in the correction block.
-    expect(intermediates.last.partial['correction'], isA<Map<String, dynamic>>());
+    expect(
+      intermediates.last.partial['correction'],
+      isA<Map<String, dynamic>>(),
+    );
   });
 
-  test('a nested array element is visible while still open (arrive-as-you-go)',
-      () async {
-    final sse = _engineFor(_ScriptedEngine(_cumulative(_completeJson)));
+  test(
+    'a nested array element is visible while still open (arrive-as-you-go)',
+    () async {
+      final sse = _engineFor(_ScriptedEngine(_cumulative(_completeJson)));
 
-    final deltas = await sse.generateStream(request).toList();
+      final deltas = await sse.generateStream(request).toList();
 
-    bool firstErrorOpen(StructuredDelta<TutorResponse> d) {
-      final e0 = d.closure.field('correction')?.field('errors')?.element(0);
-      return e0 != null && !e0.closed;
-    }
+      bool firstErrorOpen(StructuredDelta<TutorResponse> d) {
+        final e0 = d.closure.field('correction')?.field('errors')?.element(0);
+        return e0 != null && !e0.closed;
+      }
 
-    // At least one delta exposes errors[0] before its closing brace arrives...
-    expect(deltas.any(firstErrorOpen), isTrue);
-    // ...and by the end that element is closed.
-    final finalE0 =
-        deltas.last.closure.field('correction')!.field('errors')!.element(0)!;
-    expect(finalE0.closed, isTrue);
-  });
+      // At least one delta exposes errors[0] before its closing brace arrives...
+      expect(deltas.any(firstErrorOpen), isTrue);
+      // ...and by the end that element is closed.
+      final finalE0 = deltas.last.closure
+          .field('correction')!
+          .field('errors')!
+          .element(0)!;
+      expect(finalE0.closed, isTrue);
+    },
+  );
 
   test('terminal value equals the one-shot parse of the same buffer', () async {
     final sse = _engineFor(_ScriptedEngine(_cumulative(_completeJson)));
@@ -140,7 +147,8 @@ void main() {
     const oneShot = StructuredOutputParser<TutorResponse>(
       fromJson: TutorResponse.fromJson,
     );
-    final expected = oneShot.parse(_completeJson) as ParseSuccess<TutorResponse>;
+    final expected =
+        oneShot.parse(_completeJson) as ParseSuccess<TutorResponse>;
 
     expect(terminal.isComplete, isTrue);
     expect(terminal.failure, isNull);
@@ -189,17 +197,19 @@ void main() {
     expect(terminal.failure!.error, 'Response timed out');
   });
 
-  test('coalescing suppresses ticks with an unchanged map and closed-flags',
-      () async {
-    // Three buffers that all parse to the same closed {"a":1}.
-    final sse = _engineFor(
-      _ScriptedEngine(const ['{"a":1}', '{"a":1} ', '{"a":1}  ']),
-    );
+  test(
+    'coalescing suppresses ticks with an unchanged map and closed-flags',
+    () async {
+      // Three buffers that all parse to the same closed {"a":1}.
+      final sse = _engineFor(
+        _ScriptedEngine(const ['{"a":1}', '{"a":1} ', '{"a":1}  ']),
+      );
 
-    final deltas = await sse.generateStream(request).toList();
-    final intermediates = deltas.where((d) => !d.isTerminal).toList();
+      final deltas = await sse.generateStream(request).toList();
+      final intermediates = deltas.where((d) => !d.isTerminal).toList();
 
-    expect(intermediates, hasLength(1));
-    expect(jsonEncode(intermediates.single.partial), '{"a":1}');
-  });
+      expect(intermediates, hasLength(1));
+      expect(jsonEncode(intermediates.single.partial), '{"a":1}');
+    },
+  );
 }

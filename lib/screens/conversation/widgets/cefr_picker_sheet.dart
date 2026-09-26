@@ -28,9 +28,7 @@ Future<CefrLevel?> showCefrPickerSheet(
             ListTile(
               title: Text('${level.displayName} - ${level.description}'),
               subtitle: Text(level.guidance),
-              trailing: level == current
-                  ? const Icon(Icons.check)
-                  : null,
+              trailing: level == current ? const Icon(Icons.check) : null,
               onTap: () => Navigator.of(sheetContext).pop(level),
             ),
           const SizedBox(height: 8),

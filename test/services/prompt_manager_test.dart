@@ -16,14 +16,14 @@ User says: {{user_message}}''';
 
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
-      final key = String.fromCharCodes(message!.buffer.asUint8List());
-      if (key == 'assets/prompts/tutor_response/v1.txt') {
-        return ByteData.sublistView(
-          Uint8List.fromList(templateContent.codeUnits),
-        );
-      }
-      return null;
-    });
+          final key = String.fromCharCodes(message!.buffer.asUint8List());
+          if (key == 'assets/prompts/tutor_response/v1.txt') {
+            return ByteData.sublistView(
+              Uint8List.fromList(templateContent.codeUnits),
+            );
+          }
+          return null;
+        });
   });
 
   tearDown(() {
@@ -43,36 +43,36 @@ User says: {{user_message}}''';
     final prompt = await manager.buildPrompt(
       name: 'tutor_response',
       version: 1,
-      variables: {
-        'cefr_level': 'A1',
-        'user_message': 'Ola mundo',
-      },
+      variables: {'cefr_level': 'A1', 'user_message': 'Ola mundo'},
     );
     expect(prompt, contains('A1'));
     expect(prompt, contains('Ola mundo'));
     expect(prompt, isNot(contains('{{cefr_level}}')));
   });
 
-  test('a missing variable throws instead of shipping the placeholder', () async {
-    // Was "unknown variables are left as-is" until 2026-09-24. Leaving
-    // {{target_language}} in the prompt makes the model answer in whatever
-    // language it guesses, which reads as a bad reply rather than as a bug, so
-    // the manager now refuses to build an incomplete prompt.
-    expect(
-      () => manager.buildPrompt(
-        name: 'tutor_response',
-        version: 1,
-        variables: {'cefr_level': 'B1'},
-      ),
-      throwsA(
-        isA<PromptTemplateException>().having(
-          (e) => e.message,
-          'message',
-          contains('user_message'),
+  test(
+    'a missing variable throws instead of shipping the placeholder',
+    () async {
+      // Was "unknown variables are left as-is" until 2026-09-24. Leaving
+      // {{target_language}} in the prompt makes the model answer in whatever
+      // language it guesses, which reads as a bad reply rather than as a bug, so
+      // the manager now refuses to build an incomplete prompt.
+      expect(
+        () => manager.buildPrompt(
+          name: 'tutor_response',
+          version: 1,
+          variables: {'cefr_level': 'B1'},
         ),
-      ),
-    );
-  });
+        throwsA(
+          isA<PromptTemplateException>().having(
+            (e) => e.message,
+            'message',
+            contains('user_message'),
+          ),
+        ),
+      );
+    },
+  );
 
   test('caches templates on second load', () async {
     await manager.loadTemplate(name: 'tutor_response', version: 1);

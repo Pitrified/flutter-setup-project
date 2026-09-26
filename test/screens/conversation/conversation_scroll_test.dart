@@ -48,8 +48,7 @@ class _FakePromptManager extends PromptManager {
     required String name,
     required Map<String, String> variables,
     int? version,
-  }) async =>
-      'fake prompt';
+  }) async => 'fake prompt';
 }
 
 void main() {
@@ -130,8 +129,9 @@ void main() {
     return tester.widget<AnimatedOpacity>(finder).opacity;
   }
 
-  testWidgets('pinned user: a new message scrolls to the bottom, no button',
-      (tester) async {
+  testWidgets('pinned user: a new message scrolls to the bottom, no button', (
+    tester,
+  ) async {
     await pumpScreen(tester);
 
     // sendMessage drives a real Stream; runAsync lets it complete outside the
@@ -144,8 +144,9 @@ void main() {
     expect(buttonOpacity(tester), 0);
   });
 
-  testWidgets('scrolled-up user: a new message does not move the view',
-      (tester) async {
+  testWidgets('scrolled-up user: a new message does not move the view', (
+    tester,
+  ) async {
     await pumpScreen(tester);
 
     // Go to the bottom (pinned), then scroll up to read earlier messages; the
@@ -164,8 +165,9 @@ void main() {
     expect(buttonOpacity(tester), 1);
   });
 
-  testWidgets('tapping the button scrolls to the bottom and hides it',
-      (tester) async {
+  testWidgets('tapping the button scrolls to the bottom and hides it', (
+    tester,
+  ) async {
     await pumpScreen(tester);
 
     await tester.drag(find.byType(ListView), const Offset(0, -2000));
@@ -182,8 +184,9 @@ void main() {
     expect(buttonOpacity(tester), 0);
   });
 
-  testWidgets('revealing the last translation follows the bottom when pinned',
-      (tester) async {
+  testWidgets('revealing the last translation follows the bottom when pinned', (
+    tester,
+  ) async {
     await pumpScreen(tester);
 
     // Go to the bottom so the last tutor bubble is on screen and pinned.
