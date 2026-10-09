@@ -126,6 +126,40 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
+## GitHub release
+
+A release on the repository's Releases page, with the arm64 APK attached, gets a build onto a phone without the Play Console. Attach only an APK that carries no secrets, since release assets are public.
+Nothing here is automated. It runs on a machine with the keystore and GitHub credentials; a cloud session can neither hold the keystore nor create a release.
+
+1. **Once:** create the keystore and `android/key.properties` as in [Production signing](#production-signing-required-for-play-store). Back up the `.jks` and both passwords outside the repository: without them no later release installs as an update.
+2. **Version:** raise `version` in `pubspec.yaml` (name and `+` code both) on main, and write the release notes in a file in the repository.
+3. **Build** on a clean checkout of main:
+
+   ```bash
+   git switch main && git pull
+   flutter build apk --release --split-per-abi --target-platform android-arm64,android-x64
+   ```
+
+4. **Check the signature.** The certificate printed has to be yours, not `CN=Android Debug`; a build without `key.properties` falls back to the debug key silently.
+
+   ```bash
+   apksigner verify --print-certs build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+   ```
+
+5. **Publish.** Put the version in the asset name, so a phone's Downloads folder tells builds apart.
+
+   ```bash
+   cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk /tmp/<app>-<version>-arm64.apk
+   gh release create v<version> /tmp/<app>-<version>-arm64.apk \
+     --target main --title "<app> <version>" --notes-file <notes file>
+   ```
+
+   Without `gh`: Releases, "Draft a new release", a new tag on main, the notes pasted, the APK dropped in, Publish.
+6. **Install:** open the release page on the phone, download the APK, allow the browser to install unknown apps.
+
+Android refuses an update signed with a different key. Test builds from a session without the keystore are debug-signed, so going from one to a release build (or from a release build to a Play install, which Google signs) means uninstalling first, which deletes the app's data.
+The split APK's versionCode is offset per ABI (arm64 adds 2000), so a later install from Play, whose versionCode is the plain `+` number, is lower and also needs an uninstall.
+
 ## Build outputs
 
 | Command | Output path |

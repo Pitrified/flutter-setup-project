@@ -35,3 +35,8 @@ To be raised as questions when this is picked up. Starting points:
 - The shape of the docs: one getting-started for both audiences or two, and where the pattern index lives.
 - The plan folders about the tutor that stay here as history: whether the guide's README says so, and how.
 - How a session bootstrapping a new app is meant to use this repo, written down, since that is the guide's main reader.
+
+## Raised later
+
+- 2026-10-09: lessons from fala-language-tutor up to its first GitHub release are in the docs here: Hive widget tests in `docs/coding-standards.md`, the GitHub release steps in `docs/build-and-release.md`, the cloud session as a third machine in the instructions.
+  One more is a gallery candidate rather than a doc: fala's `scripts/build-apk.sh` passes the `pubspec.yaml` version and the commit as `--dart-define`s, and the drawer shows them, so every APK handed over names what it was built from.

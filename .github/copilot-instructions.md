@@ -101,6 +101,11 @@ happens from a `g7` session, so hand those back rather than working around them.
 (`~/.bashrc` sets them above its interactivity guard, 2026-09-24). `scripts/check.sh` still falls
 back to `$HOME/flutter/bin` so it works on a machine without that edit.
 
+A claude.ai cloud session is a third machine: headless like this box, able to push, and without
+Flutter until it is installed (`docs/getting-started.md`, "Fresh cloud session"). Its container can
+restart and kill background builds, so check a push landed with `git ls-remote` rather than
+trusting the last output.
+
 ## How to write
 
 Technical prose: dry, concrete, and short without leaving anything out. The two failure modes are

@@ -86,6 +86,19 @@
 - Test file naming: `<source_file>_test.dart`
 - `setUp`/`tearDown` for provider overrides
 - No tests depend on real model inference
+- A new test has to fail when the code it covers is broken. Break the code by hand (drop a filter, skip a call), run the test, see it fail, then restore the code.
+
+### Widget tests that write to Hive
+
+`testWidgets` runs in fake async, where Hive's file I/O never completes, so a test that waits on a write hangs or sees stale data.
+
+- Seed data and pump the first frame inside `tester.runAsync`.
+- A tap whose handler writes to Hive runs inside `tester.runAsync`, followed by a real delay of about 100 ms.
+- A dialog's `await showDialog(...)` continues in the zone of the tap that opened it. If the code after the dialog writes to Hive, open the dialog inside `tester.runAsync` too, not only the confirming tap.
+- A GoRouter push or pop takes longer than 500 ms of pumped time. `pumpAndSettle` does not finish while a progress indicator animates, so pump in steps (25 pumps of 50 ms) instead. Until the transition finishes, the page underneath still matches finders.
+- Use a fresh box name per test (`'test_box_$run'` with a counter). Hive keeps a box open by name across tests.
+- Do not close Hive boxes in `tearDown`, which hangs. Delete the temp directory instead.
+- Ids made from `millisecondsSinceEpoch` collide when two records are created in the same millisecond. A user cannot do that, a test can, so a test that creates records in a loop waits 2 ms between them.
 
 ## 11. Documentation
 
