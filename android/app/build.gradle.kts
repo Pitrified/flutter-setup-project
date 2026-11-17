@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.fala.app"
+    namespace = "com.pitrified.fluttersetup"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.fala.app"
+        applicationId = "com.pitrified.fluttersetup"
         minSdk = 26
         targetSdk = 36
         versionCode = flutter.versionCode

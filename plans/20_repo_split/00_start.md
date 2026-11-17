@@ -121,6 +121,7 @@ The user's framing, condensed; "the audit will guide scope decisions" covers all
   Two apps with the same id replace each other on a phone, and fala-language-tutor keeps `com.fala.app` for its Play listing.
   Recommended: a neutral id such as `com.pitrified.flutter_setup`, changed during phase 05.
   ANS: ok.
+  Reopened 2026-11-17 in fala-language-tutor `18_package_id/00_start.md` Q2: the id is `com.pitrified.fluttersetup`, with no underscore because an iOS bundle id allows only letters, digits, hyphens and periods; renamed alongside `com.pitrified.fala` and `com.pitrified.acerta`.
 - Q8: the product folders that move (07, 09, 13, 14, 19): do they keep their numbers in fala-language-tutor?
   a. keep numbers and names, so references to them from the diary here still read correctly, and fala's own new folders start after the highest.
   b. renumber from 01 in the new repo.

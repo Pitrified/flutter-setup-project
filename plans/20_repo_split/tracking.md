@@ -44,3 +44,4 @@ Append-only. Newest at the bottom.
 - 2026-09-26 : fala-language-tutor CI run 1 succeeded; its bootstrap folder is closed. Phase 4 here stays `in progress` until the merge there and a Pixel run.
 - 2026-09-26 : phase 4 done. The user ran the tutor on the Pixel from a cloud-built APK: install, language change, OpenAI conversation and settings across a restart work. The last conversation is not restored on reopen, a gap older than the split and in both repos; it belongs to fala-language-tutor. Phase 5, the guide clean-up, is next.
 - 2026-09-26 : phase 5 superseded by `27_guide_rebuild`, spun off as its own folder. With phases 1 to 4 done the split itself is complete: audit, pre-split clean-up, the tutor in its own repo and verified on the Pixel. Folder closed, priority back to 0.
+- 2026-11-17 : Q7 reopened in fala-language-tutor `18_package_id/00_start.md` Q2: the id is `com.pitrified.fluttersetup`, renamed on branch `package-id`.

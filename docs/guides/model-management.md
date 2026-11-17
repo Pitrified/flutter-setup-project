@@ -10,7 +10,7 @@ Models are stored under `getApplicationDocumentsDirectory()/models/`. The
 directory is created on first access.
 
 ```
-/data/data/com.fala.app/app_flutter/models/
+/data/data/com.pitrified.fluttersetup/app_flutter/models/
   Qwen3-0.6B.litertlm
 ```
 

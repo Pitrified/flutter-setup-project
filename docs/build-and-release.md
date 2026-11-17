@@ -75,7 +75,7 @@ flutter run --profile
 adb logcat | grep -i "flutter\|fala\|Fatal\|AndroidRuntime"
 
 # Filter to just your app's process
-adb logcat --pid=$(adb shell pidof com.fala.app)
+adb logcat --pid=$(adb shell pidof com.pitrified.fluttersetup)
 
 # Clear old logs first
 adb logcat -c && adb logcat | grep -i "flutter\|Fatal"

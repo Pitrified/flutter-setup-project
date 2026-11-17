@@ -49,7 +49,7 @@ Play Console → **Create app**:
 - Category: **Education**
 - Declarations: ads (No), Play content guidelines, US export laws
 
-Package name is fixed by the build: `com.fala.app` (set as `applicationId` in
+Package name is fixed by the build: `com.pitrified.fluttersetup` (set as `applicationId` in
 `android/app/build.gradle.kts`). It cannot be changed after the first upload.
 
 ---
@@ -115,7 +115,7 @@ Testers must:
 
 1. Click the opt-in URL while signed in to the device's Google account.
 2. Wait a few minutes for propagation.
-3. Install via Play Store (search by package name `com.fala.app` or use the test link).
+3. Install via Play Store (search by package name `com.pitrified.fluttersetup` or use the test link).
 
 ---
 

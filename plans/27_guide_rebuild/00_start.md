@@ -23,7 +23,7 @@ From `20_repo_split/00_start.md`:
 - **What the guide is** (brainstorm): setup from zero, headless and for a person; a working app with a gallery of the patterns other projects actually use, not all of them, since "a giant gallery will immediately go stale"; a pattern can be a link to the project that uses it rather than a copy; AI skills, guides and scaffolding; distribution information and approaches. This app is not distributed.
 - **The on-device engine stays here** as a gallery pattern (Q5): `flutter_gemma`, the model download, the model check.
 - **The app is a working gallery** (Q6): router and navigation, basic pages, some components, storage including secure storage.
-- **Its own `applicationId`** (Q7), for example `com.pitrified.flutter_setup`, so it cannot replace the tutor on a phone.
+- **Its own `applicationId`** (Q7), `com.pitrified.fluttersetup` since 2026-11-17, so it cannot replace the tutor on a phone.
 - **No bootstrap script**: a session reads this repo and a plan and writes a new app, as fala-language-tutor was written.
 
 ## What is not settled

@@ -1,4 +1,4 @@
-package com.fala.app
+package com.pitrified.fluttersetup
 
 import io.flutter.embedding.android.FlutterActivity
 

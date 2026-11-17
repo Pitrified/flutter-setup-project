@@ -105,7 +105,7 @@ When the model produces unexpected output:
 
 1. Check logcat for the raw response:
    ```bash
-   adb logcat --pid=$(adb shell pidof com.fala.app) | grep "flutter"
+   adb logcat --pid=$(adb shell pidof com.pitrified.fluttersetup) | grep "flutter"
    ```
 
 2. Look for `InferenceChat: Complete response accumulated:` in logs - this shows exactly what the model returned.

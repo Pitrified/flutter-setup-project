@@ -5,7 +5,7 @@
 ## 1. Overview
 
 - **App name:** fala (Portuguese for "speak")
-- **Package ID:** `com.fala.app`
+- **Package ID:** `com.pitrified.fluttersetup`
 - **Purpose:** on-device language tutoring via conversational AI
 - **Core value:** structured corrections + natural conversation, fully offline after model download
 - **Target language:** a setting (`default_language`), one of Portuguese (Brazilian),
